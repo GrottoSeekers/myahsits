@@ -4,6 +4,7 @@ export const prerender = false;
 // sneak peek of what MYAH will do, and the register-your-interest form.
 // The only page it links to is the founders' own page.
 import { FOUNDERS_SLUG, FOUNDERS_REVIEW_TOTAL } from '../data/founders';
+import Welcome from './_welcome.astro';
 
 const registered = Astro.url.searchParams.has('registered');
 const error = Astro.url.searchParams.get('error');
@@ -353,8 +354,8 @@ const founders = '/' + FOUNDERS_SLUG;
           <article class="g-card reveal">
             <div class="peek">
               <div class="m-chat">
-                <div class="bub them">Hi! Would you be free 12–19 Nov for Bramble and Moss? 🐾<small>Owner</small></div>
-                <div class="bub me">We'd love to! We've looked after two spaniels before.<small>You</small></div>
+                <div class="bub them">Hello. Would you be free 12–19 Nov for Bramble and Moss?<small>Owner</small></div>
+                <div class="bub me">We would. We have looked after two spaniels before.<small>You</small></div>
                 <div class="bub them">Perfect, confirming you now.<small>Owner</small></div>
                 <span class="m-confirm">✓ Sit confirmed · 12–19 Nov</span>
               </div>
@@ -389,7 +390,7 @@ const founders = '/' + FOUNDERS_SLUG;
             <div class="img"><img src="/images/slideshow-spaniel-walk.jpeg" alt="A sitter walking a spaniel" /></div>
             <div class="body">
               <span class="tag">For sitters</span>
-              <h3>See more of the world, with a furry friend</h3>
+              <h3>Stay somewhere new, with a dog to walk</h3>
               <ol>
                 <li>Create your page with your photos and reviews</li>
                 <li>Browse sits and apply in a tap</li>
@@ -479,6 +480,8 @@ const founders = '/' + FOUNDERS_SLUG;
     </div>
   </footer>
 
+  <Welcome open={registered} role={Astro.url.searchParams.get('as') || ''} />
+
   <script is:inline>
   (() => {
     // Send the interest form without leaving the page.
@@ -490,7 +493,11 @@ const founders = '/' + FOUNDERS_SLUG;
         fetch('/api/interest', { method: 'POST', body: new FormData(f), headers: { Accept: 'application/json' } })
           .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
           .then(({ ok, j }) => {
-            if (ok) { f.reset(); st.textContent = "Thank you, you're on the list. We'll email you the moment MYAH is live."; }
+            if (ok) {
+              const email = f.querySelector('input[type=email]').value.trim();
+              f.reset(); st.textContent = "You're on the list. Check your inbox for a welcome email.";
+              if (window.myahWelcome) window.myahWelcome({ role: j.role, position: j.position, email });
+            }
             else { st.className = 'istatus err'; st.textContent = j.error === 'email' ? 'Please check your email address and try again.' : 'Something went wrong, please try again.'; }
           })
           .catch(() => { st.className = 'istatus err'; st.textContent = 'Something went wrong, please try again.'; });

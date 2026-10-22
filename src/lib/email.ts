@@ -2,6 +2,7 @@
 import { Resend } from 'resend';
 import { supabase } from './supabase';
 import { FOUNDERS_SLUG } from '../data/founders';
+import { welcomeEmail, type Role } from './welcome-email';
 
 const SITE = 'https://www.myahsits.com';
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -63,19 +64,20 @@ const shell = (body: string) => `
   <p style="font-size:12px;color:#8a6a4f;line-height:1.6;margin:26px 0 0">You're getting this because you registered your interest at myahsits.com. Reply to this email if you'd rather not hear from us.</p>
 </div>`;
 
-/** "You're on the list" — sent when someone registers interest before launch. */
-export async function emailInterestThanks(to: string) {
+/** "You're on the list" — sent when someone registers interest before launch (see welcome-email.ts). */
+export async function emailInterestThanks(to: string, role: Role = '', position?: number) {
   const key = import.meta.env.RESEND_API_KEY;
   if (!key) return { sent: false, reason: 'no RESEND_API_KEY' };
   try {
+    const m = welcomeEmail(role, position);
+    const replyTo = await adminRecipients();
     await new Resend(key).emails.send({
-      from: 'MYAH <hello@myahsits.com>',
+      from: 'Callum & Niamh at MYAH <hello@myahsits.com>',
       to,
-      subject: "You're on the list for MYAH",
-      html: shell(`
-  <h1 style="font-family:Georgia,serif;font-weight:400;font-size:26px;margin:0 0 14px">Thanks, you're on the list</h1>
-  <p style="font-size:15px;line-height:1.7;color:#4a3726;margin:0 0 14px">MYAH is a new home for house &amp; pet sitters and home owners, and it's launching soon. We'll email you the moment it's live so you can be one of the first to join.</p>
-  <p style="font-size:15px;line-height:1.7;color:#4a3726;margin:0">Callum &amp; Niamh</p>`),
+      ...(replyTo.length ? { replyTo } : {}),
+      subject: m.subject,
+      html: m.html,
+      text: m.text,
     });
     return { sent: true };
   } catch (e) {

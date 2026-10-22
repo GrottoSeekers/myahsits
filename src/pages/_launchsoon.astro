@@ -1,6 +1,7 @@
 ---
 // Before launch: a "MYAH is launching soon" band on the founders' page, with
 // the register-your-interest form. Posts with fetch so visitors stay put.
+import Welcome from './_welcome.astro';
 ---
 <section id="launch" data-sec="1" style="background:#f3ece0;padding:88px 48px;border-top:1px solid rgba(110,84,56,.18)">
   <div class="ls-wrap" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center">
@@ -26,6 +27,7 @@
     </form>
   </div>
 </section>
+<Welcome />
 <style>
   .ls-roles { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
   .ls-roles > span { grid-column:1 / -1; font-size:.74rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#5c3d20; }
@@ -52,7 +54,11 @@
     fetch('/api/interest', { method: 'POST', body: new FormData(f), headers: { Accept: 'application/json' } })
       .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
       .then(({ ok, j }) => {
-        if (ok) { f.reset(); if (st) st.textContent = "Thank you, you're on the list. We'll email you at launch."; }
+        if (ok) {
+          const email = f.querySelector('input[type=email]').value.trim();
+          f.reset(); if (st) st.textContent = "You're on the list. Check your inbox for a welcome email.";
+          if (window.myahWelcome) window.myahWelcome({ role: j.role, position: j.position, email });
+        }
         else if (st) st.textContent = j.error === 'email' ? 'Please check your email address.' : 'Something went wrong, please try again.';
       })
       .catch(() => { if (st) st.textContent = 'Something went wrong, please try again.'; });

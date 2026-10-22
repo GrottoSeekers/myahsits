@@ -1,0 +1,144 @@
+---
+// The welcome panel that opens after someone registers interest (on the
+// launching-soon page and the founders' page). Same next steps as the
+// welcome email (src/lib/welcome-email.ts), tailored to sitter / owner /
+// both, plus a way to share MYAH. Open it from script with
+// window.myahWelcome({ role, position, email }).
+import { steps, prep } from '../lib/welcome-email';
+
+interface Props { open?: boolean; role?: string }
+const { open = false, role = '' } = Astro.props;
+const start = role === 'sitter' || role === 'owner' ? role : 'both';
+const roles = ['sitter', 'owner', 'both'] as const;
+const shareUrl = 'https://www.myahsits.com/';
+const shareText = 'MYAH is launching soon: one place for house and pet sitters and home owners, with everyone ID checked. Join the early list:';
+---
+<dialog class="wl" data-welcome data-role={start} open={open ? true : undefined} aria-labelledby="wl-title">
+  <div class="wl-card">
+    <div class="wl-bar">
+      <span class="wl-brand"><img src="/images/logo-mark-cream.png" alt="" width="30" height="30" /><span>MYAH</span></span>
+      <button type="button" class="wl-x" data-wl-close aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M15 5 5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="wl-body">
+      <p class="wl-eyebrow">You’re on the list</p>
+      <h2 id="wl-title">Thank you for joining us early</h2>
+      <p class="wl-lead"><span data-wl-first>You are one of the first people to join us.</span> We have sent a welcome email<span data-wl-email></span>. If it is not there in a few minutes, check your promotions or junk folder.</p>
+
+      <div class="wl-sec">
+        <p class="wl-label">What happens next</p>
+        {roles.map((r) => (
+          <ol class="wl-steps" data-for={r}>
+            {steps[r].map(([t, d]) => <li><b>{t}</b><span>{d}</span></li>)}
+          </ol>
+        ))}
+      </div>
+
+      {roles.map((r) => (
+        <div class="wl-prep" data-for={r}>
+          <p>{prep[r].title}</p>
+          <ul>{prep[r].items.map((it) => <li>{it}</li>)}</ul>
+        </div>
+      ))}
+
+      <div class="wl-share">
+        <p class="wl-label">Help MYAH grow</p>
+        <p class="wl-share-copy">Know a sitter, or someone who needs one? The more people who join early, the more sits and sitters there are on day one.</p>
+        <div class="wl-share-btns">
+          <a class="wl-sbtn" target="_blank" rel="noopener" href={'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>WhatsApp</a>
+          <a class="wl-sbtn" target="_blank" rel="noopener" href={'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a>
+          <button type="button" class="wl-sbtn" data-wl-copy={shareUrl}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-wl-copy-label>Copy link</span></button>
+        </div>
+      </div>
+
+      <div class="wl-foot">
+        <img src="/images/email/founders-240.jpg" alt="Callum and Niamh" width="48" height="48" />
+        <p>“We are house and pet sitters ourselves, and we built MYAH to be the place we wanted when we started. Thank you for being here early.”<b>Callum &amp; Niamh, founders</b></p>
+      </div>
+
+      <button type="button" class="wl-done" data-wl-close>Back to the page</button>
+    </div>
+  </div>
+</dialog>
+
+<style is:global>
+  .wl { padding:0; border:0; background:transparent; max-width:none; max-height:none; width:100%; height:100%; margin:0; inset:0; }
+  .wl[open] { display:flex; align-items:center; justify-content:center; position:fixed; z-index:10000; background:rgba(250,246,238,.82); backdrop-filter:blur(8px); padding:24px 16px; overflow-y:auto; }
+  .wl::backdrop { background:transparent; }
+  .wl-card { width:100%; max-width:560px; margin:auto; background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 30px 80px rgba(44,26,14,.3); font-family:'Montserrat',sans-serif; color:#2c1a0e; animation:wl-in .45s cubic-bezier(.2,.8,.2,1); }
+  @keyframes wl-in { from { opacity:0; transform:translateY(16px) scale(.98); } to { opacity:1; transform:none; } }
+  .wl-bar { background:#2f5d45; padding:16px 22px; display:flex; align-items:center; justify-content:space-between; }
+  .wl-brand { display:inline-flex; align-items:center; gap:12px; font-weight:500; font-size:.9rem; letter-spacing:.28em; color:#f5efe4; }
+  .wl-brand img { display:block; width:30px; height:30px; object-fit:contain; }
+  .wl-x { width:36px; height:36px; border-radius:50%; border:1px solid rgba(245,239,228,.35); background:transparent; color:#f5efe4; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .wl-x:hover { background:rgba(245,239,228,.12); }
+  .wl-body { padding:30px 34px 30px; }
+  .wl-eyebrow, .wl-label { font-family:'Lato',sans-serif; font-weight:700; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; color:#8a6a4f; margin:0 0 10px; }
+  .wl h2 { font-family:'Marcellus',serif; font-weight:400; font-size:1.9rem; line-height:1.2; margin:0 0 14px; }
+  .wl-lead { font-size:.94rem; line-height:1.75; color:#6b4e35; margin:0 0 24px; }
+  .wl-lead [data-wl-email] { color:#2c1a0e; font-weight:500; word-break:break-word; }
+  .wl-sec { border-top:1px solid #efe7da; padding-top:22px; }
+  .wl-steps { list-style:none; padding:0; margin:0 0 20px; display:grid; gap:14px; counter-reset:w; }
+  .wl-steps li { counter-increment:w; display:grid; grid-template-columns:32px minmax(0,1fr); column-gap:14px; }
+  .wl-steps li::before { content:counter(w); grid-row:span 2; width:32px; height:32px; border-radius:50%; background:#f3ece0; color:#2f5d45; font-weight:600; font-size:.85rem; display:flex; align-items:center; justify-content:center; }
+  .wl-steps b { font-weight:600; font-size:.95rem; line-height:1.5; padding-top:4px; }
+  .wl-steps span { font-size:.88rem; line-height:1.65; color:#6b4e35; }
+  .wl-prep { background:#faf6ee; border:1px solid #efe7da; border-radius:14px; padding:18px 20px 10px; margin:0 0 22px; }
+  .wl-prep p { margin:0 0 10px; font-weight:600; font-size:.92rem; }
+  .wl-prep ul { list-style:none; padding:0; margin:0; }
+  .wl-prep li { position:relative; padding-left:24px; margin-bottom:8px; font-size:.88rem; line-height:1.55; color:#4a3726; }
+  .wl-prep li::before { content:"✓"; position:absolute; left:0; color:#2f5d45; font-weight:600; }
+  .wl-steps[data-for], .wl-prep[data-for] { display:none; }
+  .wl[data-role="sitter"] [data-for="sitter"], .wl[data-role="owner"] [data-for="owner"], .wl[data-role="both"] [data-for="both"] { display:grid; }
+  .wl[data-role="sitter"] .wl-prep[data-for="sitter"], .wl[data-role="owner"] .wl-prep[data-for="owner"], .wl[data-role="both"] .wl-prep[data-for="both"] { display:block; }
+  .wl-share { margin:0 0 22px; }
+  .wl-share-copy { font-size:.88rem; line-height:1.65; color:#6b4e35; margin:0 0 12px; }
+  .wl-share-btns { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+  .wl-sbtn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:8px 10px; font:inherit; font-size:.8rem; font-weight:600; color:#2f5d45; background:#fff; border:1.5px solid rgba(47,93,69,.4); border-radius:999px; text-decoration:none; cursor:pointer; }
+  .wl-sbtn:hover { background:#2f5d45; color:#fff; border-color:#2f5d45; }
+  .wl-foot { display:flex; gap:14px; align-items:flex-start; border-top:1px solid #efe7da; padding-top:20px; margin:0 0 22px; }
+  .wl-foot img { width:48px; height:48px; border-radius:50%; object-fit:cover; flex:none; }
+  .wl-foot p { margin:0; font-size:.86rem; line-height:1.65; color:#4a3726; }
+  .wl-foot b { display:block; margin-top:6px; font-family:'Lato',sans-serif; font-weight:700; font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:#2f5d45; }
+  .wl-done { width:100%; font:inherit; font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:#2f5d45; border:0; border-radius:999px; padding:16px 24px; cursor:pointer; box-shadow:0 6px 18px rgba(44,26,14,.18); }
+  .wl-done:hover { background:#3e7a5b; }
+  @media (max-width:560px) {
+    .wl[open] { padding:12px; align-items:flex-start; }
+    .wl-body { padding:24px 20px; }
+    .wl h2 { font-size:1.6rem; }
+    .wl-sbtn { font-size:.74rem; gap:5px; padding:8px 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .wl-card { animation:none; } }
+</style>
+
+<script is:inline>
+(() => {
+  const d = document.querySelector('[data-welcome]');
+  if (!d) return;
+  const close = () => { d.open ? (d.close ? d.close() : d.removeAttribute('open')) : 0; document.documentElement.style.overflow = ''; };
+  d.querySelectorAll('[data-wl-close]').forEach((b) => b.addEventListener('click', close));
+  d.addEventListener('click', (e) => { if (e.target === d) close(); });
+  d.addEventListener('close', () => { document.documentElement.style.overflow = ''; });
+  const copy = d.querySelector('[data-wl-copy]');
+  copy && copy.addEventListener('click', () => {
+    const label = copy.querySelector('[data-wl-copy-label]');
+    const done = () => { label.textContent = 'Link copied'; setTimeout(() => { label.textContent = 'Copy link'; }, 2200); };
+    (navigator.clipboard ? navigator.clipboard.writeText(copy.getAttribute('data-wl-copy')) : Promise.reject()).then(done).catch(() => { window.prompt('Copy this link', copy.getAttribute('data-wl-copy')); });
+  });
+  window.myahWelcome = ({ role, position, email } = {}) => {
+    d.setAttribute('data-role', role === 'sitter' || role === 'owner' ? role : 'both');
+    const first = d.querySelector('[data-wl-first]');
+    if (first) first.textContent = position > 0 && position <= 1000 ? `You are one of the first ${Math.ceil(position / 50) * 50} people to join us.` : 'You are one of the first people to join us.';
+    const em = d.querySelector('[data-wl-email]');
+    if (em) em.textContent = email ? ' to ' + email : '';
+    if (d.showModal) { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
+    document.documentElement.style.overflow = 'hidden';
+    d.querySelector('.wl-done')?.focus({ preventScroll: true });
+  };
+})();
+</script>
