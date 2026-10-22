@@ -24,8 +24,8 @@ const shareText = 'MYAH is launching soon: one place for house and pet sitters a
 
     <div class="wl-body">
       <p class="wl-eyebrow">You’re on the list</p>
-      <h2 id="wl-title">Thank you for joining us early</h2>
-      <p class="wl-lead"><span data-wl-first>You are one of the first people to join us.</span> We have sent a welcome email<span data-wl-email></span>. If it is not there in a few minutes, check your promotions or junk folder.</p>
+      <h2 id="wl-title" tabindex="-1">Thank you for joining us early</h2>
+      <p class="wl-lead"><span data-wl-first>You are one of the first people to join us.</span> We have sent a welcome email<span data-wl-to hidden> to <span data-wl-email></span></span>. If it is not there in a few minutes, check your promotions or junk folder.</p>
 
       <div class="wl-sec">
         <p class="wl-label">What happens next</p>
@@ -79,6 +79,7 @@ const shareText = 'MYAH is launching soon: one place for house and pet sitters a
   .wl-x:hover { background:rgba(245,239,228,.12); }
   .wl-body { padding:30px 34px 30px; }
   .wl-eyebrow, .wl-label { font-family:'Lato',sans-serif; font-weight:700; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; color:#8a6a4f; margin:0 0 10px; }
+  .wl h2:focus { outline:none; }
   .wl h2 { font-family:'Marcellus',serif; font-weight:400; font-size:1.9rem; line-height:1.2; margin:0 0 14px; }
   .wl-lead { font-size:.94rem; line-height:1.75; color:#6b4e35; margin:0 0 24px; }
   .wl-lead [data-wl-email] { color:#2c1a0e; font-weight:500; word-break:break-word; }
@@ -135,10 +136,18 @@ const shareText = 'MYAH is launching soon: one place for house and pet sitters a
     const first = d.querySelector('[data-wl-first]');
     if (first) first.textContent = position > 0 && position <= 1000 ? `You are one of the first ${Math.ceil(position / 50) * 50} people to join us.` : 'You are one of the first people to join us.';
     const em = d.querySelector('[data-wl-email]');
-    if (em) em.textContent = email ? ' to ' + email : '';
+    if (em) em.textContent = email || '';
+    const to = d.querySelector('[data-wl-to]');
+    if (to) to.hidden = !email;
     if (d.showModal) { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
     document.documentElement.style.overflow = 'hidden';
-    d.querySelector('.wl-done')?.focus({ preventScroll: true });
+    // Always open at the top of the message (phones would otherwise jump to
+    // whichever button got focus, or keep the keyboard's scroll position).
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    const top = () => { d.scrollTop = 0; const c = d.querySelector('.wl-card'); if (c) c.scrollTop = 0; };
+    top();
+    d.querySelector('#wl-title')?.focus({ preventScroll: true });
+    top(); requestAnimationFrame(top); setTimeout(top, 60); setTimeout(top, 350);
   };
 })();
 </script>
