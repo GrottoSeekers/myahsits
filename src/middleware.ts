@@ -1,4 +1,5 @@
-import { defineMiddleware } from 'astro:middleware';
+import { defineMiddleware, sequence } from 'astro:middleware';
+import { withPwaHead } from './lib/pwa';
 import { LAUNCHED, openBeforeLaunch, adminBeforeLaunch, PREVIEW_COOKIE } from './lib/launch';
 import { getAccount } from './lib/account';
 import { getSessionToken } from './lib/auth';
@@ -6,7 +7,7 @@ import { getSessionToken } from './lib/auth';
 // Before launch everyone, the founders included, sees only "launching soon"
 // and the founders' page. The founders can also use /admin and edit their
 // page, and can turn on a full-site preview from /admin when testing.
-export const onRequest = defineMiddleware(async (ctx, next) => {
+const gate = defineMiddleware(async (ctx, next) => {
   if (LAUNCHED || ctx.isPrerendered) return next();
   const path = ctx.url.pathname;
 
@@ -27,6 +28,18 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   }
   return new Response(null, { status: 302, headers: { Location: '/' } });
 });
+
+// Every HTML page gets the "Add to Home Screen" tags in its <head>.
+const pwa = defineMiddleware(async (_ctx, next) => {
+  const res = await next();
+  if (!(res.headers.get('content-type') || '').includes('text/html')) return res;
+  const html = withPwaHead(await res.text());
+  const headers = new Headers(res.headers);
+  headers.delete('content-length');
+  return new Response(html, { status: res.status, statusText: res.statusText, headers });
+});
+
+export const onRequest = sequence(pwa, gate);
 
 const hasPreview = (req: Request) => new RegExp(`(?:^|;\\s*)${PREVIEW_COOKIE}=1`).test(req.headers.get('cookie') || '');
 
