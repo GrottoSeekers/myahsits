@@ -16,7 +16,7 @@
 INSERT INTO users (id, email, password)
 VALUES (
   'a0000000-0000-0000-0000-000000000001'::uuid,
-  'callumandniamh@grottositters.com',
+  'info@myahsits.com',
   '$2b$12$XjBuQbeBujhYKXVS1fTuqueaY/Iwk3ykJB77Ttg/jMrW80Dn6U3Z6'
 )
 ON CONFLICT (email) DO NOTHING;

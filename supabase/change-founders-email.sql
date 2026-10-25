@@ -1,5 +1,5 @@
 -- Move Callum & Niamh's login from callumandniamh@grottositters.com to
--- hello@myahsits.com. Run in the Supabase SQL editor.
+-- info@myahsits.com. Run in the Supabase SQL editor.
 -- Your password, page, admin access and everything else stay the same:
 -- admin access comes from the callumandniamh page, not the email.
 
@@ -8,14 +8,14 @@
 -- that account would need removing first.
 SELECT u.id, u.email, u.role, u.created_at
 FROM users u
-WHERE lower(u.email) = 'hello@myahsits.com';
+WHERE lower(u.email) = 'info@myahsits.com';
 
 -- STEP 2: change the login email.
 UPDATE users
-SET email = 'hello@myahsits.com'
+SET email = 'info@myahsits.com'
 WHERE id = (SELECT user_id FROM profiles WHERE slug = 'callumandniamh');
 
--- STEP 3: check it worked. This should show hello@myahsits.com.
+-- STEP 3: check it worked. This should show info@myahsits.com.
 SELECT u.email, u.role, p.slug, p.name
 FROM profiles p JOIN users u ON u.id = p.user_id
 WHERE p.slug = 'callumandniamh';
