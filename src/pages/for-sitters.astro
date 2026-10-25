@@ -1,0 +1,60 @@
+---
+export const prerender = false;
+// For sitters: what MYAH gives a house & pet sitter, in one short page.
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { FOUNDERS_REVIEW_TOTAL } from '../data/founders';
+---
+<PublicLayout title="For sitters" description="Your own sitter page with photos and reviews, sits to apply for, and everything about each sit in one place. Free to join.">
+  <section class="p-hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">For house &amp; pet sitters</p>
+        <h1>Stay somewhere new, <em>with a dog to walk</em></h1>
+        <p class="lead">One page that shows owners everything that makes you a great sitter, and sits to apply for when you're ready to go.</p>
+        <div class="acts"><a class="btn" href="/signup">Join as a sitter</a><a class="btn-line" href="/callumandniamh">See a real sitter page →</a></div>
+      </div>
+      <div class="pic"><img src="/images/slideshow-spaniel-walk.jpeg" alt="A sitter walking a spaniel" /></div>
+    </div>
+  </section>
+
+  <section class="sec alt">
+    <div class="wrap">
+      <div class="head"><h2>What you <em>get</em></h2><p class="lead">Free, with nothing to add on.</p></div>
+      <div class="grid3">
+        <div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg></span><h3>Your own page</h3><p>Photos, bio and the pets you love at <strong>myahsits.com/yourname</strong>. Share one link anywhere.</p></div>
+        <div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8z"/></svg></span><h3>Your reviews, together</h3><p>Bring reviews from other platforms and collect new ones after every sit.</p></div>
+        <div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><h3>Sits to apply for</h3><p>Browse homes and pets, save favourites, and apply in a tap.</p></div>
+        <div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><h3>Mark when you're free</h3><p>Owners searching your dates see you first.</p></div>
+        <div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><h3>Messages in one place</h3><p>Chat, agree dates and confirm the sit without swapping numbers.</p></div>
+        <div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span><h3>A sit pack</h3><p>Routines, vet details and house notes. Address and codes arrive the day before.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="quote">
+        <div><blockquote>"Callum and Niamh have looked after Solomon for four years. They are reliable, trustworthy, and clearly care about his wellbeing."</blockquote><cite>Thomas James · home owner</cite></div>
+        <div class="stat"><b>{FOUNDERS_REVIEW_TOTAL}+</b><span>five-star reviews on our own page</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec alt">
+    <div class="wrap">
+      <div class="head"><h2>Keep <em>exploring</em></h2></div>
+      <div class="next">
+        <a href="/how-it-works"><span><small>Three steps</small><b>How it works</b></span><i>→</i></a>
+        <a href="/callumandniamh"><span><small>A real example</small><b>Meet Callum &amp; Niamh</b></span><i>→</i></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="wrap">
+      <h2>Make yourself <em>at home</em></h2>
+      <p class="lead">Free to join. Your page is live in about five minutes.</p>
+      <a class="btn" href="/signup">Join as a sitter</a>
+    </div>
+  </section>
+</PublicLayout>

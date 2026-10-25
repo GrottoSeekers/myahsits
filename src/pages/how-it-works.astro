@@ -1,0 +1,60 @@
+---
+export const prerender = false;
+// How it works: the steps for both sides of a sit, side by side.
+import PublicLayout from '../layouts/PublicLayout.astro';
+---
+<PublicLayout title="How it works" description="How MYAH works for house & pet sitters and home owners: sign up, set up your page, and confirm a sit, all in one place.">
+  <section class="p-hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">How it works</p>
+        <h1>Made for <em>both sides</em> of a sit</h1>
+        <p class="lead">Sitters and owners use the same simple steps. Everything about each sit stays in one place, from the first message to the handover.</p>
+        <div class="acts"><a class="btn" href="/signup">Sign up for free</a></div>
+      </div>
+      <div class="pic"><img src="/images/slideshow-living-room.jpeg" alt="A bright living room" /></div>
+    </div>
+  </section>
+
+  <section class="sec alt">
+    <div class="wrap grid2">
+      <div>
+        <div class="head" style="margin-bottom:20px"><p class="eyebrow">For sitters</p><h2>Find your <em>next sit</em></h2></div>
+        <ol class="steps">
+          <li><span><b>Create your page</b><span>Photos, bio and reviews. Free, and live in about five minutes.</span></span></li>
+          <li><span><b>Apply for sits</b><span>Browse homes and pets, or mark when you're free so owners find you.</span></span></li>
+          <li><span><b>Chat and confirm</b><span>Agree the details on MYAH and get your sit pack.</span></span></li>
+        </ol>
+        <p style="margin:18px 0 0"><a class="btn-line" href="/for-sitters">More for sitters →</a></p>
+      </div>
+      <div>
+        <div class="head" style="margin-bottom:20px"><p class="eyebrow">For home owners</p><h2>Find your <em>sitter</em></h2></div>
+        <ol class="steps">
+          <li><span><b>Post your sit</b><span>Your dates, your home and your pets.</span></span></li>
+          <li><span><b>Meet ID-checked sitters</b><span>Read their reviews and message them on MYAH.</span></span></li>
+          <li><span><b>Pick and hand over</b><span>Share your sit pack. Private details unlock the day before.</span></span></li>
+        </ol>
+        <p style="margin:18px 0 0"><a class="btn-line" href="/for-owners">More for owners →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="head"><h2>Built on <em>trust</em></h2></div>
+      <div class="grid3">
+        <div class="card"><h3>Everyone ID checked</h3><p>Photo ID and a selfie, checked by us before anyone can apply or post.</p></div>
+        <div class="card"><h3>Private stays private</h3><p>Addresses and codes are shared only with your confirmed sitter.</p></div>
+        <div class="card"><h3>Free to join</h3><p>No membership fees. Sign up as a sitter, an owner, or both.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band" style="padding-top:0">
+    <div class="wrap">
+      <h2>Ready when <em>you are</em></h2>
+      <p class="lead">Sign up as a sitter, an owner, or both.</p>
+      <a class="btn" href="/signup">Sign up for free</a>
+    </div>
+  </section>
+</PublicLayout>

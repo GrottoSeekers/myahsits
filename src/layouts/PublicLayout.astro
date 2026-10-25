@@ -1,0 +1,203 @@
+---
+// Shared header and footer for the short public pages a visitor can explore
+// from the home page: /for-sitters, /for-owners and /how-it-works. Same menu
+// as the home page, so people can move around instead of scrolling one long
+// page.
+import { LAUNCHED } from '../lib/launch';
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/for-sitters', label: 'For sitters', sub: 'Your page, sits and reviews' },
+  { href: '/for-owners', label: 'For owners', sub: 'Find a trusted sitter' },
+  { href: '/how-it-works', label: 'How it works', sub: 'Three steps, both sides' },
+  { href: '/listings', label: 'Browse sits', sub: 'Homes that need a sitter' },
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} · MYAH</title>
+  <meta name="description" content={description} />
+  {!LAUNCHED && <meta name="robots" content="noindex" />}
+  <link rel="icon" href="/images/favicon.png" />
+  <link rel="apple-touch-icon" href="/images/app-tile.png" />
+  <link rel="canonical" href={'https://www.myahsits.com' + path} />
+  <meta property="og:site_name" content="MYAH" />
+  <meta property="og:title" content={title + ' · MYAH'} />
+  <meta property="og:description" content={description} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:wght@400;500;600&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
+  <style is:global>
+    :root { --ink:#2c1a0e; --bg:#faf6ee; --cream:#e9e0d2; --green:#2f5d45; --green2:#3e7a5b; --brown:#6e5438; --text:#4a3726; --soft:#6b4e35; --line:rgba(110,84,56,.22); }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:"Montserrat",sans-serif; overflow-x:hidden; }
+    * { box-sizing:border-box; }
+    a { color:var(--green); }
+    img { display:block; max-width:100%; }
+    h1, h2, h3 { font-family:'Marcellus',serif; font-weight:400; margin:0; }
+    h1 em, h2 em { font-style:normal; color:var(--green); }
+
+    .pl-top { position:sticky; top:0; z-index:50; padding:14px 48px; display:flex; justify-content:space-between; align-items:center; gap:24px; background:rgba(250,246,238,.97); backdrop-filter:blur(12px); box-shadow:0 1px 0 rgba(110,84,56,.18); }
+    .pl-logo { display:inline-flex; align-items:center; gap:14px; text-decoration:none; line-height:1; font-weight:500; font-size:1.4rem; letter-spacing:.28em; }
+    .pl-logo img { height:46px; width:46px; object-fit:contain; }
+    .pl-logo > span { display:flex; flex-direction:column; gap:5px; padding-left:14px; border-left:1px solid rgba(110,84,56,.4); }
+    .pl-logo b { color:var(--brown); font-weight:500; }
+    .pl-logo small { font-family:'Lato',sans-serif; font-weight:700; font-size:.5rem; letter-spacing:.2em; text-transform:uppercase; color:#8a6a4f; white-space:nowrap; }
+    .pl-nav { display:flex; align-items:center; gap:28px; }
+    .pl-nav a { font-size:.78rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#5c3d20; text-decoration:none; white-space:nowrap; }
+    .pl-nav a:hover, .pl-nav a[aria-current] { color:var(--green); }
+    .pl-nav a[aria-current] { border-bottom:1.5px solid var(--green); padding-bottom:3px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff !important; text-decoration:none; background:var(--green); border:1.5px solid var(--green); border-radius:50px; padding:13px 28px; white-space:nowrap; box-shadow:0 6px 20px rgba(110,84,56,.28); transition:background .2s, transform .12s, box-shadow .2s; }
+    .btn:hover { background:var(--green2); border-color:var(--green2); transform:translateY(-2px); box-shadow:0 12px 28px rgba(110,84,56,.36); }
+    .btn-line { display:inline-flex; align-items:center; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--green); text-decoration:none; border:1.5px solid rgba(110,84,56,.45); border-radius:50px; padding:13px 26px; background:#fff; transition:background .2s, color .2s; }
+    .btn-line:hover { background:var(--green); border-color:var(--green); color:#fff; }
+    .pl-burger { display:none; background:none; border:0; cursor:pointer; flex-direction:column; gap:5px; padding:10px; min-width:44px; min-height:44px; align-items:center; justify-content:center; }
+    .pl-burger span { display:block; width:24px; height:2px; background:var(--ink); border-radius:2px; }
+
+    .pl-shade { position:fixed; inset:0; z-index:190; background:rgba(0,0,0,.45); opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s; }
+    .pl-drawer { position:fixed; top:0; right:0; bottom:0; width:320px; max-width:85vw; z-index:200; background:#fff; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .35s cubic-bezier(.4,0,.2,1); box-shadow:-8px 0 40px rgba(0,0,0,.12); }
+    .pl-open .pl-shade { opacity:1; visibility:visible; }
+    .pl-open .pl-drawer { transform:none; }
+    .pl-drawer-head { display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid rgba(44,26,14,.08); }
+    .pl-drawer-head a { font-weight:500; font-size:1.25rem; color:var(--ink); text-decoration:none; letter-spacing:.28em; }
+    .pl-close { width:40px; height:40px; border-radius:50%; border:1px solid rgba(44,26,14,.12); background:#fff; cursor:pointer; color:var(--ink); font-size:1.2rem; }
+    .pl-drawer nav { flex:1; overflow-y:auto; padding:10px 0; }
+    .pl-drawer nav a { display:flex; flex-direction:column; gap:2px; padding:14px 24px; text-decoration:none; min-height:44px; }
+    .pl-drawer nav a b { font-size:.95rem; font-weight:600; color:var(--ink); }
+    .pl-drawer nav a span { font-size:.78rem; color:var(--soft); }
+    .pl-drawer nav a[aria-current] b { color:var(--green); }
+    .pl-drawer-foot { padding:20px 24px; border-top:1px solid rgba(44,26,14,.08); display:flex; flex-direction:column; gap:10px; }
+    .pl-drawer-foot .btn { width:100%; }
+    .pl-drawer-foot a.login { text-align:center; font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#5c3d20; text-decoration:none; padding:10px; }
+
+    footer.pl-foot { background:var(--ink); color:rgba(255,255,255,.7); padding:44px 48px 32px; border-top:3px solid var(--green); }
+    .pl-foot .in { max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:28px; }
+    .pl-foot .links { display:flex; flex-wrap:wrap; gap:14px 28px; }
+    .pl-foot .links a { color:rgba(255,255,255,.7); text-decoration:none; font-size:.9rem; }
+    .pl-foot .links a:hover { color:#c4ab8a; }
+    .pl-foot .bar { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,.1); padding-top:22px; font-size:.76rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.45); }
+    .pl-foot .bar a { color:rgba(255,255,255,.45); text-decoration:none; }
+
+    /* page building blocks */
+    .wrap { max-width:1100px; margin:0 auto; padding:0 48px; }
+    .eyebrow { font-family:'Lato',sans-serif; font-size:.74rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--brown); margin:0 0 16px; display:flex; align-items:center; gap:12px; }
+    .eyebrow::before { content:""; width:26px; height:1px; background:var(--brown); }
+    .lead { color:var(--soft); font-size:1.04rem; line-height:1.8; margin:0; }
+    .p-hero { padding:64px 0 56px; }
+    .p-hero .wrap { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:56px; align-items:center; }
+    .p-hero h1 { font-size:3rem; line-height:1.1; margin:0 0 20px; }
+    .p-hero .lead { margin:0 0 28px; max-width:520px; }
+    .p-hero .acts { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+    .p-hero .pic { border-radius:22px; overflow:hidden; aspect-ratio:4/3.4; box-shadow:0 20px 50px rgba(44,26,14,.16); border:5px solid #fff; }
+    .p-hero .pic img { width:100%; height:100%; object-fit:cover; }
+    .sec { padding:72px 0; }
+    .sec.alt { background:#fff; }
+    .sec h2 { font-size:2.2rem; line-height:1.15; margin:0 0 12px; }
+    .sec .head { max-width:620px; margin:0 0 36px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+    .grid2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+    .card { background:var(--bg); border:1px solid var(--line); border-radius:18px; padding:28px; display:flex; flex-direction:column; gap:10px; }
+    .sec:not(.alt) .card { background:#fff; }
+    .card .ic { width:46px; height:46px; border-radius:13px; background:#eef4ef; color:var(--green); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+    .card h3 { font-size:1.25rem; line-height:1.25; }
+    .card p { margin:0; color:var(--soft); font-size:.93rem; line-height:1.7; }
+    .steps { list-style:none; padding:0; margin:0; display:grid; gap:14px; counter-reset:s; }
+    .steps li { counter-increment:s; display:flex; gap:16px; align-items:flex-start; background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px 22px; }
+    .steps li::before { content:counter(s); flex:none; width:34px; height:34px; border-radius:50%; background:var(--cream); color:var(--green); font-family:'Marcellus',serif; font-size:1.05rem; display:flex; align-items:center; justify-content:center; }
+    .steps b { display:block; font-family:'Marcellus',serif; font-weight:400; font-size:1.15rem; margin:4px 0 4px; }
+    .steps span { color:var(--soft); font-size:.92rem; line-height:1.65; }
+    .quote { background:var(--ink); color:rgba(255,255,255,.88); border-radius:22px; padding:36px 40px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:28px; align-items:center; }
+    .quote blockquote { margin:0; font-family:'Marcellus',serif; font-size:1.35rem; line-height:1.5; }
+    .quote cite { display:block; margin-top:12px; font-style:normal; font-size:.76rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#c4ab8a; }
+    .quote .stat { text-align:center; }
+    .quote .stat b { display:block; font-family:'Marcellus',serif; font-weight:400; font-size:2.4rem; color:#c4ab8a; }
+    .quote .stat span { font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.6); }
+    .next { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .next a { display:flex; justify-content:space-between; align-items:center; gap:14px; text-decoration:none; color:var(--ink); background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px 22px; transition:border-color .2s, transform .2s; }
+    .next a:hover { border-color:var(--green); transform:translateY(-2px); }
+    .next a small { display:block; font-family:'Lato',sans-serif; font-size:.68rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); margin-bottom:4px; }
+    .next a b { font-family:'Marcellus',serif; font-weight:400; font-size:1.2rem; }
+    .next a i { font-style:normal; color:var(--green); font-size:1.3rem; }
+    .cta-band { text-align:center; padding:72px 0; }
+    .cta-band h2 { font-size:2.4rem; margin:0 0 12px; }
+    .cta-band .lead { max-width:520px; margin:0 auto 26px; }
+
+    @media (max-width:1000px) {
+      .p-hero .wrap { grid-template-columns:1fr; gap:32px; }
+      .p-hero .pic { order:-1; aspect-ratio:16/10; }
+      .grid3 { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:640px) {
+      .wrap { padding:0 18px; }
+      .p-hero { padding:24px 0 40px; }
+      .p-hero h1 { font-size:2.2rem; }
+      .sec, .cta-band { padding:48px 0; }
+      .sec h2, .cta-band h2 { font-size:1.8rem; }
+      .grid3, .grid2, .next { grid-template-columns:1fr; gap:12px; }
+      .card { padding:20px; }
+      .quote { grid-template-columns:1fr; padding:26px 24px; gap:18px; }
+      .quote blockquote { font-size:1.15rem; }
+      .quote .stat { text-align:left; }
+    }
+
+    @media (max-width:1000px) {
+      .pl-nav { display:none; }
+      .pl-burger { display:flex; }
+      .pl-top { padding:10px 16px; }
+      .pl-logo img { height:36px; width:36px; }
+      .pl-logo { font-size:1.2rem; }
+      footer.pl-foot { padding:36px 20px 28px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .pl-drawer, .pl-shade, .btn { transition:none; } }
+  </style>
+  <link rel="stylesheet" href="/mobile.css" />
+</head>
+<body>
+  <header class="pl-top">
+    <a class="pl-logo" href="/"><img src="/images/logo-mark.png" alt="" /><span><b>MYAH</b><small>Make Yourself At Home</small></span></a>
+    <nav class="pl-nav" aria-label="Main">
+      {nav.map((n) => <a href={n.href} aria-current={path === n.href ? 'page' : undefined}>{n.label}</a>)}
+      <a href="/login">Log in</a>
+      <a class="btn" href="/signup">Get started</a>
+    </nav>
+    <button class="pl-burger" type="button" aria-label="Menu" data-pl-open><span></span><span></span><span></span></button>
+  </header>
+
+  <div class="pl-shade" data-pl-close></div>
+  <div class="pl-drawer" role="dialog" aria-label="Menu">
+    <div class="pl-drawer-head"><a href="/">MYAH</a><button class="pl-close" type="button" aria-label="Close menu" data-pl-close>✕</button></div>
+    <nav aria-label="Main">
+      {nav.map((n) => <a href={n.href} aria-current={path === n.href ? 'page' : undefined}><b>{n.label}</b><span>{n.sub}</span></a>)}
+      <a href="/callumandniamh"><b>Meet Callum &amp; Niamh</b><span>See a real sitter page</span></a>
+    </nav>
+    <div class="pl-drawer-foot"><a class="btn" href="/signup">Sign up for free</a><a class="login" href="/login">Log in</a></div>
+  </div>
+
+  <main><slot /></main>
+
+  <footer class="pl-foot">
+    <div class="in">
+      <div class="links">
+        <a href="/">Home</a>
+        {nav.map((n) => <a href={n.href}>{n.label}</a>)}
+        <a href="/callumandniamh">Meet Callum &amp; Niamh</a>
+        <a href="/signup">Sign up</a>
+        <a href="/login">Log in</a>
+      </div>
+      <div class="bar"><span>&copy; 2026 MYAH</span><span><a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a></span></div>
+    </div>
+  </footer>
+
+  <script is:inline>
+    (() => {
+      const b = document.body;
+      document.querySelectorAll('[data-pl-open]').forEach((el) => el.addEventListener('click', () => b.classList.add('pl-open')));
+      document.querySelectorAll('[data-pl-close]').forEach((el) => el.addEventListener('click', () => b.classList.remove('pl-open')));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') b.classList.remove('pl-open'); });
+    })();
+  </script>
+</body>
+</html>

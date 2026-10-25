@@ -115,6 +115,7 @@ const founders = '/' + FOUNDERS_SLUG;
 
     /* glimpses */
     .glimpses { background:var(--cream); }
+    .glimpses + .founders { padding-top:16px; }
     .g-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:28px; }
     .g-grid > *, .peek, .m-sit > div { min-width:0; }
     .g-card { background:#fff; border:1px solid var(--line); border-radius:22px; padding:28px; display:flex; flex-direction:column; gap:22px; box-shadow:0 1px 2px rgba(44,26,14,.04); transition:transform .3s ease, box-shadow .3s ease; }
@@ -165,6 +166,26 @@ const founders = '/' + FOUNDERS_SLUG;
     .m-row.locked { background:repeating-linear-gradient(135deg,#fff,#fff 8px,#fbf7f0 8px,#fbf7f0 16px); }
     .m-row.locked .r { color:var(--brown); display:inline-flex; align-items:center; gap:4px; }
     .blur { filter:blur(4px); user-select:none; }
+
+
+    /* tabs: a look inside */
+    .tabs { background:#fff; border:1px solid var(--line); border-radius:22px; padding:22px; box-shadow:0 1px 2px rgba(44,26,14,.04); }
+    .tab-bar { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; margin-bottom:22px; }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-bar button { flex:none; font:inherit; font-size:.8rem; font-weight:600; letter-spacing:.06em; color:var(--text); background:var(--bg); border:1px solid rgba(110,84,56,.28); border-radius:50px; padding:10px 18px; cursor:pointer; min-height:44px; transition:background .2s, color .2s, border-color .2s; }
+    .tab-bar button:hover { border-color:var(--green); }
+    .tab-bar button[aria-selected="true"] { background:var(--green); border-color:var(--green); color:#fff; }
+    .tab-bar button:focus-visible { outline:2px solid rgba(47,93,69,.4); outline-offset:2px; }
+    .tab-panel { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:32px; align-items:center; }
+    .tab-panel[hidden] { display:none; }
+    .tp-text h3 { font-size:1.6rem; margin:0 0 10px; }
+    .tp-text p { margin:0; color:var(--soft); font-size:.98rem; line-height:1.75; }
+    .s-list { display:flex; flex-direction:column; gap:10px; padding-top:18px; }
+    .s-list::after { display:none; }
+    .s-item { display:flex; gap:12px; align-items:flex-start; background:#fff; border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:.8rem; color:var(--soft); line-height:1.5; }
+    .s-item .ic { width:32px; height:32px; border-radius:50%; background:#eef4ef; color:var(--green); display:flex; align-items:center; justify-content:center; flex:none; }
+    .s-item .ic svg { width:16px; height:16px; }
+    .s-item b { display:block; color:var(--ink); font-weight:600; font-size:.84rem; }
 
     /* both sides */
     .sides { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:28px; }
@@ -229,6 +250,15 @@ const founders = '/' + FOUNDERS_SLUG;
       h2, .final h2 { font-size:1.9rem; }
       .sec-head { margin-bottom:34px; }
       .g-grid, .sides { grid-template-columns:1fr; gap:20px; }
+      .tabs { padding:14px; border-radius:18px; }
+      .tab-bar { margin:0 -14px 16px; padding:0 14px 4px; }
+      .tab-bar button { padding:9px 14px; font-size:.76rem; }
+      .tab-panel { grid-template-columns:1fr; gap:16px; }
+      .tp-text h3 { font-size:1.35rem; }
+      .f-photos .ph2 { display:none; }
+      .f-photos .ph1 { width:100%; height:100%; }
+      .f-photos { height:240px !important; }
+      .f-stats { margin-bottom:22px; }
       .g-card { padding:20px; }
       .collage { height:380px; }
       .chip { padding:9px 11px; font-size:.74rem; }
@@ -312,16 +342,22 @@ const founders = '/' + FOUNDERS_SLUG;
       </div>
     </section>
 
-    <!-- Glimpses -->
+    <!-- A look inside: one panel at a time instead of four long sections -->
     <section class="sec glimpses">
       <div class="wrap">
-        <div class="sec-head reveal">
-          <p class="eyebrow c">A glimpse inside</p>
+        <div class="sec-head">
+          <p class="eyebrow c">A look inside</p>
           <h2>Everything a sit needs, <em>in one place</em></h2>
-          <p class="lead">Here's a sneak peek at what's coming. No more juggling spreadsheets, group chats and scraps of paper.</p>
         </div>
-        <div class="g-grid">
-          <article class="g-card reveal">
+        <div class="tabs" data-tabs>
+          <div class="tab-bar" role="tablist" aria-label="What MYAH does">
+            <button type="button" role="tab" id="tb-page" aria-controls="tp-page" aria-selected="true">Your page</button>
+            <button type="button" role="tab" id="tb-sits" aria-controls="tp-sits" aria-selected="false" tabindex="-1">Finding sits</button>
+            <button type="button" role="tab" id="tb-chat" aria-controls="tp-chat" aria-selected="false" tabindex="-1">Messages</button>
+            <button type="button" role="tab" id="tb-pack" aria-controls="tp-pack" aria-selected="false" tabindex="-1">Sit pack</button>
+            <button type="button" role="tab" id="tb-safe" aria-controls="tp-safe" aria-selected="false" tabindex="-1">Safety</button>
+          </div>
+          <div class="tab-panel" id="tp-page" role="tabpanel" aria-labelledby="tb-page">
             <div class="peek">
               <div class="m-prof">
                 <div class="m-cover"><img src="/images/slideshow-dogs-lake.jpeg" alt="" /></div>
@@ -334,10 +370,9 @@ const founders = '/' + FOUNDERS_SLUG;
                 <span class="m-btn">Book us</span>
               </div>
             </div>
-            <div><h3>Your own sitter page</h3><p>A beautiful page all about you: photos, reviews from past sits, the pets you love and when you're free. Share one link anywhere.</p></div>
-          </article>
-
-          <article class="g-card reveal">
+            <div class="tp-text"><h3>Your own sitter page</h3><p>A beautiful page all about you: photos, reviews from past sits, the pets you love and when you're free. Share one link anywhere.</p></div>
+          </div>
+          <div class="tab-panel" id="tp-sits" role="tabpanel" aria-labelledby="tb-sits" hidden>
             <div class="peek">
               <div class="m-sit">
                 <div class="img"><img src="/images/slideshow-garden-conservatory.jpeg" alt="" /></div>
@@ -348,10 +383,9 @@ const founders = '/' + FOUNDERS_SLUG;
                 <div><span class="where">Edinburgh · 3–10 Dec</span><b>City flat with Luna</b><div class="facts"><span>1 cat</span><span>Near station</span></div></div>
               </div>
             </div>
-            <div><h3>Find sits you'll love</h3><p>Browse homes and pets near and far, save your favourites and apply in a tap. Owners post a sit and choose from the sitters who apply.</p></div>
-          </article>
-
-          <article class="g-card reveal">
+            <div class="tp-text"><h3>Find sits you'll love</h3><p>Browse homes and pets near and far, save your favourites and apply in a tap. Owners post a sit and choose from the sitters who apply.</p></div>
+          </div>
+          <div class="tab-panel" id="tp-chat" role="tabpanel" aria-labelledby="tb-chat" hidden>
             <div class="peek">
               <div class="m-chat">
                 <div class="bub them">Hello. Would you be free 12–19 Nov for Bramble and Moss?<small>Owner</small></div>
@@ -360,10 +394,9 @@ const founders = '/' + FOUNDERS_SLUG;
                 <span class="m-confirm">✓ Sit confirmed · 12–19 Nov</span>
               </div>
             </div>
-            <div><h3>Message &amp; confirm in one place</h3><p>Chat, agree the dates and confirm the sit without swapping numbers. Everything about each sit stays together.</p></div>
-          </article>
-
-          <article class="g-card reveal">
+            <div class="tp-text"><h3>Message &amp; confirm in one place</h3><p>Chat, agree the dates and confirm the sit without swapping numbers. Everything about each sit stays together.</p></div>
+          </div>
+          <div class="tab-panel" id="tp-pack" role="tabpanel" aria-labelledby="tb-pack" hidden>
             <div class="peek">
               <div class="m-pack">
                 <div class="m-row"><span class="ic">🐕</span>Feeding: 8am &amp; 5pm, one scoop<span class="r">✓ Shared</span></div>
@@ -372,56 +405,12 @@ const founders = '/' + FOUNDERS_SLUG;
                 <div class="m-row locked"><span class="ic">📶</span><span class="blur">Wifi: Bramble2026</span><span class="r">🔒 Day before</span></div>
               </div>
             </div>
-            <div><h3>A sit pack that keeps you safe</h3><p>Routines, vet details and house notes in one handy pack. The address and door codes stay hidden until the day before, unless the owner shares them sooner.</p></div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Both sides -->
-    <section class="sec">
-      <div class="wrap">
-        <div class="sec-head reveal">
-          <p class="eyebrow c">How it works</p>
-          <h2>Made for <em>both sides</em> of a sit</h2>
-        </div>
-        <div class="sides">
-          <article class="side reveal">
-            <div class="img"><img src="/images/slideshow-spaniel-walk.jpeg" alt="A sitter walking a spaniel" /></div>
-            <div class="body">
-              <span class="tag">For sitters</span>
-              <h3>Stay somewhere new, with a dog to walk</h3>
-              <ol>
-                <li>Create your page with your photos and reviews</li>
-                <li>Browse sits and apply in a tap</li>
-                <li>Chat, confirm and get your sit pack</li>
-              </ol>
-            </div>
-          </article>
-          <article class="side reveal">
-            <div class="img"><img src="/images/slideshow-dogs-couch.jpeg" alt="Two dogs relaxing at home" /></div>
-            <div class="body">
-              <span class="tag">For home owners</span>
-              <h3>Go away knowing they're happy at home</h3>
-              <ol>
-                <li>Post your sit with your home and pets</li>
-                <li>Meet ID-checked sitters and read their reviews</li>
-                <li>Pick your sitter and share your sit pack</li>
-              </ol>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Trust -->
-    <section class="sec" style="padding-top:0">
-      <div class="wrap">
-        <div class="t-grid">
-          <div class="t-item reveal"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div><b>Everyone ID checked</b><span>Photo ID and a selfie, checked by us before anyone can apply or post.</span></div>
-          <div class="t-item reveal"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><b>Private stays private</b><span>Addresses and codes are only shared with your confirmed sitter.</span></div>
-          <div class="t-item reveal"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.9 5.9 6.1.9-4.5 4.3 1.1 6.1L12 17.3 6.4 20.2l1.1-6.1L3 9.8l6.1-.9z"/></svg></div><b>Real reviews</b><span>Bring your reviews with you, and collect new ones after every sit.</span></div>
-          <div class="t-item reveal"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg></div><b>Free to join</b><span>No membership fees. Sign up as a sitter, an owner, or both.</span></div>
+            <div class="tp-text"><h3>A sit pack that keeps you safe</h3><p>Routines, vet details and house notes in one handy pack. The address and door codes stay hidden until the day before, unless the owner shares them sooner.</p></div>
+          </div>
+          <div class="tab-panel" id="tp-safe" role="tabpanel" aria-labelledby="tb-safe" hidden>
+            <div class="peek s-list"><div class="s-item"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div><span><b>Everyone ID checked</b>Photo ID and a selfie, checked by us before anyone can apply or post.</span></div><div class="s-item"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><span><b>Private stays private</b>Addresses and codes are only shared with your confirmed sitter.</span></div><div class="s-item"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.9 5.9 6.1.9-4.5 4.3 1.1 6.1L12 17.3 6.4 20.2l1.1-6.1L3 9.8l6.1-.9z"/></svg></div><span><b>Real reviews</b>Bring your reviews with you, and collect new ones after every sit.</span></div><div class="s-item"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg></div><span><b>Free to join</b>No membership fees. Sign up as a sitter, an owner, or both.</span></div></div>
+            <div class="tp-text"><h3>Safe for both sides</h3><p>Everyone is checked before they can apply, post or message, and private details stay private until a sit is confirmed.</p></div>
+          </div>
         </div>
       </div>
     </section>
@@ -501,6 +490,21 @@ const founders = '/' + FOUNDERS_SLUG;
             else { st.className = 'istatus err'; st.textContent = j.error === 'email' ? 'Please check your email address and try again.' : 'Something went wrong, please try again.'; }
           })
           .catch(() => { st.className = 'istatus err'; st.textContent = 'Something went wrong, please try again.'; });
+      });
+    });
+    // "A look inside" tabs: click or use the arrow keys.
+    document.querySelectorAll('[data-tabs]').forEach((box) => {
+      const tabs = [...box.querySelectorAll('[role=tab]')];
+      const show = (t) => {
+        tabs.forEach((x) => { const on = x === t; x.setAttribute('aria-selected', String(on)); x.tabIndex = on ? 0 : -1; box.querySelector('#' + x.getAttribute('aria-controls')).hidden = !on; });
+        t.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      };
+      tabs.forEach((t, i) => {
+        t.addEventListener('click', () => show(t));
+        t.addEventListener('keydown', (e) => {
+          const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (d) { e.preventDefault(); const n = tabs[(i + d + tabs.length) % tabs.length]; show(n); n.focus(); }
+        });
       });
     });
     // Fade sections in as they scroll into view.
