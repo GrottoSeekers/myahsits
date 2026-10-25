@@ -526,5 +526,10 @@ const sections = [
   window.addEventListener('pageshow', (e) => { if (e.persisted && loader) { loader.style.opacity = '0'; loader.style.pointerEvents = 'none'; } });
 })();
 </script>
+<nav data-page-dock data-items="about:About,pets:Pets,photos:Photos,sits:Sits,contact:Get in touch*"></nav>
+<style is:global>
+  @media (max-width: 640px) { section.op-sec { padding-top: 48px; padding-bottom: 48px; } }
+</style>
+<script is:inline src="/page-dock.js"></script>
 </body>
 </html>

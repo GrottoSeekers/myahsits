@@ -335,18 +335,18 @@ const enquiryTitlePh =
       <div style="border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:30px;margin-bottom:26px">
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 16px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>MYAH sitter</p>
         <h1 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.15;margin:0 0 18px">Edit your <em style="color:#2f5d45;">profile</em></h1>
-        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Everything here updates your public page. The preview below moves as you type &mdash; change it, look at it, then save at the bottom.</p>
+        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Everything here updates your public page. Pick a section below. The preview moves as you type, and one save keeps every section.</p>
       </div>
 
       <div data-form-msg="1" role="status" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;font-size:.86rem;font-weight:600"></div>
 
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px">
+      <div data-section-tabs="1" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px">
         <a href="#details" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Name &amp; bio</a>
         <a href="#photos" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Photos</a>
         <a href="#reviews" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Reviews</a>
         <a href="#platforms" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Other profiles</a>
         <a href="#headings" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Headings</a>
-        <a href="#preview" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Colours</a>
+        <a href="#preview" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Preview &amp; colours</a>
       </div>
 
       <div data-two-col="1" style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start">
@@ -972,5 +972,6 @@ const enquiryTitlePh =
     main.insertBefore(box, main.firstChild);
   })();
 </script>
+  <script is:inline src="/section-tabs.js"></script>
 </body>
 </html>

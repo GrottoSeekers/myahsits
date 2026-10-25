@@ -437,6 +437,8 @@ const ogImage =
       ogSrc.slice(1);
 const title =
   name + ' — MYAH';
+// Photos shown before "Show all" (keeps the page short).
+const GAL_FIRST = 6;
 ---
 
 <!doctype html>
@@ -621,9 +623,12 @@ const title =
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Who we are</p>
         <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">A home away from home — <em style="color:#2f5d45;">for you and your pets.</em></h2>
         <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 26px"></div>
+        <div data-bio="1">
         {bio.map((b) => (
           <p style={`color:#6b4e35;line-height:1.85;margin:${b.m};font-size:.98rem`}>{b.t}</p>
         ))}
+        </div>
+        <button type="button" class="sp-read-more" data-read-more="1" hidden>Read more</button>
       </div>
     </div>
   </section>
@@ -670,13 +675,16 @@ const title =
       <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">Our sits</h2>
       <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 36px"></div>
       <div data-gal="1" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px">
-        {gallery.map((g) => (
-          <button type="button" data-lightbox={g.src} data-lightbox-alt={g.alt} style="position:relative;border:none;padding:0;border-radius:14px;overflow:hidden;aspect-ratio:1;background:#e9e0d2;cursor:pointer;display:block;width:100%">
+        {gallery.map((g, gi) => (
+          <button type="button" class={gi >= GAL_FIRST ? 'sp-more' : undefined} data-lightbox={g.src} data-lightbox-alt={g.alt} style="position:relative;border:none;padding:0;border-radius:14px;overflow:hidden;aspect-ratio:1;background:#e9e0d2;cursor:pointer;display:block;width:100%">
             <img src={g.src} alt={g.alt} style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease" />
             <span class="sp-gal-cap" style="position:absolute;inset:0;background:linear-gradient(to top, rgba(44,26,14,.78) 0%, transparent 60%);opacity:0;transition:opacity .3s ease;display:flex;align-items:flex-end;padding:16px;font-family:'Montserrat',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.04em;color:#fff;text-align:left">{g.alt}</span>
           </button>
         ))}
       </div>
+{gallery.length > GAL_FIRST && (
+      <button type="button" class="sp-show-all" data-show-all="1" aria-expanded="false">Show all {gallery.length} photos</button>
+)}
     </div>
   </section>
 )}
@@ -973,6 +981,74 @@ const title =
   const onKey = e => { if (e.key === 'Escape') closeLb(); };
   document.addEventListener('keydown', onKey);
 })();
+</script>
+
+<nav class="sp-dock" data-dock="1" aria-label="On this page">
+  <a href="#about">About</a>
+{hasRevs && (<a href="#reviews">Reviews</a>)}
+{gallery.length > 0 && (<a href="#gallery">Photos</a>)}
+  <a href="#enquiry" class="sp-dock-book">Book us</a>
+</nav>
+<style is:global>
+  .sp-more { display: none !important; }
+  [data-gal].sp-open .sp-more { display: block !important; }
+  .sp-show-all, .sp-read-more { display: inline-flex; align-items: center; margin-top: 22px; font-family: 'Montserrat', sans-serif; font-size: .76rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #2f5d45; background: #fff; border: 1.5px solid rgba(110,84,56,.45); border-radius: 50px; padding: 12px 24px; cursor: pointer; }
+  .sp-show-all:hover, .sp-read-more:hover { background: #2f5d45; border-color: #2f5d45; color: #fff; }
+  .sp-read-more { margin-top: 14px; padding: 10px 20px; }
+  .sp-dock { display: none; }
+  @media (max-width: 1000px) {
+    .sp-dock { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 205; gap: 4px; padding: 6px; background: rgba(255,255,255,.96); backdrop-filter: blur(12px); border: 1px solid rgba(110,84,56,.22); border-radius: 50px; box-shadow: 0 12px 32px rgba(44,26,14,.18); transform: translateY(140%); transition: transform .3s ease; }
+    .sp-dock.on { transform: none; }
+    .sp-dock a { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 50px; font-family: 'Montserrat', sans-serif; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5c3d20; text-decoration: none; white-space: nowrap; }
+    .sp-dock a.sp-dock-book { flex: 1.3; background: #2f5d45; color: #fff; }
+    body { padding-bottom: 84px; }
+  }
+  @media (max-width: 640px) {
+    [data-sec] { padding-top: 48px !important; padding-bottom: 48px !important; }
+    /* booking form: names and dates side by side */
+    form[data-enquiry] [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 10px !important; }
+    /* verified profiles: two compact cards in a row */
+    #profiles [style*="grid-template-columns:repeat(2"] { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 10px !important; }
+    #profiles .sp-plat { padding: 16px 14px !important; gap: 8px !important; }
+    #profiles .sp-plat > span:first-child { width: 36px !important; height: 36px !important; font-size: 1.1rem !important; }
+    #profiles .sp-plat h3 { font-size: 1.05rem !important; }
+    #profiles .sp-plat p { font-size: .8rem !important; line-height: 1.55 !important; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    [data-bio].sp-clamp { max-height: 15.5em; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent); mask-image: linear-gradient(to bottom, #000 70%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) { .sp-dock { transition: none; } }
+</style>
+<script is:inline>
+  (function () {
+    // Gallery: first photos only until "Show all".
+    var all = document.querySelector('[data-show-all]');
+    if (all) all.addEventListener('click', function () {
+      var g = document.querySelector('[data-gal]'); var open = g.classList.toggle('sp-open');
+      all.setAttribute('aria-expanded', String(open));
+      all.textContent = open ? 'Show fewer photos' : 'Show all ' + g.children.length + ' photos';
+      if (!open) g.scrollIntoView({ block: 'start' });
+    });
+    // Long bio on phones: fold behind "Read more".
+    var bio = document.querySelector('[data-bio]'), more = document.querySelector('[data-read-more]');
+    function fold() {
+      if (!bio || !more) return;
+      var phone = window.matchMedia('(max-width: 640px)').matches;
+      if (!phone) { bio.classList.remove('sp-clamp'); more.hidden = true; return; }
+      if (more.dataset.open) return;
+      bio.classList.add('sp-clamp'); more.hidden = bio.scrollHeight <= bio.clientHeight + 8;
+      if (more.hidden) bio.classList.remove('sp-clamp');
+    }
+    if (more) more.addEventListener('click', function () {
+      var open = !more.dataset.open; if (open) { more.dataset.open = '1'; bio.classList.remove('sp-clamp'); more.textContent = 'Read less'; }
+      else { delete more.dataset.open; more.textContent = 'Read more'; fold(); bio.scrollIntoView({ block: 'nearest' }); }
+    });
+    fold(); window.addEventListener('resize', fold);
+    // Phone dock: appears once the visitor is past the top photo.
+    var dock = document.querySelector('[data-dock]'), hero = document.querySelector('[data-hero]');
+    if (dock && hero) {
+      var tick = function () { dock.classList.toggle('on', hero.getBoundingClientRect().bottom < 80); };
+      window.addEventListener('scroll', tick, { passive: true }); tick();
+    }
+  })();
 </script>
 </body>
 </html>

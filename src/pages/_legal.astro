@@ -90,5 +90,38 @@ const path = Astro.url.pathname;
       <span><a href="/privacy" aria-current={path === '/privacy' ? 'page' : undefined}>Privacy</a> &nbsp;·&nbsp; <a href="/terms" aria-current={path === '/terms' ? 'page' : undefined}>Terms</a> &nbsp;·&nbsp; <a href="mailto:hello@myahsits.com">hello@myahsits.com</a></span>
     </div>
   </footer>
+  <style is:global>
+    .lg-tools { display:flex; justify-content:flex-end; margin:0 0 6px; }
+    .lg-tools button { font:inherit; font-size:.72rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#2f5d45; background:none; border:0; cursor:pointer; padding:8px 0; }
+    details.lg-part { border-bottom:1px solid rgba(110,84,56,.22); }
+    details.lg-part > summary { list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 0; min-height:44px; }
+    details.lg-part > summary::-webkit-details-marker { display:none; }
+    details.lg-part > summary h2 { margin:0 !important; }
+    details.lg-part > summary::after { content:"+"; flex:none; font-size:1.4rem; color:#2f5d45; line-height:1; }
+    details.lg-part[open] > summary::after { content:"−"; }
+    details.lg-part > div { padding:0 0 18px; }
+  </style>
+  <script is:inline>
+    // Each heading becomes a section that opens on tap, so the policy reads as
+    // a short list of topics. Nothing is removed; "Open all" shows everything.
+    (function () {
+      var doc = document.querySelector('.lg-doc'); if (!doc) return;
+      var heads = [].slice.call(doc.querySelectorAll(':scope > h2')); if (heads.length < 3) return;
+      heads.forEach(function (h) {
+        var d = document.createElement('details'); d.className = 'lg-part';
+        var sm = document.createElement('summary'); var body = document.createElement('div');
+        h.parentNode.insertBefore(d, h); sm.appendChild(h); d.appendChild(sm); d.appendChild(body);
+        while (d.nextSibling && !(d.nextSibling.tagName === 'H2' || (d.nextSibling.classList && d.nextSibling.classList.contains('lg-part')))) body.appendChild(d.nextSibling);
+      });
+      var tools = document.createElement('div'); tools.className = 'lg-tools';
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Open all';
+      b.addEventListener('click', function () {
+        var parts = doc.querySelectorAll('details.lg-part'); var open = b.textContent === 'Open all';
+        parts.forEach(function (p) { p.open = open; }); b.textContent = open ? 'Close all' : 'Open all';
+      });
+      tools.appendChild(b); doc.insertBefore(tools, doc.querySelector('details.lg-part'));
+      if (location.hash) { var t = document.getElementById(location.hash.slice(1)); var d = t && t.closest('details'); if (d) d.open = true; }
+    })();
+  </script>
 </body>
 </html>

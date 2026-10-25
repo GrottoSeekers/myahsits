@@ -336,7 +336,7 @@ const initial = {
 
       <div data-form-error="1" role="alert" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;background:#fdeeee;border:1px solid #f7cfcf;font-size:.86rem;font-weight:600;color:#a4442e"></div>
 
-      <div data-jumps style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px"></div>
+      <div data-section-tabs="1" data-jumps style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px"></div>
 
       <div data-two-col="1" style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start">
 
@@ -600,7 +600,8 @@ const initial = {
     { href: '#amenities', label: 'Amenities' },
     { href: '#looking-for', label: 'Looking for' },
     { href: '#handover', label: 'Handover' },
-    { href: '#preview', label: 'Colours' }
+    { href: '#headings', label: 'Headings' },
+    { href: '#preview', label: 'Preview & colours' }
   ];
   q('[data-jumps]').innerHTML = JUMPS.map(j =>
     '<a href="' + j.href + '" class="eo-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">' + esc(j.label) + '</a>').join('');
@@ -970,5 +971,6 @@ const initial = {
     main.insertBefore(box, main.firstChild);
   })();
 </script>
+  <script is:inline src="/section-tabs.js"></script>
 </body>
 </html>
