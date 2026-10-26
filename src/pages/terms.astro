@@ -1,15 +1,16 @@
 ---
 import Legal from './_legal.astro';
+import { COMPANY, companyLine } from '../lib/company';
 ---
 <Legal
   title="Terms of use"
   intro="The agreement between you and MYAH when you use myahsits.com, as a house and pet sitter or as a home owner."
-  updated="2 October 2026"
+  updated="26 October 2026"
 >
   <div class="lg-card"><p>In short: MYAH helps sitters and owners find each other and arrange sits. The sit itself is an agreement between the sitter and the owner. Be honest, be kind, and look after each other's homes and animals.</p></div>
 
   <h2>1. About MYAH</h2>
-  <p>MYAH (myahsits.com) is run by its founders, Callum &amp; Niamh. You can contact us at <a href="mailto:hello@myahsits.com">hello@myahsits.com</a>. By creating an account or using the site you agree to these terms and to our <a href="/privacy">privacy policy</a>.</p>
+  <p>MYAH (myahsits.com) is run by {companyLine()} ("MYAH", "we", "us"). MYAH was founded by Callum &amp; Niamh. You can contact us at <a href={'mailto:' + COMPANY.email}>{COMPANY.email}</a>. By creating an account or using the site you agree to these terms and to our <a href="/privacy">privacy policy</a>.</p>
 
   <h2>2. Your account</h2>
   <ul>
@@ -24,8 +25,23 @@ import Legal from './_legal.astro';
   <p>MYAH gives sitters a public page, lets owners post sits, and lets members apply, message and confirm sits with each other. We are not a party to the arrangement between a sitter and an owner, and we do not employ sitters.</p>
   <p>Everyone on MYAH is ID checked: before you can apply for sits, post a sit, message other members or confirm a sitter, you send a photo of your passport or driving licence and a selfie, and we check that they match. A verified badge means that check was completed; it is not a background or criminal record check. Owners and sitters should still talk, check reviews and references, and agree the details of every sit between themselves.</p>
 
-  <h2>4. Membership is free</h2>
-  <p>MYAH is completely free to use: creating a profile, posting sits, applying, messaging and confirming sitters all cost nothing. If we ever introduce paid features, we will tell you well in advance, and nothing will ever be charged without your clear agreement.</p>
+  <h2>4. Membership and payments</h2>
+  <p><strong>While MYAH is launching, it is free.</strong> Nothing is charged, and you can use either page design. We will tell every member by email, well before any charges begin, what memberships cost and when they start. Nothing will be charged without your clear agreement.</p>
+  <p>When memberships begin there will be two, for sitters and owners alike:</p>
+  <ul>
+    <li><strong>Basic</strong>: your page in our classic one-page layout, with everything you need to post or find sits, apply, message and confirm.</li>
+    <li><strong>Premium</strong>: everything in Basic, with your page in our Premium design.</li>
+  </ul>
+  <p>Once memberships begin:</p>
+  <ul>
+    <li>Prices are shown on the membership page before you pay, and include VAT where it applies.</li>
+    <li>You can pay monthly or yearly. Your membership renews automatically at the end of each period until you cancel, and we take the payment for the next period on the renewal date.</li>
+    <li>You can cancel at any time from your membership page. Your membership then runs to the end of the period you have paid for and does not renew; we do not refund part-periods.</li>
+    <li><strong>Your right to cancel:</strong> you can cancel a new membership within 14 days of buying it and get a full refund. Email <a href={'mailto:' + COMPANY.email}>{COMPANY.email}</a> or cancel from your membership page. This does not affect your other rights as a consumer.</li>
+    <li>If you move from Premium to Basic, or your membership ends, your page switches to the Basic design; nothing you have added is deleted.</li>
+    <li>If we change a price, we will tell you at least 30 days before it applies to you, and you can cancel before then.</li>
+    <li>Payments are handled by our payment provider, Stripe. We never see or store your full card details.</li>
+  </ul>
 
   <h2>5. Sitters</h2>
   <ul>
@@ -45,9 +61,11 @@ import Legal from './_legal.astro';
 
   <h2>7. Your content</h2>
   <p>You keep ownership of the photos, words and reviews you add. You give MYAH permission to show them on the site so the service works, for as long as they are on your account. Only upload content you have the right to share, and nothing unlawful, misleading or offensive.</p>
+  <p>Your page is public, so keep it safe: give your city or region only, never a street, house number or postcode, and do not show house numbers, street signs or car number plates in photos. Only show other people's faces if they are happy to appear.</p>
+  <p>Reviews must be genuine and written by the home owner or sitter they come from. A reviewer's first name is shown with their review.</p>
 
   <h2>8. Messages and behaviour</h2>
-  <p>Be respectful. Do not harass anyone, share anyone else's personal details without permission, or use MYAH to send spam or to arrange anything unlawful. You can report anything that worries you to <a href="mailto:hello@myahsits.com">hello@myahsits.com</a>.</p>
+  <p>Be respectful. Do not harass anyone, share anyone else's personal details without permission, or use MYAH to send spam or to arrange anything unlawful. You can report anything that worries you to <a href={'mailto:' + COMPANY.email}>{COMPANY.email}</a>.</p>
 
   <h2>9. Suspending or closing accounts</h2>
   <p>You can ask us to close your account at any time. We may suspend or close an account that breaks these terms, puts other members, homes or animals at risk, or is used fraudulently. Where it is safe to, we will tell you why.</p>
