@@ -335,7 +335,7 @@ const enquiryTitlePh =
       <div style="border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:30px;margin-bottom:26px">
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 16px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>MYAH sitter</p>
         <h1 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.15;margin:0 0 18px">Edit your <em style="color:#2f5d45;">profile</em></h1>
-        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Pick a section to edit. The preview updates as you type, and one save keeps everything.</p>
+        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Choose a section and make your changes. Don&rsquo;t forget to save before you leave.</p>
       </div>
 
       <div data-form-msg="1" role="status" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;font-size:.86rem;font-weight:600"></div>
@@ -436,9 +436,9 @@ const enquiryTitlePh =
                   <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0">{g.title}</p>
                   <span style="font-size:.78rem;color:#6b4e35">{plural(g.images.length)}</span>
                 </div>
-                {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The full-width photos at the top of your page, cycling as a slideshow. Wide landscape shots work best.</p>}
-                {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">A small slideshow next to your About text. You with pets, at a sit, around the house.</p>}
-                {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The grid further down — pets you have looked after, places you have stayed.</p>}
+                {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The big photos at the top of your page. They play as a slideshow, so wide photos look best.</p>}
+                {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">A small slideshow beside your About text. Photos of you with pets work well.</p>}
+                {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">Your photo grid. Show the pets you&rsquo;ve cared for and the places you&rsquo;ve stayed.</p>}
                 <div style="display:flex;flex-wrap:wrap;gap:12px">
                   {g.images.map((img, i) => (
                     <div class="ep-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">
@@ -465,7 +465,7 @@ const enquiryTitlePh =
           <section id="reviews" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Reviews</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Reviews are written by the pet owners themselves. Generate a link, send it to them, and their words land straight on your page.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Send an owner your review link and what they write goes straight onto your page.</p>
 
             <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:26px">
               {reviews.map((r, i) => (
@@ -498,7 +498,7 @@ const enquiryTitlePh =
           <section id="platforms" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your other profiles</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Sitting sites, socials, anywhere else owners can check you out. These show as cards near the bottom of your page.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Add your other sitting sites or social pages, so owners can check you out.</p>
 
             <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
               {plats.map((p, i) => (
@@ -530,7 +530,7 @@ const enquiryTitlePh =
           <section id="headings" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">05</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Every section has a small label and a big title. Leave anything blank to keep the wording shown.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Change the titles on your page. Leave a box empty to keep the current wording.</p>
 
             <form data-headings-form="1" action="/api/profile/headings" method="POST" style="margin:0">
               <div style="display:flex;flex-direction:column;gap:26px">
