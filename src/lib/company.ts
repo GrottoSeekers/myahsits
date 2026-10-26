@@ -1,11 +1,12 @@
 // The company behind MYAH, shown on the legal pages and in footers.
 // UK law (Company Trading Disclosures Regulations 2015) needs the name,
 // number, place of registration and registered office address on the site.
-// TODO(owner): fill in NUMBER and OFFICE (a registered office service address
-// is fine; it does not have to be a home address).
+// OFFICE is left empty on purpose: the registered office is currently the
+// founders' home, which must not go on the site. Once it moves to a registered
+// office service address, put that address here (the law needs it shown).
 export const COMPANY = {
   name: 'Myah Sits Ltd',
-  number: '',
+  number: '17518835',
   registeredIn: 'England and Wales',
   office: '',
   email: 'info@myahsits.com',
@@ -16,5 +17,5 @@ export const companyLine = () =>
   [
     `${COMPANY.name}, a company registered in ${COMPANY.registeredIn}`,
     `company number ${COMPANY.number || '[company number to add]'}`,
-    `registered office ${COMPANY.office || '[registered office address to add]'}`,
-  ].join(', ');
+    COMPANY.office ? `registered office ${COMPANY.office}` : '',
+  ].filter(Boolean).join(', ');
