@@ -372,7 +372,6 @@ const enquiryTitlePh =
                   </button>
                 </div>
                 <input type="hidden" name="account_type" data-type-input="1" value={pvData.type} />
-                <p style="font-size:.82rem;color:#6b4e35;margin:12px 0 0;line-height:1.6">Changes the default wording on your page &mdash; <span data-wording="1"></span></p>
               </div>
 
               <div style="margin-bottom:24px">
@@ -705,7 +704,6 @@ const enquiryTitlePh =
           : 'background:#faf6ee;border:1.5px solid rgba(44,26,14,.14);color:#5c3d20;');
     });
     q('[data-type-input]').value = s.type;
-    q('[data-wording]').textContent = joint ? '“Book Us Today”, “Who We Are”.' : '“Book Me Today”, “Who I Am”.';
     const bio = s.bio.trim();
     q('[data-bio-count]').textContent = bio.length + ' characters — around ' + Math.max(1, Math.round(bio.split(/\s+/).length / 200 * 60)) + ' seconds to read.';
 
