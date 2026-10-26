@@ -782,7 +782,7 @@ const initial = {
     q('[data-savebar]').setAttribute('style', 'position:fixed;left:0;right:0;bottom:0;z-index:40;padding:16px 48px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid rgba(110,84,56,.28);box-shadow:0 -6px 24px rgba(44,26,14,.06);transition:transform .3s ease, opacity .3s ease;' +
       (s.saved ? 'transform:translateY(100%);opacity:0;pointer-events:none;' : 'transform:translateY(0);opacity:1;'));
     qa('[data-save]').forEach(btn => {
-        btn.textContent = s.saving ? 'Saving…' : s.saved ? 'Changes saved' : 'Save changes';
+        btn.textContent = s.saving ? 'Saving…' : 'Save changes';
       btn.disabled = s.saving;
       btn.setAttribute('style', 'font-family:\'Montserrat\',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:16px 36px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease');
     });
