@@ -116,13 +116,17 @@ export const POST: APIRoute = async ({ request }) => {
       const bySrc = new Map(current.map((img: any) => [img?.src, img]));
       const next: any[] = [];
       for (const item of arr(data.images?.[key]).slice(0, 30)) {
+        // Gallery photos can carry a short name shown on the photo (e.g. "Garden").
+        const cap = key === 'gallery' ? str(item?.cap, 40) : '';
         if (item && typeof item.new === 'number') {
           const file = files[`${key}_new_${item.new}`];
           if (!file) continue;
           const src = await upload(file, key);
-          next.push(key === 'hero' ? { src, pos: 'center' } : { src, alt: '' });
+          next.push(key === 'hero' ? { src, pos: 'center' } : { src, alt: '', ...(cap ? { cap } : {}) });
         } else if (item && bySrc.has(item.src)) {
-          next.push(bySrc.get(item.src));
+          const img = { ...(bySrc.get(item.src) as any) };
+          if (key === 'gallery') { if (cap) img.cap = cap; else delete img.cap; }
+          next.push(img);
         }
       }
       const kept = new Set(next.map((i) => i.src));

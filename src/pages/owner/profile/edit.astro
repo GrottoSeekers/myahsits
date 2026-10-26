@@ -24,6 +24,18 @@ import {
   arr,
 } from
   '../../../lib/dashboard';
+import PageDesign from
+  '../../../components/PageDesign.astro';
+import {
+  PAYMENTS_ENABLED,
+  getBilling,
+} from
+  '../../../lib/billing';
+import {
+  canUsePremium,
+  chosenLayout,
+} from
+  '../../../lib/tier';
 
 const session =
   await getSession(
@@ -126,7 +138,21 @@ const hd: any =
 const ho: any =
   me.handover_json || {};
 
+// Page design (Basic or Premium): the sections below are worded for it.
+const billing =
+  PAYMENTS_ENABLED
+    ? await getBilling(
+      session.userId,
+    ).catch(() => null)
+    : null;
+const premiumOk =
+  canUsePremium(billing);
+const premium =
+  chosenLayout(me) ===
+    'premium' &&
+  premiumOk;
 const initial = {
+  premium,
   slug: me.slug || '',
   name: me.name || '',
   location:
@@ -168,6 +194,7 @@ const initial = {
     )
     .map((i: any) => ({
       src: i.src,
+      cap: i.cap || '',
     })),
   pets: arr(
     me.pets_json,
@@ -342,8 +369,10 @@ const initial = {
 
         <div style="display:flex;flex-direction:column;gap:24px">
 
+          <PageDesign side="owner" current={premium ? 'premium' : 'basic'} premiumOk={premiumOk} paymentsOn={PAYMENTS_ENABLED} slug={me.slug || ''} num="01" />
+
           <section id="details" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">01</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Details</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">02</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Details</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 28px;max-width:460px">Who you are, where you are, and a few words about the place a sitter would be staying in.</p>
 
@@ -386,7 +415,7 @@ const initial = {
           </section>
 
           <section id="photos" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">02</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Home photos</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Home photos</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 24px"></div>
             <div data-photo-groups></div>
             <input data-photo-file="1" type="file" accept="image/*" multiple="multiple" hidden />
@@ -394,7 +423,7 @@ const initial = {
           </section>
 
           <section id="pets" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your pets</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your pets</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Add each pet with their quirks, routine and any medication, so a sitter knows exactly what to expect.</p>
 
@@ -431,7 +460,7 @@ const initial = {
           </section>
 
           <section id="amenities" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Amenities</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">05</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Amenities</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p data-amenity-count style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:500px"></p>
 
@@ -440,7 +469,7 @@ const initial = {
           </section>
 
           <section id="looking-for" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">05</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">What you&rsquo;re looking for</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">06</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">What you&rsquo;re looking for</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:500px">Describe the ideal sitter &mdash; experience, expectations, house rules. Specific beats polite.</p>
             <textarea data-looking="1" rows="6" aria-label="What you're looking for" placeholder="e.g. Someone comfortable with a large dog, happy in a rural spot with no bus route, and around the house most of the day." style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;resize:vertical;line-height:1.7;transition:border-color .2s, box-shadow .2s">{initial.lookingFor}</textarea>
@@ -448,7 +477,7 @@ const initial = {
           </section>
 
           <section id="handover" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">06</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Handover details</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">07</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Handover details</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 16px"></div>
 
             <div style="display:flex;align-items:flex-start;gap:13px;background:rgba(110,84,56,.1);border:1px solid rgba(110,84,56,.32);border-radius:12px;padding:16px 18px;margin-bottom:26px;max-width:560px">
@@ -476,7 +505,7 @@ const initial = {
           </section>
 
           <section id="headings" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">07</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">08</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Leave anything blank to keep the wording shown.</p>
 
@@ -502,15 +531,22 @@ const initial = {
             </div>
 
             <div data-pv-body>
-              <div style="position:relative;height:186px;overflow:hidden">
+              <div data-pv-herobox style="position:relative;height:186px;overflow:hidden">
                 <img data-pv-hero src="/images/slideshow-living-room.jpeg" alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
-                <div style="position:absolute;inset:0;background:rgba(44,26,14,.52)"></div>
-                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;gap:6px">
+                <div data-pv-shade style="position:absolute;inset:0;background:rgba(44,26,14,.52)"></div>
+                <div data-pv-heroin style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;gap:6px">
                   <span data-pv-badge></span>
                   <p data-pv-brand>MYAH</p>
                   <p data-pv-name style="font-size:.72rem;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.08em;margin:0"></p>
                   <p data-pv-tagline></p>
                   <span data-pv-btn>Get In Touch</span>
+                </div>
+              </div>
+
+              <div data-pv2 hidden>
+                <div data-pv2-strip style="padding:6px 14px;font-size:.52rem;font-weight:600;letter-spacing:.06em;color:#fff;white-space:nowrap;overflow:hidden"></div>
+                <div style="display:flex;gap:6px;padding:12px 14px 0">
+                  {['Home', 'Pets', 'Photos', 'Sits', 'Contact'].map((t, i) => <span data-pv2-tab={i === 0 ? 'on' : ''} style="font-size:.5rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:50px;border:1px solid rgba(110,84,56,.25)">{t}</span>)}
                 </div>
               </div>
 
@@ -602,6 +638,7 @@ const initial = {
   const hideLoader = () => { clearTimeout(hideT); loader.style.opacity = '0'; loader.style.pointerEvents = 'none'; };
 
   const JUMPS = [
+    { href: '#page-style', label: 'Page design' },
     { href: '#details', label: 'Details' },
     { href: '#photos', label: 'Home photos' },
     { href: '#pets', label: 'Pets' },
@@ -630,11 +667,12 @@ const initial = {
       '<input type="text" id="ho-' + f.key + '" data-handover="' + f.key + '" value="' + esc(s.handover[f.key]) + '" placeholder="' + esc(f.placeholder) + '" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.95rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />' +
     '</div>').join('');
 
+  const P = s.premium;
   const HEADINGS = [
-    { title: 'About section', where: 'Your bio text and photos.', label: 'about_label', titleKey: 'about_title', labelPh: 'About Our Home', titlePh: () => 'A great place to stay — for you and the pets.' },
-    { title: 'Pets section', where: 'The row of pet cards.', label: 'pets_label', titleKey: 'pets_title', labelPh: 'Meet the Pets', titlePh: () => 'Who you would be looking after' },
-    { title: 'Gallery section', where: 'The photo grid.', label: 'gallery_label', titleKey: 'gallery_title', labelPh: 'Our Home', titlePh: () => 'Room by room' },
-    { title: 'Contact section', where: 'The enquiry form at the bottom.', label: 'enquiry_label', titleKey: 'enquiry_title', labelPh: 'Get In Touch', titlePh: () => 'Contact ' + (s.name.trim() || 'us') }
+    { title: P ? 'Home tab' : 'About section', where: P ? 'The small label and the title above your words about the home.' : 'Your bio text and photos.', label: 'about_label', titleKey: 'about_title', labelPh: 'About our home', titlePh: () => 'A great place to stay — for you and the pets.' },
+    { title: P ? 'Pets tab' : 'Pets section', where: P ? 'Above your pet cards.' : 'The row of pet cards.', label: 'pets_label', titleKey: 'pets_title', labelPh: 'Meet the pets', titlePh: () => 'Who you would be looking after' },
+    { title: P ? 'Photos tab' : 'Gallery section', where: 'The photo grid.', label: 'gallery_label', titleKey: 'gallery_title', labelPh: 'Our home', titlePh: () => 'Room by room' },
+    { title: P ? 'Contact tab' : 'Contact section', where: P ? 'Above the enquiry form.' : 'The enquiry form at the bottom.', label: 'enquiry_label', titleKey: 'enquiry_title', labelPh: 'Get in touch', titlePh: () => 'Contact ' + (s.name.trim() || 'us') }
   ];
   const headInput = (key, ph) => '<input type="text" data-heading="' + key + '" aria-label="' + esc(ph) + '" value="' + esc(s.headings[key]) + '" placeholder="' + esc(ph) + '" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />';
   q('[data-headings]').innerHTML = HEADINGS.map(h =>
@@ -660,10 +698,14 @@ const initial = {
   };
   renderSwatches();
 
-  const GROUPS = [
+  const GROUPS = s.premium ? [
+    { key: 'hero', title: 'Top photo', desc: 'One still photo fills the screen when your page opens: the Cover photo. Any others join your Home photos.' },
+    { key: 'about', title: 'Home photos', desc: 'Shown one at a time in a rounded frame beside your words about the home, with a soft zoom from one to the next.' },
+    { key: 'gallery', title: 'Photos tab', desc: 'The grid in your Photos tab; the first photo shows large. Type a name under a photo (e.g. Garden) to show it in white on the photo.', last: true }
+  ] : [
     { key: 'hero', title: 'Banner photos', desc: 'The wide shots at the top of your page. Outside, the living room, the garden — whatever sells the place.' },
     { key: 'about', title: 'Interior & lifestyle', desc: 'Smaller photos beside your About text.' },
-    { key: 'gallery', title: 'Gallery', desc: 'The grid further down — rooms, garden, neighbourhood.', last: true }
+    { key: 'gallery', title: 'Gallery', desc: 'The grid further down — rooms, garden, neighbourhood. Type a name under a photo (e.g. Garden) to show it on the photo.', last: true }
   ];
 
   const render = () => {
@@ -685,11 +727,12 @@ const initial = {
             const badgeStyle = (g.key === 'hero' && i === 0)
               ? 'position:absolute;left:6px;bottom:6px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(44,26,14,.62);padding:3px 9px;border-radius:50px'
               : 'display:none';
-            return '<div class="eo-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">' +
+            const cap = g.key === 'gallery' ? '<input type="text" data-cap-photo="' + i + '" value="' + esc(img.cap || '') + '" maxlength="40" placeholder="Room or pet" aria-label="Name on photo ' + (i + 1) + '" style="width:118px;margin-top:6px;border:1.5px solid rgba(44,26,14,.18);border-radius:8px;padding:7px 9px;font-size:.78rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none" />' : '';
+            return '<div style="display:flex;flex-direction:column">' + '<div class="eo-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">' +
               '<img src="' + esc(img.src) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block" />' +
               '<span style="' + badgeStyle + '">Cover</span>' +
               '<button type="button" data-remove-photo="' + g.key + ':' + i + '" title="Remove photo" class="eo-x" style="position:absolute;top:6px;right:6px;width:23px;height:23px;border-radius:50%;background:rgba(44,26,14,.6);color:#fff;border:none;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .2s ease">&times;</button>' +
-            '</div>';
+            '</div>' + cap + '</div>';
           }).join('') +
           '<button type="button" data-add-photo="' + g.key + '" class="eo-add" style="width:118px;height:88px;border-radius:10px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease, border-color .25s ease">+ Add</button>' +
         '</div>' +
@@ -768,6 +811,23 @@ const initial = {
       '<div style="aspect-ratio:1;border-radius:4px;overflow:hidden"><img src="' + esc(g.src) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block" /></div>').join('');
     q('[data-pv-footer]').setAttribute('style', 'padding:12px 20px;display:flex;justify-content:space-between;align-items:center;background:' + t.text + ';');
     q('[data-pv-footer-brand]').setAttribute('style', 'font-family:\'Montserrat\',sans-serif;font-weight:500;letter-spacing:.24em;font-size:.68rem;margin:0;color:rgba(255,255,255,.75)');
+    // Premium preview: the founders' page design.
+    if (s.premium) {
+      q('[data-pv-herobox]').style.height = '230px';
+      q('[data-pv-shade]').style.background = 'linear-gradient(to top, rgba(20,13,7,.86) 0%, rgba(20,13,7,.2) 55%, rgba(20,13,7,.35) 100%)';
+      q('[data-pv-heroin]').setAttribute('style', 'position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:5px');
+      q('[data-pv-brand]').style.display = 'none';
+      badge.textContent = 'Home owner' + (s.location.trim() ? ' · ' + s.location.trim() : '');
+      badge.setAttribute('style', 'font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);padding:4px 10px;border-radius:50px');
+      q('[data-pv-heroin] [data-pv-name]').setAttribute('style', "font-family:'Marcellus',serif;font-size:1.35rem;color:#fff;line-height:1.1;margin:2px 0 0");
+      tag.setAttribute('style', 'font-size:.6rem;color:rgba(255,255,255,.82);margin:0;line-height:1.4;' + (s.tagline.trim() ? '' : 'font-style:italic;opacity:.6;'));
+      q('[data-pv-btn]').setAttribute('style', 'display:inline-block;margin-top:5px;background:' + t.accent + ';color:#fff;font-size:.5rem;font-weight:600;padding:6px 14px;border-radius:50px;letter-spacing:.1em;text-transform:uppercase;');
+      q('[data-pv2]').hidden = false;
+      const names = s.pets.map(p => p.name).filter(Boolean);
+      q('[data-pv2-strip]').textContent = [names.length ? 'Meet ' + names.join(' & ') : '', s.location.trim()].concat(s.amenities.slice(0, 2)).filter(Boolean).join('  ·  ') || 'Your highlights';
+      q('[data-pv2-strip]').style.background = t.accent;
+      qa('[data-pv2-tab]').forEach(el => { const on = el.getAttribute('data-pv2-tab') === 'on'; el.style.background = on ? t.accent : '#fff'; el.style.color = on ? '#fff' : t.textSoft; el.style.borderColor = on ? t.accent : 'rgba(110,84,56,.25)'; });
+    }
 
     // Strength
     const handoverDone = Object.values(s.handover).every(v => String(v).trim());
@@ -800,8 +860,12 @@ const initial = {
     const hd = e.target.closest && e.target.closest('[data-heading]');
     if (hd) { s.headings[hd.getAttribute('data-heading')] = hd.value; dirty(); render(); return; }
     const sw = e.target.closest && e.target.closest('[data-swatch]');
-    if (sw) { s.theme[sw.getAttribute('data-swatch')] = sw.value; dirty(); render(); }
+    if (sw) { s.theme[sw.getAttribute('data-swatch')] = sw.value; dirty(); render(); return; }
+    // Name on a gallery photo: no re-render while typing (it would drop focus).
+    const cp = e.target.closest && e.target.closest('[data-cap-photo]');
+    if (cp) { const g = s.gallery[Number(cp.getAttribute('data-cap-photo'))]; if (g) g.cap = cp.value; dirty(); }
   });
+  document.addEventListener('change', e => { if (e.target.closest && e.target.closest('[data-cap-photo]')) render(); });
 
   // New photos are shrunk in the browser before upload: one save can carry at
   // most 4.5 MB on Vercel, and phone photos are often bigger than that alone.
@@ -921,7 +985,7 @@ const initial = {
     if (s.saving) return;
     if (!s.name.trim()) { showError('missing'); q('[data-name]').focus(); return; }
     errEl.style.display = 'none';
-    const imgs = key => s[key].map(i => (typeof i.new === 'number' ? { new: i.new } : { src: i.src }));
+    const imgs = key => s[key].map(i => (typeof i.new === 'number' ? { new: i.new, cap: i.cap || '' } : { src: i.src, cap: i.cap || '' }));
     const payload = {
       name: s.name, location: s.location, tagline: s.tagline, bio: s.bio,
       contact_email: s.email, whatsapp_number: s.whatsapp, looking_for: s.lookingFor,

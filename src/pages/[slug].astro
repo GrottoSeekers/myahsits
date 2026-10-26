@@ -71,7 +71,8 @@ side =
 if (side === 'owner') {
   return Astro.rewrite(
     '/owner-page/' +
-    p.slug,
+    p.slug +
+    Astro.url.search,
   );
 }
 
