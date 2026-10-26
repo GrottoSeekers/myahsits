@@ -9,6 +9,8 @@ import {
 } from '../lib/launch';
 import LaunchSoon
   from './_launchsoon.astro';
+import SignatureProfile
+  from '../components/SignatureProfile.astro';
 import {
   FOUNDERS_SLUG,
   FOUNDERS_REVIEW_TOTAL,
@@ -297,7 +299,7 @@ const bioSrc: string =
   ' added a bio yet.';
 const bioParas =
   bioSrc
-  .split('\n\n')
+  .split(/\r?\n\s*\r?\n/)
   .map(tx)
   .filter(Boolean);
 const bio = bioParas
@@ -439,9 +441,14 @@ const title =
   name + ' — MYAH';
 // Photos shown before "Show all" (keeps the page short).
 const GAL_FIRST = 6;
+// Proposed 'Signature' design for the founders' page, shown with
+// ?layout=signature until the owner approves it.
+const SIGNATURE = isFounders && Astro.url.searchParams.get('layout') === 'signature';
+const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioParas, reviews, revCount, rating, gallery, plats, waNum, waHref, location, launched: LAUNCHED, pageSlug, title, blurb, ogImage, isFounders };
 ---
 
 <!doctype html>
+{SIGNATURE ? <SignatureProfile {...sigProps} /> : (
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -637,7 +644,7 @@ const GAL_FIRST = 6;
   <section id="reviews" data-sec="1" style="padding:100px 48px;background:#faf6ee">
     <div style="max-width:1100px;margin:0 auto">
       <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>What pet owners say</p>
-      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">{revCount} <em style="color:#2f5d45;">five-star reviews.</em></h2>
+      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">{revCount}{" "}<em style="color:#2f5d45;">five-star reviews.</em></h2>
       <div style="display:flex;align-items:center;gap:14px;margin:24px 0 36px">
         <span style="color:#2f5d45;font-size:1.05rem;letter-spacing:.24em">★★★★★</span>
         <span style="color:#6b4e35;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">5.0 across all platforms</span>
@@ -713,7 +720,7 @@ const GAL_FIRST = 6;
     <div data-split="1" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:60px;align-items:start">
       <div>
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Get in touch</p>
-        <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">Book {nameA} <em style="color:#2f5d45;">{nameB}</em></h2>
+        <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">Book {nameA}{" "}<em style="color:#2f5d45;">{nameB}</em></h2>
         <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 26px"></div>
         <p style="color:#6b4e35;line-height:1.85;font-size:.98rem;margin:0">Tell us about your home, your pets, and your dates and we'll get back to you within 24 hours.</p>
 {waNum && (
@@ -1052,3 +1059,4 @@ const GAL_FIRST = 6;
 </script>
 </body>
 </html>
+)}

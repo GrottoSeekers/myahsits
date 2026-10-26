@@ -1,0 +1,366 @@
+---
+// "Signature" sitter page: the founders' page design proposed on 26 Oct 2026.
+// One screen of hero, then a sticky row of tabs (About, Reviews, Photos, Book)
+// with one panel open at a time, so the page stays short on a phone.
+// Shown at /<slug>?layout=signature until the owner approves it.
+import LaunchSoon from '../pages/_launchsoon.astro';
+
+interface Pic { src: string; pos?: string; alt?: string }
+interface Props {
+  name: string; nameA: string; nameB: string; tagline: string; badge: string;
+  hero: Pic[]; about: Pic[]; bio: string[]; reviews: any[]; revCount: string; rating: string;
+  gallery: Pic[]; plats: any[]; waNum: string; waHref: string; location: string;
+  launched: boolean; pageSlug: string; title: string; blurb: string; ogImage: string; isFounders: boolean;
+}
+const p = Astro.props;
+const first = p.reviews[0];
+const rest = p.reviews.slice(1);
+const glance = [
+  { n: p.revCount, l: 'five-star reviews' },
+  { n: p.rating, l: 'average rating' },
+  ...(p.isFounders ? [{ n: '30+', l: 'pets cared for' }] : []),
+  { n: String(p.plats.length || '—'), l: 'verified profiles' },
+];
+const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
+---
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>{p.title}</title>
+  <meta name="description" content={p.blurb} />
+  <meta property="og:type" content="profile" />
+  <meta property="og:title" content={p.title} />
+  <meta property="og:description" content={p.blurb} />
+  <meta property="og:image" content={p.ogImage} />
+  <link rel="icon" href="/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --ink:#2c1a0e; --paper:#faf6ee; --cream:#f3ece0; --forest:#2f5d45; --forest2:#3e7a5b; --tan:#c4ab8a; --brown:#6e5438; --soft:#6b4e35; --line:rgba(110,84,56,.2); }
+    * { box-sizing:border-box; }
+    html { scroll-padding-top:120px; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:'Montserrat',sans-serif; -webkit-font-smoothing:antialiased; }
+    img { display:block; max-width:100%; }
+    a { color:inherit; }
+    .serif { font-family:'Marcellus',serif; font-weight:400; }
+    .lbl { font-family:'Lato',sans-serif; font-weight:700; font-size:.68rem; letter-spacing:.22em; text-transform:uppercase; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:48px; padding:0 26px; border-radius:50px; font-size:.76rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; border:1.5px solid transparent; cursor:pointer; font-family:inherit; transition:transform .15s, background .2s, border-color .2s, color .2s; }
+    .btn:hover { transform:translateY(-2px); }
+    .btn-main { background:var(--forest); color:#fff; box-shadow:0 10px 26px rgba(20,13,7,.28); }
+    .btn-main:hover { background:var(--forest2); }
+    .btn-glass { background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.45); backdrop-filter:blur(6px); }
+    .btn-glass:hover { background:rgba(255,255,255,.22); }
+    .btn-line { background:#fff; color:var(--forest); border-color:rgba(110,84,56,.4); }
+    .btn-line:hover { border-color:var(--forest); }
+
+    /* top bar */
+    .sg-top { position:fixed; top:0; left:0; right:0; z-index:60; display:flex; justify-content:space-between; align-items:center; padding:calc(14px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 14px max(20px,env(safe-area-inset-left,0px)); transition:background .3s, box-shadow .3s; }
+    .sg-top.solid { background:rgba(250,246,238,.96); backdrop-filter:blur(12px); box-shadow:0 1px 0 var(--line); }
+    .sg-logo { display:inline-flex; align-items:center; gap:12px; text-decoration:none; }
+    .sg-logo img { width:40px; height:40px; }
+    .sg-logo span { display:flex; flex-direction:column; gap:4px; padding-left:12px; border-left:1px solid rgba(255,255,255,.45); color:#fff; font-weight:500; letter-spacing:.28em; font-size:1.1rem; line-height:1; transition:color .3s, border-color .3s; }
+    .sg-logo small { font-family:'Lato',sans-serif; font-weight:700; font-size:.45rem; letter-spacing:.2em; text-transform:uppercase; opacity:.85; }
+    .sg-top.solid .sg-logo span { color:var(--forest); border-color:var(--line); }
+    .sg-top .btn { min-height:40px; padding:0 18px; font-size:.68rem; }
+
+    /* hero */
+    .sg-hero { position:relative; min-height:min(92svh,820px); display:flex; align-items:flex-end; color:#fff; overflow:hidden; background:var(--ink); }
+    .sg-hero .bg img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.4s ease; }
+    .sg-hero .bg img.on { opacity:1; }
+    .sg-hero .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.35) 0%,rgba(20,13,7,0) 30%,rgba(20,13,7,.25) 55%,rgba(20,13,7,.88) 100%); }
+    .sg-hero .in { position:relative; width:100%; max-width:1180px; margin:0 auto; padding:120px max(22px,env(safe-area-inset-right,0px)) 40px max(22px,env(safe-area-inset-left,0px)); }
+    .sg-badge { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:50px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(6px); font-size:.72rem; font-weight:600; letter-spacing:.04em; margin-bottom:18px; }
+    .sg-badge i { width:7px; height:7px; border-radius:50%; background:#8fd1a8; }
+    .sg-hero .lbl { color:#f1e6d6; text-shadow:0 1px 8px rgba(20,13,7,.6); display:flex; align-items:center; gap:12px; margin:0 0 12px; }
+    .sg-hero .lbl::before { content:""; width:28px; height:1px; background:#f1e6d6; }
+    .sg-name { font-size:clamp(2.7rem,9vw,5.2rem); line-height:1.02; margin:0 0 14px; letter-spacing:.005em; }
+    .sg-name em { font-style:normal; color:var(--tan); }
+    .sg-tag { max-width:560px; font-size:1.02rem; line-height:1.65; color:rgba(255,255,255,.88); margin:0 0 22px; }
+    .sg-trust { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 26px; padding:0; list-style:none; }
+    .sg-trust li { display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:50px; background:rgba(20,13,7,.38); border:1px solid rgba(255,255,255,.18); font-size:.74rem; font-weight:600; letter-spacing:.03em; }
+    .sg-trust .star { color:#e8c36a; letter-spacing:.1em; }
+    .sg-acts { display:flex; flex-wrap:wrap; gap:10px; }
+
+    /* tabs */
+    .sg-tabs { position:sticky; top:calc(68px + env(safe-area-inset-top,0px)); z-index:50; background:rgba(250,246,238,.96); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+    .sg-tabs .in { max-width:1180px; margin:0 auto; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:12px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px)); }
+    .sg-tabs .in::-webkit-scrollbar { display:none; }
+    .sg-tabs button { flex:none; display:inline-flex; align-items:center; gap:8px; min-height:42px; padding:0 18px; border-radius:50px; border:1px solid var(--line); background:#fff; color:var(--soft); font:600 .74rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+    .sg-tabs button small { font:700 .62rem 'Lato',sans-serif; letter-spacing:.04em; padding:2px 7px; border-radius:50px; background:var(--cream); color:var(--brown); }
+    .sg-tabs button[aria-selected="true"] { background:var(--ink); border-color:var(--ink); color:#fff; }
+    .sg-tabs button[aria-selected="true"] small { background:rgba(255,255,255,.16); color:var(--tan); }
+
+    .sg-panel { max-width:1180px; margin:0 auto; padding:44px max(22px,env(safe-area-inset-right,0px)) 56px max(22px,env(safe-area-inset-left,0px)); }
+    .sg-panel[hidden] { display:none; }
+    .sg-h { font-size:clamp(1.9rem,4.4vw,2.8rem); line-height:1.12; margin:0 0 12px; }
+    .sg-h em { font-style:normal; color:var(--forest); }
+    .sg-panel > .lbl { color:var(--brown); margin:0 0 12px; display:block; }
+
+    /* about */
+    .sg-about { display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr); gap:48px; align-items:start; }
+    .sg-strip { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .sg-strip button { padding:0; border:0; border-radius:18px; overflow:hidden; cursor:zoom-in; aspect-ratio:4/5; background:var(--cream); }
+    .sg-strip button:first-child { grid-column:1 / -1; aspect-ratio:16/11; }
+    .sg-strip img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+    .sg-strip button:hover img { transform:scale(1.04); }
+    .sg-bio { position:relative; }
+    .sg-bio p { color:var(--soft); line-height:1.85; margin:0 0 14px; font-size:.98rem; }
+    .sg-bio.clamp { max-height:13.2em; overflow:hidden; -webkit-mask-image:linear-gradient(#000 65%,transparent); mask-image:linear-gradient(#000 65%,transparent); }
+    .sg-more { background:none; border:0; padding:0; margin:4px 0 0; font:600 .74rem 'Montserrat',sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--forest); cursor:pointer; border-bottom:1px solid currentColor; }
+    .sg-glance { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:28px 0 0; }
+    .sg-glance div { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
+    .sg-glance b { display:block; font:400 1.8rem 'Marcellus',serif; color:var(--forest); line-height:1.1; }
+    .sg-glance span { font-size:.74rem; color:var(--soft); letter-spacing:.02em; }
+    .sg-plats { display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 0; }
+    .sg-plats a { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:50px; background:#fff; border:1px solid var(--line); text-decoration:none; font-size:.78rem; font-weight:600; color:var(--ink); }
+    .sg-plats a::before { content:"✓"; color:#fff; background:var(--forest); width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.62rem; }
+
+    /* reviews */
+    .sg-feature { background:var(--ink); color:#fff; border-radius:24px; padding:38px 40px; position:relative; overflow:hidden; margin:24px 0 18px; }
+    .sg-feature::after { content:"\201D"; position:absolute; right:26px; top:-18px; font:400 9rem 'Marcellus',serif; color:rgba(196,171,138,.16); }
+    .sg-feature .star { color:#e8c36a; letter-spacing:.22em; font-size:.86rem; }
+    .sg-feature blockquote { margin:14px 0 18px; font:400 clamp(1.2rem,2.6vw,1.65rem)/1.45 'Marcellus',serif; max-width:820px; }
+    .sg-feature cite { font-style:normal; font-size:.74rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--tan); }
+    .sg-rows { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px 2px 14px; scrollbar-width:thin; }
+    .sg-rev { flex:none; width:min(330px,82vw); scroll-snap-align:start; background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px 20px 18px; display:flex; flex-direction:column; gap:12px; }
+    .sg-rev p { margin:0; font-size:.88rem; line-height:1.65; color:var(--soft); font-style:italic; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
+    .sg-rev.open p { display:block; }
+    .sg-rev .who { margin-top:auto; display:flex; align-items:center; gap:10px; }
+    .sg-rev .av { width:34px; height:34px; border-radius:50%; background:var(--forest); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:600; flex:none; }
+    .sg-rev .who b { display:block; font-size:.84rem; }
+    .sg-rev .who span { font-size:.7rem; color:var(--soft); }
+    .sg-hint { font-size:.74rem; color:var(--soft); margin:0; }
+
+    /* photos */
+    .sg-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:22px; }
+    .sg-grid button { padding:0; border:0; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--cream); cursor:zoom-in; position:relative; }
+    .sg-grid img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+    .sg-grid button:hover img { transform:scale(1.05); }
+
+    /* book */
+    .sg-book { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:44px; align-items:start; }
+    .sg-promise { list-style:none; padding:0; margin:20px 0 22px; display:grid; gap:10px; }
+    .sg-promise li { display:flex; gap:10px; align-items:flex-start; font-size:.92rem; color:var(--soft); line-height:1.5; }
+    .sg-promise li::before { content:"✓"; flex:none; width:22px; height:22px; border-radius:50%; background:#e4efe7; color:var(--forest); display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:700; }
+    .sg-form { background:#fff; border:1px solid var(--line); border-radius:22px; padding:26px; display:grid; gap:14px; box-shadow:0 18px 50px rgba(44,26,14,.06); }
+    .sg-form .two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+    .sg-form label { display:grid; gap:6px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
+    .sg-form input, .sg-form textarea { font:400 .95rem 'Montserrat',sans-serif; color:var(--ink); background:var(--paper); border:1.5px solid rgba(110,84,56,.25); border-radius:12px; padding:12px 14px; width:100%; min-width:0; }
+    .sg-form input:focus, .sg-form textarea:focus { outline:none; border-color:var(--forest); box-shadow:0 0 0 3px rgba(47,93,69,.12); }
+    .sg-form .btn { width:100%; }
+    .sg-status { margin:0; min-height:1.2em; text-align:center; font-size:.86rem; font-weight:600; color:var(--forest); }
+    .sg-launch { margin-top:40px; border-radius:22px; overflow:hidden; border:1px solid var(--line); }
+    .sg-launch :global(#launch) { padding:40px 28px !important; }
+    .sg-launch :global(.ls-wrap) { gap:28px !important; }
+
+    /* lightbox */
+    .sg-lb { position:fixed; inset:0; z-index:100; background:rgba(20,13,7,.92); display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; pointer-events:none; transition:opacity .25s; }
+    .sg-lb.on { opacity:1; pointer-events:all; }
+    .sg-lb img { max-width:min(960px,100%); max-height:80vh; border-radius:10px; object-fit:contain; }
+    .sg-lb button { position:absolute; top:calc(18px + env(safe-area-inset-top,0px)); right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.1); color:#fff; font-size:1.2rem; cursor:pointer; }
+
+    /* phone book bar */
+    .sg-bar { position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom,0px)); z-index:55; display:none; gap:8px; padding:7px; border-radius:50px; background:rgba(44,26,14,.94); backdrop-filter:blur(10px); box-shadow:0 14px 34px rgba(20,13,7,.3); transform:translateY(150%); transition:transform .3s ease; }
+    .sg-bar.on { transform:none; }
+    .sg-bar span { flex:1; display:flex; flex-direction:column; justify-content:center; padding-left:14px; color:#fff; font-size:.8rem; font-weight:600; line-height:1.25; }
+    .sg-bar span small { color:var(--tan); font-weight:600; font-size:.66rem; letter-spacing:.06em; }
+    .sg-bar .btn { min-height:44px; }
+
+    footer.sg-foot { background:var(--ink); color:rgba(255,255,255,.65); padding:34px max(22px,env(safe-area-inset-right,0px)) calc(34px + env(safe-area-inset-bottom,0px)) max(22px,env(safe-area-inset-left,0px)); }
+    .sg-foot .in { max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; align-items:center; font-size:.78rem; }
+    .sg-foot a { color:rgba(255,255,255,.75); text-decoration:none; margin-left:18px; }
+
+    @media (max-width:900px) {
+      .sg-about, .sg-book { grid-template-columns:minmax(0,1fr); gap:28px; }
+      .sg-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+      .sg-bar { display:flex; }
+      body { padding-bottom:84px; }
+    }
+    @media (max-width:560px) {
+      .sg-top .btn { display:none; }
+      .sg-hero .in { padding-bottom:30px; }
+      .sg-tag { font-size:.95rem; margin-bottom:18px; }
+      .sg-trust li { font-size:.7rem; padding:7px 11px; }
+      .sg-acts .btn { flex:1; padding:0 16px; }
+      .sg-panel { padding-top:30px; padding-bottom:40px; }
+      .sg-strip { gap:8px; }
+      .sg-strip button:not(:first-child) { aspect-ratio:1; }
+      .sg-feature { padding:28px 24px; border-radius:20px; }
+      .sg-form { padding:20px; border-radius:18px; }
+      .sg-foot a { margin:0 14px 0 0; }
+    }
+    @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+  </style>
+</head>
+<body>
+  <header class="sg-top" data-top>
+    <a class="sg-logo" href="/"><img src="/images/logo-mark-white.png" alt="" data-logo /><span>MYAH<small>Make Yourself At Home</small></span></a>
+    <a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a>
+  </header>
+
+  <section class="sg-hero" data-hero>
+    <div class="bg">{p.hero.map((h, i) => <img src={h.src} alt="" class={i === 0 ? 'on' : undefined} style={`object-position:${h.pos || 'center 30%'}`} data-slide />)}</div>
+    <div class="shade"></div>
+    <div class="in">
+      {p.badge && <p class="sg-badge"><i></i>{p.badge}</p>}
+      <p class="lbl">{eyebrow}</p>
+      <h1 class="sg-name serif">{p.nameA}{p.nameB && <em> &amp;</em>}{p.nameB && <>{' '}{p.nameB.replace(/^&\s*/, '')}</>}</h1>
+      {p.tagline && <p class="sg-tag">{p.tagline}</p>}
+      <ul class="sg-trust">
+        {p.reviews.length > 0 && <li><span class="star">★★★★★</span>{p.rating} · {p.revCount} reviews</li>}
+        <li>✓ ID verified</li>
+        {p.location && <li>{p.location}</li>}
+      </ul>
+      <div class="sg-acts">
+        <a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a>
+        {p.waNum && <a class="btn btn-glass" href={p.waHref} target="_blank" rel="noopener">WhatsApp</a>}
+      </div>
+    </div>
+  </section>
+
+  <nav class="sg-tabs" aria-label="About this sitter">
+    <div class="in" role="tablist">
+      <button type="button" role="tab" aria-selected="true" aria-controls="about" data-tab="about">About</button>
+      {p.reviews.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="reviews" data-tab="reviews">Reviews <small>{p.revCount}</small></button>}
+      {p.gallery.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="photos" data-tab="photos">Photos <small>{p.gallery.length}</small></button>}
+      <button type="button" role="tab" aria-selected="false" aria-controls="book" data-tab="book">Book</button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="sg-panel" id="about" role="tabpanel">
+      <div class="sg-about">
+        {p.about.length > 0 && (
+          <div class="sg-strip">
+            {p.about.slice(0, 3).map((a) => <button type="button" data-lightbox={a.src} data-alt={a.alt}><img src={a.src} alt={a.alt || ''} loading="lazy" /></button>)}
+          </div>
+        )}
+        <div>
+          <span class="lbl" style="color:#6e5438;display:block;margin:0 0 12px">Who we are</span>
+          <h2 class="sg-h serif">A home away from home, <em>for you and your pets.</em></h2>
+          <div class="sg-bio" data-bio>{p.bio.map((t) => <p>{t}</p>)}</div>
+          <button type="button" class="sg-more" data-bio-more hidden>Read more</button>
+          <div class="sg-glance">{glance.map((g) => <div><b>{g.n}</b><span>{g.l}</span></div>)}</div>
+          {p.plats.length > 0 && <div class="sg-plats">{p.plats.map((x: any) => <a href={x.url} target="_blank" rel="noopener noreferrer">{x.name}</a>)}</div>}
+        </div>
+      </div>
+    </section>
+
+    {p.reviews.length > 0 && (
+      <section class="sg-panel" id="reviews" role="tabpanel" hidden>
+        <span class="lbl">What pet owners say</span>
+        <h2 class="sg-h serif">{p.revCount}{' '}<em>five-star reviews</em></h2>
+        <div class="sg-feature">
+          <span class="star">★★★★★</span>
+          <blockquote>&ldquo;{first.text}&rdquo;</blockquote>
+          <cite>{first.name}{first.platform ? ' · ' + first.platform : ''}</cite>
+        </div>
+        <div class="sg-rows" data-rows>
+          {rest.map((r: any) => (
+            <article class="sg-rev">
+              <p>&ldquo;{r.text}&rdquo;</p>
+              <div class="who"><span class="av">{r.initials || String(r.name || '?').charAt(0)}</span><div><b>{r.name}</b><span>{r.platform}</span></div></div>
+            </article>
+          ))}
+        </div>
+        <p class="sg-hint">Swipe for more · tap a review to read it all</p>
+      </section>
+    )}
+
+    {p.gallery.length > 0 && (
+      <section class="sg-panel" id="photos" role="tabpanel" hidden>
+        <span class="lbl">Pets we've loved</span>
+        <h2 class="sg-h serif">Our <em>sits</em></h2>
+        <div class="sg-grid">{p.gallery.map((g) => <button type="button" data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" /></button>)}</div>
+      </section>
+    )}
+
+    <section class="sg-panel" id="book" role="tabpanel" hidden>
+      <div class="sg-book">
+        <div>
+          <span class="lbl" style="color:#6e5438;display:block;margin:0 0 12px">Get in touch</span>
+          <h2 class="sg-h serif">Book {p.nameA}{p.nameB && <>{' '}<em>{p.nameB}</em></>}</h2>
+          <ul class="sg-promise">
+            <li>We reply within 24 hours</li>
+            <li>Meet us before the sit, in person or on a call</li>
+            <li>Daily photo updates while you're away</li>
+          </ul>
+          {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Message on WhatsApp</a>}
+        </div>
+        <form class="sg-form" data-enquiry data-go={p.launched ? '/messages' : undefined}>
+          <div class="two">
+            <label>First name<input name="first_name" required autocomplete="given-name" /></label>
+            <label>Last name<input name="last_name" autocomplete="family-name" /></label>
+          </div>
+          <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+          <div class="two">
+            <label>From<input type="date" name="date_from" required /></label>
+            <label>To<input type="date" name="date_to" required /></label>
+          </div>
+          <label>Your pets &amp; home<textarea name="message" rows="3" placeholder="Breed, age, anything we should know"></textarea></label>
+          <button type="submit" class="btn btn-main">Send enquiry</button>
+          <p class="sg-status" data-enquiry-status role="status"></p>
+        </form>
+      </div>
+      {!p.launched && <div class="sg-launch"><LaunchSoon /></div>}
+    </section>
+  </main>
+
+  <footer class="sg-foot"><div class="in"><span>&copy; 2026 MYAH · {p.name}</span><span><a href="/">MYAH</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span></div></footer>
+
+  <div class="sg-bar" data-bar><span>{p.name}<small>★ {p.rating} · replies within 24h</small></span><a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a></div>
+  <div class="sg-lb" data-lb><button type="button" aria-label="Close" data-lb-close>✕</button><img alt="" data-lb-img /></div>
+
+  <script is:inline define:vars={{ pageSlug: p.pageSlug }}>
+  (() => {
+    const q = s => document.querySelector(s), qa = s => Array.from(document.querySelectorAll(s));
+    // tabs: one panel at a time
+    const tabs = qa('[data-tab]');
+    const open = (id, scroll) => {
+      tabs.forEach(t => { const on = t.dataset.tab === id; t.setAttribute('aria-selected', String(on)); q('#' + t.dataset.tab).hidden = !on; });
+      if (scroll) { const top = q('.sg-tabs').getBoundingClientRect().top + window.scrollY - (q('[data-top]').offsetHeight - 2); window.scrollTo({ top, behavior: 'smooth' }); }
+    };
+    tabs.forEach(t => t.addEventListener('click', () => open(t.dataset.tab, window.scrollY > q('[data-hero]').offsetHeight - 200)));
+    qa('[data-open]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); open(a.dataset.open, true); }));
+    const h = location.hash.slice(1); if (h && q('[data-tab="' + h + '"]')) open(h, false);
+    // top bar and phone bar
+    const top = q('[data-top]'), logo = q('[data-logo]'), bar = q('[data-bar]'), hero = q('[data-hero]');
+    const tick = () => {
+      const past = hero.getBoundingClientRect().bottom < 90;
+      top.classList.toggle('solid', past); logo.src = past ? '/images/logo-mark.png' : '/images/logo-mark-white.png';
+      bar.classList.toggle('on', past && q('#book').hidden);
+    };
+    window.addEventListener('scroll', tick, { passive: true }); tick();
+    tabs.forEach(t => t.addEventListener('click', tick));
+    // hero slideshow
+    const slides = qa('[data-slide]'); let si = 0;
+    if (slides.length > 1) setInterval(() => { slides[si].classList.remove('on'); si = (si + 1) % slides.length; slides[si].classList.add('on'); }, 5000);
+    // bio read more
+    const bio = q('[data-bio]'), more = q('[data-bio-more]');
+    if (bio && more) { bio.classList.add('clamp'); if (bio.scrollHeight > bio.clientHeight + 8) more.hidden = false; else bio.classList.remove('clamp');
+      more.addEventListener('click', () => { const c = bio.classList.toggle('clamp'); more.textContent = c ? 'Read more' : 'Read less'; }); }
+    // reviews: tap to read all
+    qa('.sg-rev p').forEach(p => p.addEventListener('click', () => p.closest('.sg-rev').classList.toggle('open')));
+    // lightbox
+    const lb = q('[data-lb]'), lbImg = q('[data-lb-img]');
+    document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-lightbox]'); if (!b) return; lbImg.src = b.dataset.lightbox; lbImg.alt = b.dataset.alt || ''; lb.classList.add('on'); });
+    q('[data-lb-close]').addEventListener('click', () => lb.classList.remove('on'));
+    lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('on'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+    // enquiry (same behaviour as the current page)
+    const form = q('[data-enquiry]'), status = q('[data-enquiry-status]');
+    form && form.addEventListener('submit', e => {
+      e.preventDefault();
+      const fd = new FormData(form); fd.append('slug', pageSlug);
+      if (form.hasAttribute('data-go')) { navigator.sendBeacon('/api/enquiry', fd); window.location.href = form.getAttribute('data-go'); return; }
+      status.textContent = 'Sending…';
+      fetch('/api/enquiry', { method: 'POST', body: fd }).then(r => r.json().catch(() => ({})).then(j => ({ ok: r.ok, j })))
+        .then(({ ok, j }) => { status.textContent = ok ? "Enquiry sent. We'll be in touch soon." : (j.error || 'That did not send. Please try again.'); if (ok) form.reset(); })
+        .catch(() => { status.textContent = 'That did not send. Please try again.'; });
+    });
+  })();
+  </script>
+</body>
+</html>
