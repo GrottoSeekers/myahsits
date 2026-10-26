@@ -70,11 +70,11 @@ const head = {
   aboutLabel: esc(h.about_label) || 'About our home',
   aboutTitle: esc(h.about_title) || 'A great place to stay — for you and the pets.',
   petsLabel: esc(h.pets_label) || 'Meet the pets',
-  petsTitle: esc(h.pets_title) || 'Who you would be looking after',
+  petsTitle: esc(h.pets_title) || 'Who you would be — looking after',
   galleryLabel: esc(h.gallery_label) || 'Our home',
-  galleryTitle: esc(h.gallery_title) || 'Room by room',
+  galleryTitle: esc(h.gallery_title) || 'Room — by room',
   enquiryLabel: esc(h.enquiry_label) || 'Get in touch',
-  enquiryTitle: esc(h.enquiry_title) || 'Contact ' + name,
+  enquiryTitle: esc(h.enquiry_title) || 'Contact — ' + name,
 };
 
 const t = jsonObj(p.theme_json);
@@ -87,6 +87,15 @@ const theme = {
   soft: hex(t.text_soft, '#6b4e35'),
 };
 
+// A title is split at " — ": the second half shows in italics (as on sitter pages).
+const split = (t: string) => {
+  const i = t.indexOf(' — ');
+  return i < 0 ? [t, ''] : [t.slice(0, i), t.slice(i + 3)];
+};
+// Colours as CSS variables on <html> (define:vars on a global style left them unset).
+const vars = `--bg:${theme.bg};--accent:${theme.accent};--light:${theme.light};--ink:${theme.text};--soft:${theme.soft}`;
+// Photos shown before "Show all" (keeps the page short), as on sitter pages.
+const GAL_FIRST = 6;
 const fmt = (d: string) =>
   new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const nights = (a: string, b: string) =>
@@ -124,7 +133,7 @@ const premiumProps = {
 
 <!doctype html>
 {PREMIUM ? <OwnerSignature {...premiumProps} /> : (
-<html lang="en">
+<html lang="en" style={vars}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -139,7 +148,7 @@ const premiumProps = {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
-  <style is:global define:vars={{ bg: theme.bg, accent: theme.accent, light: theme.light, ink: theme.text, soft: theme.soft }}>
+  <style is:global>
     body { margin:0; background:var(--bg); color:var(--ink); font-family:"Montserrat",sans-serif; overflow-x:hidden; }
     * { box-sizing:border-box; }
     a { color:var(--accent); }
@@ -163,26 +172,39 @@ const premiumProps = {
     .op-mine { position:fixed; left:0; right:0; bottom:0; z-index:220; background:#fff; color:#2c1a0e; border-top:1px solid rgba(110,84,56,.28); box-shadow:0 -6px 24px rgba(44,26,14,.06); padding:14px 48px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:.86rem; }
     .op-mine a { color:#2f5d45; font-weight:600; }
 
-    .op-hero { min-height:74vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding:140px 48px 80px; text-align:center; }
+    .op-hero { min-height:78vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding:140px 48px 80px; text-align:center; }
     .op-hero .bg { position:absolute; inset:0; z-index:0; background:#2c1a0e; }
     .op-hero .bg img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity 1.2s ease; }
-    .op-hero .shade { position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(44,26,14,.5) 0%, rgba(44,26,14,.68) 100%); }
+    .op-hero .shade { position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(44,26,14,.52) 0%, rgba(44,26,14,.66) 100%); }
+    .op-hero .word { font-family:'Montserrat',sans-serif; font-weight:500; letter-spacing:.28em; font-size:4.6rem; color:#fff; line-height:1; margin:0 0 18px; }
+    .op-hero .word em { color:var(--light); }
+    .op-hero .who { font-size:1.1rem; color:#fff; font-weight:600; letter-spacing:.14em; text-transform:uppercase; margin:0 0 18px; }
+    .op-hero .meta i { width:5px; height:5px; border-radius:50%; background:rgba(196,171,138,.6); display:block; }
+    .op-scroll { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:2; width:42px; height:42px; border-radius:50%; border:1px solid rgba(196,171,138,.5); background:rgba(250,246,238,.12); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; color:#fff; text-decoration:none; transition:background .2s; }
+    .op-scroll:hover { background:rgba(250,246,238,.24); color:#fff; }
     .op-hero .inner { position:relative; z-index:2; max-width:720px; }
     .op-pill { display:inline-flex; align-items:center; gap:10px; background:rgba(250,246,238,.14); border:1px solid rgba(196,171,138,.45); backdrop-filter:blur(6px); color:#fff; padding:9px 20px; border-radius:50px; font-size:.76rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; margin:0 0 26px; }
     .op-hero h1 { font-family:'Marcellus',serif; font-weight:400; font-size:3.6rem; color:#fff; line-height:1.1; margin:0 0 18px; }
     .op-hero .tag { font-size:1.08rem; color:rgba(255,255,255,.88); line-height:1.75; max-width:560px; margin:0 auto 34px; }
-    .op-hero .meta { display:flex; gap:22px; justify-content:center; flex-wrap:wrap; margin-top:30px; font-size:.78rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.8); }
+    .op-hero .meta { display:flex; align-items:center; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:30px; font-size:.78rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.8); }
 
-    .op-sec { padding:96px 48px; }
+    .op-sec { padding:100px 48px; background:var(--bg); }
     .op-wrap { max-width:1100px; margin:0 auto; }
     .op-label { font-size:.75rem; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#6e5438; margin:0 0 18px; display:flex; align-items:center; gap:12px; }
     .op-label::before { content:""; width:26px; height:1px; background:#6e5438; display:block; flex-shrink:0; }
-    .op-h2 { font-family:'Marcellus',serif; font-weight:400; font-size:2.4rem; color:var(--ink); line-height:1.2; margin:0; }
+    .op-h2 { font-family:'Marcellus',serif; font-weight:400; font-size:2.5rem; color:var(--ink); line-height:1.2; margin:0; }
+    .op-h2 em { color:var(--accent); }
     .op-rule { width:48px; height:2px; background:#6e5438; margin:24px 0 30px; }
     .op-p { color:var(--soft); line-height:1.85; font-size:.98rem; margin:0 0 16px; }
     .op-split { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:60px; align-items:center; }
     .op-about-pic { position:relative; aspect-ratio:4/5; border-radius:18px; overflow:hidden; background:#e9e0d2; box-shadow:0 20px 50px rgba(44,26,14,.12); }
-    .op-about-pic img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity 1s ease; }
+    .op-about-pic img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; transition:opacity .5s ease; }
+    .op-about-pic { border:1px solid rgba(110,84,56,.22); box-shadow:none; }
+    .op-arrow { position:absolute; top:50%; transform:translateY(-50%); background:rgba(250,246,238,.9); border:1px solid rgba(110,84,56,.3); width:42px; height:42px; border-radius:50%; font-size:1.3rem; color:var(--ink); cursor:pointer; z-index:2; display:flex; align-items:center; justify-content:center; }
+    .op-arrow:hover { background:#fff; }
+    .op-dots { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:2; }
+    .op-dots button { width:10px; height:10px; border-radius:50%; border:2px solid rgba(255,255,255,.85); background:transparent; cursor:pointer; padding:0; }
+    .op-dots button.on { background:rgba(255,255,255,.9); }
 
     .op-pets { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:22px; }
     .op-pet { background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; }
@@ -200,11 +222,15 @@ const premiumProps = {
     .op-chip::before { content:"✓"; color:var(--accent); font-weight:600; }
     .op-card { background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; padding:34px 36px; }
 
-    .op-gal { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
-    .op-gal button { position:relative; border:none; padding:0; border-radius:14px; overflow:hidden; aspect-ratio:4/3; cursor:pointer; background:#e9e0d2; }
+    .op-gal { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; }
+    .op-gal button { position:relative; border:none; padding:0; border-radius:14px; overflow:hidden; aspect-ratio:1; cursor:pointer; background:#e9e0d2; }
+    .op-gal button.op-more { display:none; }
+    .op-gal.all button.op-more { display:block; }
+    .op-show-all { display:inline-flex; align-items:center; margin-top:22px; font-family:'Montserrat',sans-serif; font-size:.76rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); background:none; border:1.5px solid rgba(110,84,56,.35); border-radius:50px; padding:12px 26px; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+    .op-show-all:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
     .op-gal img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
     .op-gal button:hover img { transform:scale(1.04); }
-    .op-gal .op-cap { position:absolute; left:0; right:0; bottom:0; padding:26px 14px 11px; background:linear-gradient(transparent,rgba(20,13,7,.75)); color:#fff; font-size:.82rem; font-weight:600; text-align:left; pointer-events:none; }
+    .op-gal .op-cap { position:absolute; left:0; right:0; bottom:0; padding:26px 16px 14px; background:linear-gradient(transparent,rgba(44,26,14,.78)); color:#fff; font-size:.82rem; font-weight:600; letter-spacing:.04em; text-align:left; pointer-events:none; }
 
     .op-sits { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
     .op-sit { display:flex; flex-direction:column; gap:10px; background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; padding:26px 26px 24px; text-decoration:none; color:inherit; transition:box-shadow .3s, border-color .3s, transform .2s; }
@@ -228,9 +254,21 @@ const premiumProps = {
     .op-lb img { max-width:min(960px,100%); max-height:80vh; object-fit:contain; border-radius:16px; }
     .op-lb button { position:absolute; top:28px; right:32px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(196,171,138,.45); background:rgba(250,246,238,.12); color:#fff; cursor:pointer; font-size:1.2rem; }
 
-    footer.op-foot { background:#2c1a0e; color:rgba(255,255,255,.7); padding:48px 48px 32px; border-top:3px solid var(--accent); }
-    footer.op-foot .bar { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; font-size:.78rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.5); }
-    footer.op-foot a { color:rgba(255,255,255,.7); text-decoration:none; }
+    footer.op-foot { background:var(--ink); color:rgba(255,255,255,.7); padding:0 48px 32px; border-top:3px solid var(--accent); }
+    footer.op-foot .cols { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:56px; padding:64px 0 44px; }
+    footer.op-foot .brand { display:inline-flex; align-items:center; gap:14px; text-decoration:none; line-height:1; font-weight:500; font-size:1.7rem; letter-spacing:.28em; }
+    footer.op-foot .brand img { height:46px; width:46px; }
+    footer.op-foot .brand span { display:flex; flex-direction:column; gap:5px; padding-left:14px; border-left:1px solid rgba(255,255,255,.28); color:#fff; }
+    footer.op-foot .brand small { font-family:'Lato',sans-serif; font-weight:700; font-size:.5rem; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.75); }
+    footer.op-foot h4 { color:#fff; font-size:.76rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; margin:0 0 20px; padding-bottom:14px; border-bottom:1px solid rgba(196,171,138,.28); }
+    footer.op-foot ul { list-style:none; padding:0; margin:0; }
+    footer.op-foot li { margin-bottom:12px; }
+    footer.op-foot a { color:rgba(255,255,255,.62); text-decoration:none; font-size:.92rem; }
+    footer.op-foot a:hover { color:#fff; }
+    footer.op-foot .bar { max-width:1100px; margin:0 auto; border-top:1px solid rgba(255,255,255,.1); padding-top:28px; display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; }
+    footer.op-foot .bar > span:first-child { display:flex; align-items:center; gap:16px; font-size:.78rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.45); }
+    footer.op-foot .bar i { width:4px; height:4px; border-radius:50%; background:rgba(196,171,138,.5); display:block; }
+    footer.op-foot .love { font-size:.82rem; color:rgba(255,255,255,.55); font-style:italic; }
 
     @media (max-width:1000px) {
       .op-top { padding:14px 24px; }
@@ -254,7 +292,13 @@ const premiumProps = {
       .op-form { padding:22px 18px; }
       .op-form .row { grid-template-columns:minmax(0,1fr); }
       .op-card { padding:22px 18px; }
-      footer.op-foot { padding:36px 20px 28px; }
+      footer.op-foot { padding:0 20px 28px; }
+      footer.op-foot .cols { grid-template-columns:minmax(0,1fr); gap:32px; padding:44px 0 32px; }
+      .op-hero .word { font-size:2.7rem; letter-spacing:.16em; margin-bottom:14px; }
+      .op-scroll { display:none; }
+      .op-hero { min-height:70vh; }
+      .op-gal { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .op-gal .op-cap { font-size:.72rem; padding:20px 10px 10px; }
     }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
@@ -291,15 +335,15 @@ const premiumProps = {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>
         Home owner{location ? ' · ' + location : ''}
       </p>
-      <h1>{name}</h1>
+      <h1 class="word">MYAH<br /><em>Home</em></h1>
+      <p class="who">{name}</p>
       {tagline && <p class="tag">{tagline}</p>}
-      <a href="#contact" class="op-btn">Get in touch</a>
+      <a href="#contact" class="op-btn" style="padding:16px 36px;font-size:.82rem">Get in touch</a>
       <div class="meta">
-        {pets.length > 0 && <span>{pets.length} {pets.length === 1 ? 'pet' : 'pets'}</span>}
-        {sitCards.length > 0 && <span>{sitCards.length} open {sitCards.length === 1 ? 'sit' : 'sits'}</span>}
-        {amenities.length > 0 && <span>{amenities.length} amenities</span>}
+        {[pets.length > 0 && `${pets.length} ${pets.length === 1 ? 'pet' : 'pets'}`, sitCards.length > 0 && `${sitCards.length} open ${sitCards.length === 1 ? 'sit' : 'sits'}`, location].filter(Boolean).map((t, i) => <>{i > 0 && <i></i>}<span>{t}</span></>)}
       </div>
     </div>
+    <a href={sections[0] ? '#' + sections[0].id : '#contact'} aria-label="Scroll down" class="op-scroll"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></a>
   </section>
 
   {(bio.length > 0 || about.length > 0) && (
@@ -308,11 +352,16 @@ const premiumProps = {
         {about.length > 0 && (
           <div class="op-about-pic">
             {about.map((a, i) => <img data-about-slide="1" src={a.src} alt={a.alt} style={`opacity:${i === 0 ? 1 : 0}`} />)}
+            {about.length > 1 && <>
+              <button type="button" class="op-arrow" style="left:14px" data-about-prev aria-label="Previous photo">&#8249;</button>
+              <button type="button" class="op-arrow" style="right:14px" data-about-next aria-label="Next photo">&#8250;</button>
+              <div class="op-dots">{about.map((_, i) => <button type="button" class={i === 0 ? 'on' : undefined} data-about-dot={i} aria-label={`Photo ${i + 1}`}></button>)}</div>
+            </>}
           </div>
         )}
         <div>
           <p class="op-label">{head.aboutLabel}</p>
-          <h2 class="op-h2">{head.aboutTitle}</h2>
+          <h2 class="op-h2">{split(head.aboutTitle)[0]}{split(head.aboutTitle)[1] && <>{' — '}<em>{split(head.aboutTitle)[1]}</em></>}</h2>
           <div class="op-rule"></div>
           {bio.length
             ? bio.map((b) => <p class="op-p">{b}</p>)
@@ -323,10 +372,10 @@ const premiumProps = {
   )}
 
   {pets.length > 0 && (
-    <section id="pets" class="op-sec" style="background:#fff">
+    <section id="pets" class="op-sec">
       <div class="op-wrap">
         <p class="op-label">{head.petsLabel}</p>
-        <h2 class="op-h2">{head.petsTitle}</h2>
+        <h2 class="op-h2">{split(head.petsTitle)[0]}{split(head.petsTitle)[1] && <>{' '}<em>{split(head.petsTitle)[1]}</em></>}</h2>
         <div class="op-rule"></div>
         <div class="op-pets">
           {pets.map((x: any) => (
@@ -353,7 +402,7 @@ const premiumProps = {
         {amenities.length > 0 && (
           <div>
             <p class="op-label">The home</p>
-            <h2 class="op-h2">Home amenities</h2>
+            <h2 class="op-h2">Home <em>amenities</em></h2>
             <div class="op-rule"></div>
             <div class="op-chips">{amenities.map((a) => <span class="op-chip">{a}</span>)}</div>
           </div>
@@ -361,7 +410,7 @@ const premiumProps = {
         {lookingFor.length > 0 && (
           <div>
             <p class="op-label">The right sitter</p>
-            <h2 class="op-h2">What we're looking for</h2>
+            <h2 class="op-h2">What we're <em>looking for</em></h2>
             <div class="op-rule"></div>
             <div class="op-card">{lookingFor.map((l) => <p class="op-p">{l}</p>)}</div>
           </div>
@@ -371,16 +420,17 @@ const premiumProps = {
   )}
 
   {gallery.length > 0 && (
-    <section id="photos" class="op-sec" style="background:#fff">
+    <section id="photos" class="op-sec">
       <div class="op-wrap">
         <p class="op-label">{head.galleryLabel}</p>
-        <h2 class="op-h2">{head.galleryTitle}</h2>
+        <h2 class="op-h2">{split(head.galleryTitle)[0]}{split(head.galleryTitle)[1] && <>{' '}<em>{split(head.galleryTitle)[1]}</em></>}</h2>
         <div class="op-rule"></div>
-        <div class="op-gal">
-          {gallery.map((g) => (
-            <button type="button" data-lightbox={g.src} aria-label={g.cap || g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.cap && <span class="op-cap">{g.cap}</span>}</button>
+        <div class="op-gal" data-gal>
+          {gallery.map((g, gi) => (
+            <button type="button" class={gi >= GAL_FIRST ? 'op-more' : undefined} data-lightbox={g.src} aria-label={g.cap || g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.cap && <span class="op-cap">{g.cap}</span>}</button>
           ))}
         </div>
+        {gallery.length > GAL_FIRST && <button type="button" class="op-show-all" data-show-all>Show all {gallery.length} photos</button>}
       </div>
     </section>
   )}
@@ -389,7 +439,7 @@ const premiumProps = {
     <section id="sits" class="op-sec">
       <div class="op-wrap">
         <p class="op-label">Open sits</p>
-        <h2 class="op-h2">Dates {first} needs covered</h2>
+        <h2 class="op-h2">Dates {first} needs <em>covered</em></h2>
         <div class="op-rule"></div>
         <div class="op-sits">
           {sitCards.map((s) => (
@@ -405,11 +455,11 @@ const premiumProps = {
     </section>
   )}
 
-  <section id="contact" class="op-sec" style="background:#fff">
+  <section id="contact" class="op-sec">
     <div class="op-wrap op-split" style="align-items:start">
       <div>
         <p class="op-label">{head.enquiryLabel}</p>
-        <h2 class="op-h2">{head.enquiryTitle}</h2>
+        <h2 class="op-h2">{split(head.enquiryTitle)[0]}{split(head.enquiryTitle)[1] && <>{' '}<em>{split(head.enquiryTitle)[1]}</em></>}</h2>
         <div class="op-rule"></div>
         <p class="op-p">Tell {first} a little about yourself, your experience with pets and the dates you're free.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px">
@@ -448,9 +498,22 @@ const premiumProps = {
   <div class="op-lb" data-lb="1"><button type="button" data-lb-close="1" aria-label="Close">✕</button><img data-lb-img="1" alt="" /></div>
 
   <footer class="op-foot">
+    <div class="cols">
+      <div style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
+        <a href="/" class="brand"><img src="/images/logo-mark-white.png" alt="" /><span>MYAH<small>Make Yourself At Home</small></span></a>
+        <p style="line-height:1.8;font-size:.95rem;margin:0;max-width:340px">{description}</p>
+      </div>
+      <div>
+        <h4>Quick links</h4>
+        <ul>
+          {sections.map((x) => <li><a href={'#' + x.id}>{x.label}</a></li>)}
+          <li><a href="#contact">Get in touch</a></li>
+        </ul>
+      </div>
+    </div>
     <div class="bar">
-      <span>&copy; 2026 MYAH · {name}</span>
-      <span><a href="/listings">Browse sits</a> · <a href="/signup">Join MYAH</a></span>
+      <span><span>&copy; 2026 MYAH</span><i></i><span>{name}</span></span>
+      <span class="love">Made with <span style="font-style:normal">&#9825;</span> for pet lovers everywhere</span>
     </div>
   </footer>
 
@@ -476,7 +539,19 @@ const premiumProps = {
     setInterval(() => { imgs[i].style.opacity = '0'; i = (i + 1) % imgs.length; imgs[i].style.opacity = '1'; }, ms);
   };
   cycle('[data-hero-slide]', 5000);
-  cycle('[data-about-slide]', 4500);
+  // About photos: arrows, dots and a gentle auto-advance (as on sitter pages)
+  const as = qa('[data-about-slide]'), ad = qa('[data-about-dot]');
+  let ai = 0, at;
+  const showA = (n) => { if (!as.length) return; as[ai].style.opacity = '0'; ai = (n + as.length) % as.length; as[ai].style.opacity = '1'; ad.forEach((d, k) => d.classList.toggle('on', k === ai)); };
+  const runA = () => { clearInterval(at); if (as.length > 1) at = setInterval(() => showA(ai + 1), 4500); };
+  q('[data-about-prev]') && q('[data-about-prev]').addEventListener('click', () => { showA(ai - 1); runA(); });
+  q('[data-about-next]') && q('[data-about-next]').addEventListener('click', () => { showA(ai + 1); runA(); });
+  ad.forEach((d) => d.addEventListener('click', () => { showA(+d.getAttribute('data-about-dot')); runA(); }));
+  runA();
+
+  // Gallery: "Show all"
+  const all = q('[data-show-all]');
+  all && all.addEventListener('click', () => { const g = q('[data-gal]'); const open = g.classList.toggle('all'); all.textContent = open ? 'Show fewer' : 'Show all ' + qa('[data-gal] button').length + ' photos'; });
 
   // Smooth scroll past the fixed header
   qa('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
