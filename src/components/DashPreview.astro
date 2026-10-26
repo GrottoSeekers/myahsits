@@ -1,0 +1,24 @@
+---
+// The member's real public page, shown small on a laptop and a phone, so the
+// dashboard always matches what visitors see (Basic or Premium, own colours).
+interface Props { href: string; url: string; edit: string; title?: string }
+const { href, url, edit, title = 'Your page, as visitors see it' } = Astro.props;
+// ?frame=1 hides the owner's own "this is your page" bar inside the preview.
+const src = href + (href.includes('?') ? '&' : '?') + 'frame=1';
+---
+<section class="dp">
+  <div class="dp-head">
+    <div>
+      <span class="dp-lbl">Live preview</span>
+      <h2>{title}</h2>
+    </div>
+    <div class="dp-links"><a href={edit}>Edit page</a><a href={href} target="_blank" rel="noopener">Open ↗</a></div>
+  </div>
+  <div class="dp-stage">
+    <div class="dp-laptop">
+      <div class="dp-bar"><i></i><i></i><i></i><span>{url}</span></div>
+      <div class="dp-screen"><iframe src={src} title="Your page on a laptop" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></div>
+    </div>
+    <div class="dp-phone"><div class="dp-screen"><iframe src={src} title="Your page on a phone" loading="lazy" tabindex="-1" aria-hidden="true"></iframe></div></div>
+  </div>
+</section>

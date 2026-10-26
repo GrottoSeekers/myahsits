@@ -43,6 +43,8 @@ try {
 // Who is looking: the owner themselves, a signed-in sitter, or a visitor.
 const viewer = await getAccount(Astro.request);
 const isMe = !!viewer?.profile && viewer.profile.id === p.id;
+// Shown inside the dashboard preview: leave out the owner's own banner.
+const inFrame = Astro.url.searchParams.has('frame');
 const canMessage = !!viewer?.profile && viewer.side === 'sitter';
 
 const esc = (v: unknown) => String(v ?? '').trim();
@@ -126,7 +128,7 @@ const premiumProps = {
   name, first, location, tagline, badge: esc(p.badge_text),
   hero, about: aboutPics, bio, lookingFor, amenities,
   pets: pets.map((x: any) => ({ name: esc(x.name), line: petLine(x), temperament: esc(x.temperament), needs: esc(x.special_needs), photo: x.photo_url ? local(x.photo_url) : '', initials: initials(esc(x.name)) })),
-  gallery, sits: sitCards, waNum, slug, ownerId: p.id, isMe, canMessage, signedIn: !!viewer,
+  gallery, sits: sitCards, waNum, slug, ownerId: p.id, isMe: isMe && !inFrame, canMessage, signedIn: !!viewer,
   head, theme, description, ogImage: hero[0].src.startsWith('http') ? hero[0].src : '/images/logo-tile.png',
 };
 ---
@@ -517,7 +519,7 @@ const premiumProps = {
     </div>
   </footer>
 
-  {isMe && (
+  {isMe && !inFrame && (
     <div class="op-mine" data-mine="1">
       <span>This is your public page — what sitters see.</span>
       <span style="display:flex;gap:18px"><a href="/owner/profile/edit">Edit your home</a><a href="/owner/dashboard">Dashboard</a></span>

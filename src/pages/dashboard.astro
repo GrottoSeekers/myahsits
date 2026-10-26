@@ -1,6 +1,11 @@
 ---
 export const prerender =
   false;
+import DashHero from '../components/DashHero.astro';
+import DashGlance from '../components/DashGlance.astro';
+import DashPreview from '../components/DashPreview.astro';
+import { PAYMENTS_ENABLED, getBilling } from '../lib/billing';
+import { layoutOf } from '../lib/tier';
 import IdGate from
   './_idgate.astro';
 import {
@@ -436,6 +441,17 @@ const tabs = [
       ? '#2f5d45'
       : 'transparent'),
 }));
+// Dashboard banner and stat cards (founders' page style).
+const dashBilling = PAYMENTS_ENABLED ? await getBilling(session.userId).catch(() => null) : null;
+const design = layoutOf(profile, dashBilling);
+const firstName = String(name || '').split(/\s+&\s+|\s+/)[0] || name;
+const dashPhoto = heroImages[0]?.src ? { src: heroImages[0].src, pos: heroImages[0].pos } : { src: pvHero.src, pos: pvHero.pos };
+const glance = [
+  { n: reviews.length, l: reviews.length === 1 ? 'review' : 'reviews', icon: 'quote', href: '/profile/edit#reviews' },
+  { n: sits.length, l: 'sits to apply for', icon: 'cal', href: '/listings' },
+  { n: gallery.length, l: 'photos on your page', icon: 'photo', href: '/profile/edit#photos' },
+  { n: platforms.length || st.done, l: platforms.length ? 'other profiles' : 'of ' + st.total + ' steps done', icon: 'star', href: '/profile/edit' },
+];
 ---
 
 <!DOCTYPE html>
@@ -463,6 +479,7 @@ const tabs = [
       [data-dash-pad] { padding: 28px 24px 60px !important; }
       [data-dash-grid] { grid-template-columns: minmax(0,1fr) !important; }
       [data-stats] { flex-direction: row !important; }
+      [data-dash-two] { grid-template-columns: minmax(0,1fr) !important; }
     }
 
     .db-nav-link:hover { color:#2f5d45 !important; }
@@ -476,6 +493,7 @@ const tabs = [
     .db-next:hover { transform:translateY(-3px) !important; box-shadow:0 16px 40px rgba(44,26,14,.22) !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <link rel="stylesheet" href="/dash.css" />
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -526,17 +544,10 @@ const tabs = [
       <IdGate profile={acct!.profile} what="apply for sits and message owners" />
 
       <div data-panel="dashboard" style="display:flex;flex-direction:column;gap:24px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:26px">
-          <div>
-            <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 14px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Your dashboard</p>
-            <h1 style="font-family:'Marcellus',serif;font-size:2.3rem;color:#2c1a0e;line-height:1.15;margin:0">Welcome back, <em style="color:#2f5d45;">{name}</em></h1>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <a href="/profile/edit#photos" class="db-pill" style="display:inline-flex;align-items:center;gap:8px;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:50px;padding:11px 20px;transition:background .2s, color .2s, border-color .2s">Add photos</a>
-            <a href="/profile/edit#reviews" class="db-pill" style="display:inline-flex;align-items:center;gap:8px;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:50px;padding:11px 20px;transition:background .2s, color .2s, border-color .2s">Request a review</a>
-            <a href="/profile/edit#headings" class="db-pill" style="display:inline-flex;align-items:center;gap:8px;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:50px;padding:11px 20px;transition:background .2s, color .2s, border-color .2s">Edit colours</a>
-          </div>
-        </div>
+        <DashHero kicker="Your sitter dashboard" first={firstName} photo={dashPhoto} avatar={pic} line={tagline} url={pageUrl} href={publicHref}
+          primary={{ href: '/profile/edit', label: 'Edit your page' }} secondary={{ href: publicHref, label: 'View your page' }}
+          pills={[{ href: '/profile/edit#photos', label: 'Add photos' }, { href: '/profile/edit#reviews', label: 'Request a review' }, { href: '/availability', label: 'Your availability' }, { href: '/profile/edit#page-style', label: 'Page design' }]}
+          pct={st.pct} pctLabel="Page complete" design={design} designHref="/profile/edit#page-style" />
 {nextSit && (
           <a href={nextSit.href} class="db-next" style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:#2c1a0e;border-radius:18px;padding:24px 28px;text-decoration:none;color:#fff;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:transform .3s ease, box-shadow .3s ease">
             {nextSit.pic ? (
@@ -552,34 +563,9 @@ const tabs = [
             <span style="display:inline-flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 26px;white-space:nowrap">Open sit pack</span>
           </a>
         )}
-        <div data-dash-grid="1" style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start">
-          <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;gap:24px;align-items:flex-start;margin-bottom:26px">
-              <img src={pic} alt={name} style="width:84px;height:84px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(110,84,56,.35)" />
-              <div style="min-width:0">
-                <h2 style="font-family:'Marcellus',serif;font-size:1.5rem;color:#2c1a0e;margin:0 0 7px">{name}</h2>
-                <p style="font-size:.92rem;color:#6b4e35;line-height:1.6;margin:0 0 12px">{tagline}</p>
-                <a href={publicHref} style="display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:#2f5d45;font-weight:600;text-decoration:none;letter-spacing:.03em;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px">{pageUrl}</a>
-              </div>
-            </div>
-            <div style="border-top:1px solid rgba(44,26,14,.08);padding-top:24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-              <a href="/profile/edit" class="db-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 28px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">Edit profile</a>
-              <a href={publicHref} class="db-text-link" style="font-size:.78rem;color:#2f5d45;font-weight:600;text-decoration:none;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px;transition:color .2s">View public page</a>
-            </div>
-          </div>
+        <DashGlance items={glance} />
 
-          <div data-stats="1" style="display:flex;flex-direction:column;gap:16px">
-            <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px;text-align:center;flex:1;display:flex;flex-direction:column;gap:7px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-              <span style="font-family:'Marcellus',serif;font-size:2.1rem;color:#6e5438;line-height:1">{reviews.length}</span>
-              <span style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35">Reviews</span>
-            </div>
-            <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px;text-align:center;flex:1;display:flex;flex-direction:column;gap:7px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-              <span style="font-family:'Marcellus',serif;font-size:2.1rem;color:#6e5438;line-height:1">{sits.length}</span>
-              <span style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35">Sits available</span>
-            </div>
-          </div>
-        </div>
-
+        <div data-dash-two="1" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:stretch">
         <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
           <h3 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0 0 8px">Share your profile</h3>
           <p style="font-size:.93rem;color:#6b4e35;margin:0 0 20px;line-height:1.7;max-width:560px">Send this link to pet owners so they can view your full portfolio, reviews, and get in touch.</p>
@@ -606,73 +592,9 @@ const tabs = [
           </div>
         </div>
 
-        <div style="margin-top:32px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:18px">
-            <div>
-              <h2 style="font-family:'Marcellus',serif;font-size:1.7rem;color:#2c1a0e;margin:0 0 6px">Your page preview</h2>
-              <p style="font-size:.92rem;color:#6b4e35;line-height:1.6;margin:0">How your public profile currently looks with your colours applied.</p>
-            </div>
-            <a href="/profile/edit" class="db-text-link" style="font-size:.76rem;font-weight:600;color:#2f5d45;text-decoration:none;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px;transition:color .2s">Edit profile</a>
-          </div>
-          <div style="background:#faf6ee;border-radius:18px;overflow:hidden;box-shadow:0 8px 32px rgba(44,26,14,.12);border:1px solid rgba(44,26,14,.08)">
-            <div style="display:flex;align-items:center;gap:14px;padding:13px 18px;background:#fff;border-bottom:1px solid rgba(44,26,14,.08)">
-              <span style="display:flex;gap:6px;flex-shrink:0">
-                <span style="width:10px;height:10px;border-radius:50%;background:rgba(44,26,14,.14);display:block"></span>
-                <span style="width:10px;height:10px;border-radius:50%;background:rgba(44,26,14,.14);display:block"></span>
-                <span style="width:10px;height:10px;border-radius:50%;background:rgba(44,26,14,.14);display:block"></span>
-              </span>
-              <span style="flex:1;background:#faf6ee;border:1px solid rgba(110,84,56,.25);border-radius:50px;padding:7px 16px;font-size:.74rem;color:#6b4e35;letter-spacing:.02em;display:flex;align-items:center;gap:9px;min-width:0">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0"><rect x="4.5" y="10.5" width="15" height="10" rx="2"></rect><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"></path></svg>
-                {pageUrl}
-              </span>
-            </div>
-            <div style="position:relative;height:230px;overflow:hidden">
-              <img src={pvHero.src} alt="" style={pvHeroStyle} />
-              <div style="position:absolute;inset:0;background:rgba(44,26,14,.55)"></div>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2;text-align:center;padding:16px">
-                <span style="font-size:.58rem;background:rgba(255,255,255,.16);border:1px solid rgba(196,171,138,.4);color:#fff;padding:5px 14px;border-radius:50px;margin-bottom:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">{badge}</span>
-                <p style="font-family:'Montserrat',sans-serif;font-weight:500;letter-spacing:.28em;font-size:1.9rem;color:#fff;line-height:1;margin:0">MYAH</p>
-                <p style="font-size:.72rem;color:rgba(255,255,255,.88);font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin:8px 0 0">{name}</p>
-                <span style="display:inline-block;margin-top:12px;background:#2f5d45;color:#fff;font-size:.58rem;font-weight:600;padding:8px 18px;border-radius:50px;letter-spacing:.1em;text-transform:uppercase">Book us today</span>
-              </div>
-            </div>
-            <div style="padding:22px 26px">
-              <p style="font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 12px">Who we are</p>
-              <div style="display:flex;gap:14px;align-items:flex-start">
-                <img src={pvAbout} alt="" style="width:74px;height:74px;border-radius:10px;object-fit:cover;flex-shrink:0" />
-                <p style="font-size:.74rem;color:#6b4e35;line-height:1.7;margin:0">{aboutText}</p>
-              </div>
-            </div>
-            {pvReviews.length > 0 && (
-              <div style="padding:22px 26px">
-                <p style="font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 12px">What pet owners say</p>
-                <div data-prev-revs="1" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
-                  {pvReviews.map((r) => (
-                    <div style="background:#fff;border:1px solid rgba(110,84,56,.18);border-radius:10px;padding:13px">
-                      <span style="color:#2f5d45;font-size:.55rem;display:block;margin-bottom:6px;letter-spacing:.2em">★★★★★</span>
-                      <p style="font-size:.64rem;color:#6b4e35;line-height:1.6;font-style:italic;margin:0 0 6px">"{r.text}"</p>
-                      <span style="font-size:.56rem;font-weight:700;color:#2f5d45;letter-spacing:.04em">— {r.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {pvGallery.length > 0 && (
-              <div style="padding:22px 26px">
-                <p style="font-size:.58rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 12px">Pets we've loved</p>
-                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px">
-                  {pvGallery.map((g) => (
-                    <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;background:#e9e0d2"><img src={g} alt="" style="width:100%;height:100%;object-fit:cover;display:block" /></div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div style="background:#2c1a0e;padding:16px 26px;display:flex;justify-content:space-between;align-items:center;gap:16px">
-              <p style="font-family:'Marcellus',serif;font-size:.82rem;margin:0"><span style="color:#2f5d45">MYAH</span> </p>
-              <span style="font-size:.6rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase">{name}</span>
-            </div>
-          </div>
         </div>
+
+        <DashPreview href={publicHref} url={pageUrl} edit="/profile/edit" />
       </div>
 
       <div data-panel="sits" style="display:none">
@@ -751,5 +673,6 @@ const tabs = [
   import { initDashboard } from '../scripts/dashboard';
   initDashboard();
 </script>
+<script is:inline src="/dash.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,20 @@
+---
+// Row of stat cards (icon, number that counts up, label), as on the founders' page.
+interface Props { items: { n: string | number; l: string; icon: string; href?: string }[] }
+const { items } = Astro.props;
+const ICON: Record<string, string> = {
+  star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+  quote: '<path d="M5 18v-5.5C5 8.9 7 6.5 10 6v2.4c-1.6.5-2.5 1.8-2.5 3.6H10V18zm9 0v-5.5c0-3.6 2-6 5-6.5v2.4c-1.6.5-2.5 1.8-2.5 3.6H19V18z"/>',
+  paw: '<circle cx="7" cy="9" r="2"/><circle cx="12" cy="6.5" r="2"/><circle cx="17" cy="9" r="2"/><path d="M12 11c-3 0-5.5 3.2-5.5 5.3 0 1.6 1.3 2.2 2.6 2.2 1.1 0 1.9-.5 2.9-.5s1.8.5 2.9.5c1.3 0 2.6-.6 2.6-2.2C17.5 14.2 15 11 12 11z"/>',
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  cal: '<rect x="3.5" y="5.5" width="17" height="15" rx="2.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M3.5 10h17M7 3v3M17 3v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>',
+  photo: '<rect x="3" y="6" width="18" height="14" rx="3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M9 6l1.5-2h3L15 6" fill="none" stroke="#fff" stroke-width="1.8"/>',
+  inbox: '<path d="M4 13l2.5-7h11L20 13v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 13h4.5l1 2h5l1-2H20" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>',
+};
+---
+<div class="dg">
+  {items.map((g) => {
+    const Tag = g.href ? 'a' : 'div';
+    return <Tag class="dg-card" href={g.href}><svg viewBox="0 0 24 24" aria-hidden="true" set:html={ICON[g.icon] || ICON.star}></svg><b data-count={String(g.n)}>{g.n}</b><span>{g.l}</span></Tag>;
+  })}
+</div>
