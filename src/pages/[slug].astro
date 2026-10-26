@@ -18,6 +18,7 @@ import {
   foundersGallery,
 } from '../data/founders';
 import { regionOnly } from '../lib/region';
+import { offSite, privateLabel, scrubOffSite } from '../lib/offsite';
 
 const { slug } =
   Astro.params;
@@ -174,11 +175,11 @@ Callum & Niamh — experienced house and pet sitters.
 `);
 
 const revDef = [
-        { text: 'Super lovely couple who took great care of our cat Rocco! Regular updates, spotless apartment on return. Rocco was extremely happy when we got home.', name: 'Jess & Sam', initials: 'JS', platform: 'TrustedHouseSitters' },
-        { text: "We couldn't have asked for better pet sitters — reliable, trustworthy, and incredibly caring. They left our home spotless and exceeded every expectation.", name: 'Libby', initials: 'L', platform: 'Rover' },
-        { text: "Callum and Niamh have looked after Solomon for four years. They are reliable, trustworthy, and clearly care about his wellbeing. I couldn't recommend them highly enough.", name: 'Thomas James', initials: 'TJ', platform: 'Rover' },
-        { text: 'Came back to a tidy house, a very happy dog and a fridge full of the food we left. Booked them again for the summer before we had even unpacked.', name: 'Angela', initials: 'A', platform: 'TrustedHouseSitters' },
-        { text: 'Daily photos, walks rain or shine, and the garden looked better than when we left. Genuinely the easiest holiday we have had since getting the dogs.', name: 'Deb', initials: 'D', platform: 'Rover' }
+        { text: 'Super lovely couple who took great care of our cat Rocco! Regular updates, spotless apartment on return. Rocco was extremely happy when we got home.', name: 'Jess & Sam', initials: 'JS', platform: 'Private' },
+        { text: "We couldn't have asked for better pet sitters — reliable, trustworthy, and incredibly caring. They left our home spotless and exceeded every expectation.", name: 'Libby', initials: 'L', platform: 'Private' },
+        { text: "Callum and Niamh have looked after Solomon for four years. They are reliable, trustworthy, and clearly care about his wellbeing. I couldn't recommend them highly enough.", name: 'Thomas James', initials: 'TJ', platform: 'Private' },
+        { text: 'Came back to a tidy house, a very happy dog and a fridge full of the food we left. Booked them again for the summer before we had even unpacked.', name: 'Angela', initials: 'A', platform: 'Private' },
+        { text: 'Daily photos, walks rain or shine, and the garden looked better than when we left. Genuinely the easiest holiday we have had since getting the dogs.', name: 'Deb', initials: 'D', platform: 'Private' }
 ];
 
 const galDef = [
@@ -192,33 +193,7 @@ const galDef = [
         { src: 'public/images/solomon-4.jpg', alt: 'Solomon in the snow' }
 ];
 
-const platDef = [
-  {
-    name: 'Rover (UK)',
-    url:
-      'https://www.rover.com' +
-      '/sit/callud53623',
-    description: tx(`
-Our UK profile, with verified reviews from owners across the country.
-`),
-  },
-  {
-    name: tx(`
-TrustedHouseSitters (AU)
-`),
-    url:
-      'https://www.' +
-      'trustedhousesitters' +
-      '.com/house-and-' +
-      'pet-sitters/' +
-      'australia/' +
-      'new-south-wales/' +
-      'sydney/l/6979617/',
-    description: tx(`
-Our Sydney-based profile, covering sits across New South Wales.
-`),
-  },
-];
+const platDef: any[] = [];
 
 // Profile values
 // JSON columns can come
@@ -287,13 +262,13 @@ const nameB =
 // what they have added.
 const F = isFounders;
 const badge =
-  p.badge_text ||
+  scrubOffSite(p.badge_text || '') ||
   (F ? badgeDef : '');
 const tagline =
-  p.tagline ||
+  scrubOffSite(p.tagline || "") ||
   (F ? taglineDef : '');
 const bioSrc: string =
-  p.bio ||
+  scrubOffSite(p.bio || '') ||
   (F ? bioDef : '') ||
   tagline ||
   name + ' has not' +
@@ -370,7 +345,7 @@ const reviews = (isFounders
   )
   : arrOf(
     p.reviews_json,
-  )).map((r: any) => (r && r.platform ? { ...r, platform: regionOnly(String(r.platform)) } : r));
+  )).map((r: any) => (r && r.platform ? { ...r, platform: privateLabel(regionOnly(String(r.platform))) } : r));
 const gallery = (isFounders
   ? foundersGallery
   : arrOf(
@@ -383,7 +358,7 @@ const gallery = (isFounders
 const platforms = list(
   p.platforms_json,
   F ? platDef : [],
-);
+).filter((x: any) => !offSite.test(String(x && x.name || '') + ' ' + String(x && x.url || '')));
 const ownRevs = isFounders
   ? reviews.length
   : arrOf(p.reviews_json)
@@ -616,8 +591,8 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
         <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">Average rating</div>
       </div>
       <div style="padding:34px 26px;text-align:center;border-right:1px solid rgba(196,171,138,.18)">
-        <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">{platCount}</div>
-        <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">Verified platforms</div>
+        <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">{platforms.length ? platCount : '2'}</div>
+        <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">{platforms.length ? 'Verified platforms' : 'Countries'}</div>
       </div>
       <div style="padding:34px 26px;text-align:center">
         <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">30+</div>
@@ -666,7 +641,7 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
       <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">{revCount}{" "}<em style="color:#2f5d45;">five-star reviews.</em></h2>
       <div style="display:flex;align-items:center;gap:14px;margin:24px 0 36px">
         <span style="color:#2f5d45;font-size:1.05rem;letter-spacing:.24em">★★★★★</span>
-        <span style="color:#6b4e35;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">5.0 across all platforms</span>
+        <span style="color:#6b4e35;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">5.0 average rating</span>
       </div>
       <div style="overflow:hidden;margin-bottom:26px">
         <div data-rev-track="1" style="display:flex;gap:24px;transition:transform .45s ease">
