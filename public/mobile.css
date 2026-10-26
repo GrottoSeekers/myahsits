@@ -133,3 +133,46 @@ img, video { max-width: 100%; }
   /* Fixed save bars */
   [data-save-bar], [data-savebar] { padding: 12px 16px !important; }
 }
+
+/* Signed-in header on phones: the account links live behind a menu button,
+   so pages start with the logo row and the Dashboard/Sits/Messages/Profile tabs. */
+[data-acct-toggle] { display: none; }
+@media (max-width: 640px) {
+  [data-topnav] { position: relative; flex-wrap: nowrap !important; }
+  [data-acct-toggle] { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 44px; min-height: 44px; padding: 10px; margin-right: -8px; background: none; border: 0; cursor: pointer; }
+  [data-acct-toggle] span { display: block; width: 22px; height: 2px; border-radius: 2px; background: #2c1a0e; transition: transform .2s, opacity .2s; }
+  .acct-open [data-acct-toggle] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .acct-open [data-acct-toggle] span:nth-child(2) { opacity: 0; }
+  .acct-open [data-acct-toggle] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  [data-topnav] [data-acct-links] { display: none !important; }
+  [data-topnav].acct-open [data-acct-links] {
+    display: flex !important; flex-direction: column !important; align-items: stretch !important; flex-wrap: nowrap !important;
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 60;
+    background: #fff; padding: 6px 16px 12px !important; gap: 0 !important;
+    border-bottom: 1px solid rgba(110,84,56,.2); box-shadow: 0 14px 30px rgba(44,26,14,.12);
+  }
+  [data-topnav].acct-open [data-acct-links] > a { padding: 13px 2px !important; font-size: .8rem !important; border-bottom: 1px solid rgba(44,26,14,.07) !important; }
+  [data-topnav].acct-open [data-acct-links] > a:last-child { border-bottom: 0 !important; }
+}
+
+/* Two choices side by side even on phones (e.g. Solo sitter / Joint couple). */
+@media (max-width: 960px) { [data-keep-two] { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 10px !important; } }
+
+/* Profile type choice (Solo sitter / Joint couple) on Create and Edit profile. */
+.tc-card { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; padding: 18px 44px 18px 18px; text-align: left; font-family: 'Montserrat', sans-serif; color: #2c1a0e; background: #fff; border: 1.5px solid rgba(44,26,14,.14); border-radius: 16px; cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .15s, background .2s; }
+.tc-card:hover { border-color: #2f5d45; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(44,26,14,.08); }
+.tc-card:focus-visible { outline: 2px solid rgba(47,93,69,.45); outline-offset: 2px; }
+.tc-card.on { border-color: #2f5d45; background: linear-gradient(180deg, #f2f7f3 0%, #fff 100%); box-shadow: 0 0 0 3px rgba(47,93,69,.12); }
+.tc-icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f3ece0; color: #6e5438; transition: background .2s, color .2s; }
+.tc-card.on .tc-icon { background: #2f5d45; color: #fff; }
+.tc-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tc-title { font-family: 'Marcellus', serif; font-size: 1.15rem; line-height: 1.2; color: #2c1a0e; }
+.tc-sub { font-size: .78rem; color: #6b4e35; }
+.tc-tick { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid rgba(44,26,14,.22); display: flex; align-items: center; justify-content: center; color: transparent; background: #fff; transition: background .2s, border-color .2s, color .2s; }
+.tc-card.on .tc-tick { background: #2f5d45; border-color: #2f5d45; color: #fff; }
+@media (max-width: 640px) {
+  .tc-card { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 14px 16px; }
+  .tc-icon { width: 40px; height: 40px; }
+  .tc-title { font-size: 1.05rem; }
+}
+@media (prefers-reduced-motion: reduce) { .tc-card { transition: none; } .tc-card:hover { transform: none; } }

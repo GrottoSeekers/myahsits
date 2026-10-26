@@ -20,7 +20,7 @@ UPDATE profiles p SET
   "text": "Callum and Niamh were and are a delightful couple. The house was impeccable on our return and the animals were well looked after. They both went out of their way to come and meet me a few weeks before our departure which put me at absolute ease. Both would be welcomed back anytime.",
   "name": "Janet",
   "initials": "JA",
-  "platform": "TrustedHouseSitters · Kurrajong Heights, NSW · Mar 2026"
+  "platform": "TrustedHouseSitters · Hawkesbury, NSW · Mar 2026"
  },
  {
   "text": "Callum & Niamh were amazing sitters! We came home to happy puppies and they went the extra mile. One of our dogs wasn't feeling well and they took excellent care of everything. I'm so grateful our dogs were in such great hands. The house was spotless and they were a pleasure to talk with!",
@@ -38,13 +38,13 @@ UPDATE profiles p SET
   "text": "Callum and Niamh were just lovely house sitters. We have 4 dogs, a cat, chooks and a big garden. The animals were very well looked after and happy. The house was tidy and sheets washed. I would be very happy to recommend these two lovely people to anyone.",
   "name": "Angela",
   "initials": "AN",
-  "platform": "TrustedHouseSitters · Bowral, NSW · Jan–Feb 2026"
+  "platform": "TrustedHouseSitters · Southern Highlands, NSW · Jan–Feb 2026"
  },
  {
   "text": "Callum and Niamh were amazing. Mali took to them immediately, especially as Mali doesn't usually take to men quickly. They were loving and took great care of him, even taking him for walks in the rain. Our place was left in perfect condition. Mali adored them — so grateful our first experience with a sitter was so perfect!",
   "name": "Elizabeth",
   "initials": "EL",
-  "platform": "TrustedHouseSitters · Faulconbridge, NSW · Jan 2026"
+  "platform": "TrustedHouseSitters · Blue Mountains, NSW · Jan 2026"
  },
  {
   "text": "Niamh and Callum were the perfect house sitters — reliable with fantastic communication. They looked after Zeus and the house impeccably. We're pretty sure Zeus was disappointed when we came home! We wish them all the very best and hope to see them again. Zeus already misses them!",
@@ -56,7 +56,7 @@ UPDATE profiles p SET
   "text": "Our 3 pets loved their time with Callum and Niamh for 2 weeks over Christmas — Scuff is still looking in the spare room to check if his friends have really gone! We appreciated the regular updates and photos, and their due diligence taking Scuff out in the cooler parts of the day during 35–40 degree heat. Would have them back anytime!",
   "name": "Kimberley",
   "initials": "KI",
-  "platform": "TrustedHouseSitters · Joondalup, WA · Dec 2025–Jan 2026"
+  "platform": "TrustedHouseSitters · Perth, WA · Dec 2025–Jan 2026"
  },
  {
   "text": "Callum and his partner looked after our Spaniel whilst we were away for a week — both lovely, very professional but also super friendly. Toby looked very happy and chilled and came home so content! We would absolutely use Callum again in a heartbeat and would highly recommend.",

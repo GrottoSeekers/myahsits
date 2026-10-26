@@ -13,7 +13,8 @@ export const POST: APIRoute = async ({ request }) => {
     const name = (form.get('name') as string | null)?.trim() ?? '';
     const tagline = (form.get('tagline') as string | null)?.trim() || null;
     const badge_text = (form.get('badge_text') as string | null)?.trim() || null;
-    const bio = (form.get('bio') as string | null)?.trim() || null;
+    // Browsers send textarea line breaks as \r\n; store plain \n so paragraphs survive.
+    const bio = (form.get('bio') as string | null)?.replace(/\r\n?/g, '\n').trim() || null;
     const account_type = form.get('account_type') === 'joint' ? 'joint' : 'solo';
     const contact_email = (form.get('contact_email') as string | null)?.trim() || null;
     const whatsapp_number = (form.get('whatsapp_number') as string | null)?.trim() || null;

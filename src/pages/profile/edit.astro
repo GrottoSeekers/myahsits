@@ -254,6 +254,8 @@ const galleryTitlePh =
 const enquiryTitlePh =
   'Book ' +
   (profile.name || 'us');
+// Reviews shown before "Show all" in the Reviews section.
+const REV_FIRST = 6;
 ---
 
 <!DOCTYPE html>
@@ -335,18 +337,18 @@ const enquiryTitlePh =
       <div style="border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:30px;margin-bottom:26px">
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 16px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>MYAH sitter</p>
         <h1 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.15;margin:0 0 18px">Edit your <em style="color:#2f5d45;">profile</em></h1>
-        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Everything here updates your public page. The preview below moves as you type &mdash; change it, look at it, then save at the bottom.</p>
+        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Choose a section to edit. Don&rsquo;t forget to save your changes.</p>
       </div>
 
       <div data-form-msg="1" role="status" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;font-size:.86rem;font-weight:600"></div>
 
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px">
+      <div data-section-tabs="1" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px">
         <a href="#details" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Name &amp; bio</a>
         <a href="#photos" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Photos</a>
         <a href="#reviews" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Reviews</a>
         <a href="#platforms" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Other profiles</a>
         <a href="#headings" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Headings</a>
-        <a href="#preview" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Colours</a>
+        <a href="#preview" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Preview &amp; colours</a>
       </div>
 
       <div data-two-col="1" style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start">
@@ -356,23 +358,24 @@ const enquiryTitlePh =
           <section id="details" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">01</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your name &amp; bio</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 28px;max-width:460px">The basics &mdash; your name, one line under it, and the text pet owners read when they land on your page.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 28px;max-width:460px">Your name, a short line about you, and the story pet owners read first.</p>
 
             <form data-details-form="1" action="/api/profile/update" method="POST" enctype="multipart/form-data">
               <div style="margin-bottom:26px">
                 <span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:12px">Profile type</span>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:420px">
-                  <button type="button" data-type-btn="solo">
-                    <span style="font-size:1.3rem;line-height:1">🧍</span>
-                    <span style="font-size:.85rem;font-weight:600">Solo sitter</span>
-                  </button>
-                  <button type="button" data-type-btn="joint">
-                    <span style="font-size:1.3rem;line-height:1">🧑‍🤝‍🧑</span>
-                    <span style="font-size:.85rem;font-weight:600">Joint / couple</span>
-                  </button>
+                <div data-keep-two="1" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:460px">
+                  <button data-type-btn="solo" class="tc-card" aria-pressed="false" type="button">
+                  <span class="tc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+                  <span class="tc-text"><span class="tc-title">Solo sitter</span><span class="tc-sub">Just me</span></span>
+                  <span class="tc-tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                </button>
+                  <button data-type-btn="joint" class="tc-card" aria-pressed="false" type="button">
+                  <span class="tc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9.5" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.85"></path><path d="M16 3.1a4 4 0 0 1 0 7.75"></path></svg></span>
+                  <span class="tc-text"><span class="tc-title">Joint / couple</span><span class="tc-sub">Two of us</span></span>
+                  <span class="tc-tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+                </button>
                 </div>
                 <input type="hidden" name="account_type" data-type-input="1" value={pvData.type} />
-                <p style="font-size:.82rem;color:#6b4e35;margin:12px 0 0;line-height:1.6">Changes the default wording on your page &mdash; <span data-wording="1"></span></p>
               </div>
 
               <div style="margin-bottom:24px">
@@ -425,6 +428,9 @@ const enquiryTitlePh =
                 <p style="font-size:.82rem;color:#6b4e35;margin:12px 0 0;line-height:1.6">Neither is shown publicly. With a number set, a WhatsApp button appears on your page.</p>
               </div>
             </form>
+            <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
+              <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
+            </div>
           </section>
 
           <section id="photos" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -432,14 +438,14 @@ const enquiryTitlePh =
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 24px"></div>
 
             {photoGroups.map((g) => (
-              <div style={g.last ? 'padding-bottom:26px;' : 'padding-bottom:26px;margin-bottom:26px;border-bottom:1px solid rgba(44,26,14,.07);'}>
+              <div id={g.cat} style={g.last ? 'padding-bottom:26px;' : 'padding-bottom:26px;margin-bottom:26px;border-bottom:1px solid rgba(44,26,14,.07);'}>
                 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px">
                   <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0">{g.title}</p>
                   <span style="font-size:.78rem;color:#6b4e35">{plural(g.images.length)}</span>
                 </div>
-                {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The full-width photos at the top of your page, cycling as a slideshow. Wide landscape shots work best.</p>}
-                {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">A small slideshow next to your About text. You with pets, at a sit, around the house.</p>}
-                {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The grid further down — pets you have looked after, places you have stayed.</p>}
+                {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The big photos at the top of your page. They play as a slideshow, so wide photos look best.</p>}
+                {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">A small slideshow beside your About text. Photos of you with pets work well.</p>}
+                {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">Your photo grid. Show the pets you&rsquo;ve cared for and the places you&rsquo;ve stayed.</p>}
                 <div style="display:flex;flex-wrap:wrap;gap:12px">
                   {g.images.map((img, i) => (
                     <div class="ep-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">
@@ -461,19 +467,22 @@ const enquiryTitlePh =
                 <div class="ep-queue" data-queue-for={g.cat}></div>
               </div>
             ))}
+            <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
+              <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
+            </div>
           </section>
 
           <section id="reviews" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Reviews</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Reviews are written by the pet owners themselves. Generate a link, send it to them, and their words land straight on your page.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Send an owner your review link and what they write goes straight onto your page.</p>
 
-            <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:26px">
+            <div class="ep-rev-list" data-rev-list="1" style="margin-bottom:26px">
               {reviews.map((r, i) => (
-                <div class="ep-row" style="display:flex;gap:18px;align-items:flex-start;background:#faf6ee;border:1px solid rgba(110,84,56,.2);border-radius:14px;padding:20px 22px;transition:border-color .25s ease">
+                <div class={'ep-row ep-rev' + (i >= REV_FIRST ? ' more' : '')} style="display:flex;gap:18px;align-items:flex-start;background:#faf6ee;border:1px solid rgba(110,84,56,.2);border-radius:14px;padding:20px 22px;transition:border-color .25s ease">
                   <div style="flex:1;min-width:0">
-                    <p style="font-size:.94rem;color:#2c1a0e;line-height:1.7;font-style:italic;margin:0 0 8px">&ldquo;{r.text}&rdquo;</p>
-                    <p style="font-size:.8rem;color:#2f5d45;font-weight:600;margin:0">&mdash; {r.name}</p>
+                    <p class="ep-rev-text" title="Tap to read it all" style="font-size:.94rem;color:#2c1a0e;line-height:1.7;font-style:italic;margin:0 0 8px">&ldquo;{r.text}&rdquo;</p>
+                    <p class="ep-rev-name" style="font-size:.8rem;color:#2f5d45;font-weight:600;margin:0">&mdash; {r.name}</p>
                   </div>
                   <form action="/api/profile/reviews" method="POST" style="display:contents">
                     <input type="hidden" name="_action" value="delete" />
@@ -483,6 +492,9 @@ const enquiryTitlePh =
                 </div>
               ))}
             </div>
+{reviews.length > REV_FIRST && (
+            <button type="button" class="ep-ghost ep-rev-all" data-rev-all="1" aria-expanded="false" style="display:inline-flex;align-items:center;gap:9px;font-family:'Montserrat',sans-serif;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;background:#fff;border:1.5px solid rgba(110,84,56,.45);border-radius:50px;padding:12px 26px;cursor:pointer;transition:background .25s ease, border-color .25s ease, transform .15s ease;margin:-12px 0 26px">Show all {reviews.length} reviews</button>
+)}
 
             <div style="background:#faf6ee;border:1px dashed rgba(110,84,56,.45);border-radius:14px;padding:24px 26px">
               <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 14px">Request a review</p>
@@ -494,12 +506,13 @@ const enquiryTitlePh =
                 <button type="submit" class="ep-ghost" style="display:inline-flex;align-items:center;gap:9px;font-family:'Montserrat',sans-serif;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;background:#fff;border:1.5px solid rgba(110,84,56,.45);border-radius:50px;padding:12px 26px;cursor:pointer;transition:background .25s ease, border-color .25s ease, transform .15s ease">Generate review link</button>
               </form>
             </div>
+            <p class="ep-sec-note" style="margin:22px 0 0;padding-top:18px;border-top:1px solid rgba(44,26,14,.07);font-size:.84rem;color:#6b4e35;line-height:1.6">Anything you add or remove here saves straight away.</p>
           </section>
 
           <section id="platforms" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your other profiles</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Sitting sites, socials, anywhere else owners can check you out. These show as cards near the bottom of your page.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Add your other sitting sites or social pages, so owners can check you out.</p>
 
             <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
               {plats.map((p, i) => (
@@ -526,12 +539,13 @@ const enquiryTitlePh =
               </div>
               <button type="submit" class="ep-ghost" style="font-family:'Montserrat',sans-serif;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;background:#fff;border:1.5px solid rgba(110,84,56,.45);border-radius:50px;padding:12px 26px;cursor:pointer;transition:background .25s ease, border-color .25s ease, transform .15s ease">Add site</button>
             </form>
+            <p class="ep-sec-note" style="margin:22px 0 0;padding-top:18px;border-top:1px solid rgba(44,26,14,.07);font-size:.84rem;color:#6b4e35;line-height:1.6">Anything you add or remove here saves straight away.</p>
           </section>
 
           <section id="headings" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">05</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Every section has a small label and a big title. Leave anything blank to keep the wording shown.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Change the titles on your page. Leave a box empty to keep the current wording.</p>
 
             <form data-headings-form="1" action="/api/profile/headings" method="POST" style="margin:0">
               <div style="display:flex;flex-direction:column;gap:26px">
@@ -569,10 +583,12 @@ const enquiryTitlePh =
                 </div>
               </div>
             </form>
+            <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
+              <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
+            </div>
           </section>
 
           <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-            <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
             <a href="/dashboard" class="ep-cancel" style="font-size:.8rem;color:#6b4e35;text-decoration:none;letter-spacing:.1em;text-transform:uppercase;font-weight:600;transition:color .2s">Back to dashboard</a>
           </div>
         </div>
@@ -647,7 +663,7 @@ const enquiryTitlePh =
             </div>
 
             <div style="padding:18px 20px 20px;background:#fff;border-top:1px solid rgba(110,84,56,.2)">
-              <form data-theme-form="1" action="/api/profile/theme" method="POST" style="margin:0">
+              <form id="colours" data-theme-form="1" action="/api/profile/theme" method="POST" style="margin:0">
                 <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:14px">
                   {swatches.map((s) => (
                     <label style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer">
@@ -658,6 +674,9 @@ const enquiryTitlePh =
                 </div>
                 <div style="display:flex;justify-content:center">
                   <button type="button" data-reset="1" class="ep-reset" style="font-family:'Montserrat',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;background:none;border:1.5px solid rgba(44,26,14,.15);border-radius:50px;padding:9px 22px;cursor:pointer;transition:border-color .2s, color .2s">Reset colours</button>
+                </div>
+                <div style="display:flex;justify-content:center;margin-top:14px">
+                  <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
                 </div>
               </form>
             </div>
@@ -699,13 +718,10 @@ const enquiryTitlePh =
     // profile type
     qa('[data-type-btn]').forEach(b => {
       const on = b.getAttribute('data-type-btn') === s.type;
-      b.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;font-family:\'Montserrat\',sans-serif;padding:18px 12px;border-radius:14px;cursor:pointer;transition:background .25s ease, border-color .25s ease, color .25s ease, transform .15s ease;' +
-        (on
-          ? 'background:rgba(110,84,56,.12);border:1.5px solid #2f5d45;color:#2c1a0e;'
-          : 'background:#faf6ee;border:1.5px solid rgba(44,26,14,.14);color:#5c3d20;');
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
     });
     q('[data-type-input]').value = s.type;
-    q('[data-wording]').textContent = joint ? '“Book Us Today”, “Who We Are”.' : '“Book Me Today”, “Who I Am”.';
     const bio = s.bio.trim();
     q('[data-bio-count]').textContent = bio.length + ' characters — around ' + Math.max(1, Math.round(bio.split(/\s+/).length / 200 * 60)) + ' seconds to read.';
 
@@ -921,7 +937,8 @@ const enquiryTitlePh =
       showMsg(errors.join(' '), true);
       render();
     } else {
-      window.location.href = '/profile/edit?saved=1';
+      // A fresh query each time so the page always reloads (a change of #tab alone would not).
+      window.location.href = '/profile/edit?saved=' + Date.now() + (location.hash || '');
     }
   };
   saveBtns.forEach(b => b.addEventListener('click', saveAll));
@@ -972,5 +989,32 @@ const enquiryTitlePh =
     main.insertBefore(box, main.firstChild);
   })();
 </script>
+  <script is:inline src="/section-tabs.js"></script>
+
+  <style is:global>
+    /* Reviews in Edit profile: small cards, two lines each, first few only. */
+    .ep-rev-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .ep-rev { padding:12px 14px !important; gap:10px !important; border-radius:12px !important; }
+    .ep-rev-text { font-size:.82rem !important; line-height:1.5 !important; margin:0 0 4px !important; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
+    .ep-rev.open .ep-rev-text { display:block; -webkit-line-clamp:unset; }
+    .ep-rev-name { font-size:.74rem !important; }
+    .ep-rev .ep-row-x { width:22px !important; height:22px !important; font-size:13px !important; }
+    .ep-rev.more { display:none !important; }
+    .ep-rev-list.all .ep-rev.more { display:flex !important; }
+    @media (max-width:640px) { .ep-rev-list { grid-template-columns:minmax(0,1fr); gap:8px; } }
+  </style>
+  <script is:inline>
+    (function () {
+      document.addEventListener('click', function (e) {
+        var t = e.target.closest && e.target.closest('.ep-rev-text');
+        if (t) { t.closest('.ep-rev').classList.toggle('open'); return; }
+        var b = e.target.closest && e.target.closest('[data-rev-all]');
+        if (!b) return;
+        var list = document.querySelector('[data-rev-list]'); var open = list.classList.toggle('all');
+        b.setAttribute('aria-expanded', String(open));
+        b.textContent = open ? 'Show fewer reviews' : 'Show all ' + list.children.length + ' reviews';
+      });
+    })();
+  </script>
 </body>
 </html>
