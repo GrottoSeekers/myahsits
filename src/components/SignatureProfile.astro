@@ -39,7 +39,7 @@ const glance = [
   { n: p.revCount, l: 'five-star reviews', i: ICON.quote },
   { n: p.rating, l: 'average rating', i: ICON.star },
   ...(p.isFounders ? [{ n: '30+', l: 'pets cared for', i: ICON.paw }] : []),
-  { n: String(p.plats.length || '—'), l: 'verified profiles', i: ICON.shield },
+  ...(p.plats.length ? [{ n: String(p.plats.length), l: 'verified profiles', i: ICON.shield }] : p.isFounders ? [{ n: '2', l: 'countries', i: ICON.shield }] : []),
 ];
 // Running ribbon under the photo.
 const ribbon = [
