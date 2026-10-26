@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, theme_json')
       .eq('user_id', session.userId)
       .single();
 
@@ -28,6 +28,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const theme: Record<string, string> = {};
+    // Keep the page design choice (saved separately).
+    const layout = (profile as any).theme_json?.layout;
+    if (layout) theme.layout = layout;
     for (const key of KEYS) {
       const val = (form.get(key) as string | null)?.trim() ?? '';
       if (val && isValidColour(val)) theme[key] = val;

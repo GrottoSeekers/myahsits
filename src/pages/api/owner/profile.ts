@@ -83,8 +83,10 @@ export const POST: APIRoute = async ({ request }) => {
       amenities_json: arr(data.amenities).map((a) => str(a, 40)).filter(Boolean).slice(0, 40),
     };
 
-    // Theme colours.
+    // Theme colours (the page design choice is kept).
     const theme: Record<string, string> = {};
+    const layout = jsonObj(profile.theme_json).layout;
+    if (layout) theme.layout = layout;
     for (const [k, col] of Object.entries(THEME_KEYS)) {
       const v = str(data.theme?.[k], 7);
       if (HEX.test(v)) theme[col] = v;

@@ -1,0 +1,99 @@
+---
+// "Your page design" card on both edit pages: Basic (the classic one-page
+// layout) or Premium (the founders' page design). Saving posts to
+// /api/profile/layout; see lib/tier.ts for who can pick Premium.
+interface Props {
+  side: 'sitter' | 'owner';
+  current: 'basic' | 'premium';
+  premiumOk: boolean;
+  paymentsOn: boolean;
+  slug: string;
+  num: string;
+}
+const { side, current, premiumOk, paymentsOn, slug, num } = Astro.props;
+const page = side === 'owner' ? 'home page' : 'page';
+const options = [
+  {
+    key: 'basic',
+    name: 'Basic',
+    blurb: side === 'owner'
+      ? 'Our classic layout: banner photos, then your home, pets, photos and open sits on one page.'
+      : 'Our classic layout: banner photos, then About, Reviews, Photos and an enquiry form on one page.',
+  },
+  {
+    key: 'premium',
+    name: 'Premium',
+    blurb: side === 'owner'
+      ? 'Our founders’ design: one full-screen photo, a moving highlights strip, and tabs for your home, pets, photos and sits.'
+      : 'Our founders’ design: one full-screen photo, a moving highlights strip, and tabs for About, Reviews, Photos and Book.',
+  },
+] as const;
+const lbl = 'font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase';
+---
+<section id="page-style" data-card="1" class="pd-card">
+  <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">{num}</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your page design</h2></div>
+  <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
+  <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:520px">
+    How your public {page} looks. The sections below follow the design you choose.
+    {paymentsOn ? ' Premium comes with a Premium membership.' : ' Both are free while MYAH launches; later, Premium comes with a Premium membership.'}
+  </p>
+  <div class="pd-grid">
+    {options.map((o) => (
+      <div class={'pd-opt' + (current === o.key ? ' on' : '')}>
+        <div class={'pd-mock pd-' + o.key} aria-hidden="true">
+          {o.key === 'basic' ? (
+            <>
+              <i class="b-hero"><b></b><b></b></i><i class="b-row"><u></u><s></s></i><i class="b-row"><s></s><s></s><s></s></i><i class="b-row"><s></s><s></s></i>
+            </>
+          ) : (
+            <>
+              <i class="p-hero"><b></b><b></b><em></em></i><i class="p-strip"></i><i class="p-tabs"><s></s><s></s><s></s><s></s></i><i class="p-row"><u></u><s></s></i>
+            </>
+          )}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin:16px 0 6px">
+          <span style={lbl + ';color:#2c1a0e'}>{o.name}</span>
+          {current === o.key && <span class="pd-tag">In use</span>}
+        </div>
+        <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px">{o.blurb}</p>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:auto">
+          {current !== o.key && (o.key === 'basic' || premiumOk) && (
+            <form action="/api/profile/layout" method="POST" style="margin:0">
+              <input type="hidden" name="layout" value={o.key} />
+              <button type="submit" class="pd-btn">Use {o.name}</button>
+            </form>
+          )}
+          {current !== o.key && o.key === 'premium' && !premiumOk && <a class="pd-btn" href="/billing?upgrade=premium">Upgrade to Premium</a>}
+          {slug && <a class="pd-see" href={`/${slug}?layout=${o.key}`} target="_blank" rel="noopener">See it &rarr;</a>}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .pd-card { background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; padding:36px; box-shadow:0 1px 2px rgba(44,26,14,.04); }
+  .pd-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .pd-opt { display:flex; flex-direction:column; border:1.5px solid rgba(110,84,56,.22); border-radius:14px; padding:16px; background:#faf6ee; transition:border-color .2s, box-shadow .2s; }
+  .pd-opt.on { border-color:#2f5d45; box-shadow:0 0 0 1px #2f5d45; background:#fff; }
+  .pd-tag { font-size:.62rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#fff; background:#2f5d45; padding:4px 10px; border-radius:50px; }
+  .pd-btn { display:inline-flex; align-items:center; font-family:'Montserrat',sans-serif; font-size:.72rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:#2f5d45; border:0; border-radius:50px; padding:11px 20px; cursor:pointer; text-decoration:none; }
+  .pd-btn:hover { background:#3e7a5b; color:#fff; }
+  .pd-see { font-size:.72rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#2f5d45; text-decoration:none; }
+  .pd-mock { display:flex; flex-direction:column; gap:5px; height:150px; border-radius:10px; overflow:hidden; background:#fff; border:1px solid rgba(110,84,56,.18); padding:0 0 6px; }
+  .pd-mock i { display:flex; gap:5px; padding:0 8px; }
+  .pd-mock s, .pd-mock u { display:block; flex:1; height:16px; border-radius:3px; background:#e9e0d2; text-decoration:none; }
+  .pd-mock u { flex:.8; height:30px; background:#c4ab8a; }
+  .pd-mock .b-hero { height:56px; padding:0; background:linear-gradient(135deg,#6e5438,#2c1a0e); flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+  .pd-mock .b-hero b { display:block; width:60px; height:5px; border-radius:3px; background:rgba(255,255,255,.8); }
+  .pd-mock .b-hero b + b { width:38px; background:rgba(255,255,255,.5); }
+  .pd-mock .p-hero { position:relative; height:78px; padding:0 0 0 10px; background:linear-gradient(160deg,#8a6a4f,#2c1a0e); flex-direction:column; justify-content:flex-end; gap:4px; padding-bottom:9px; }
+  .pd-mock .p-hero b { display:block; width:70px; height:7px; border-radius:3px; background:rgba(255,255,255,.85); }
+  .pd-mock .p-hero b + b { width:46px; height:4px; background:rgba(255,255,255,.55); }
+  .pd-mock .p-hero em { position:absolute; right:10px; top:10px; width:22px; height:22px; border-radius:50%; border:1.5px dashed rgba(255,255,255,.7); }
+  .pd-mock .p-strip { height:9px; padding:0; background:#2f5d45; margin-top:-5px; }
+  .pd-mock .p-tabs s { height:9px; border-radius:50px; }
+  .pd-mock .p-tabs s:first-child { background:#2f5d45; }
+  @media (max-width:960px) { .pd-card { padding:26px 22px; } }
+  @media (max-width:560px) { .pd-grid { grid-template-columns:minmax(0,1fr); } }
+</style>

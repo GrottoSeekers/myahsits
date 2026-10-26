@@ -23,12 +23,20 @@ export const PAYMENTS_ENABLED = env('PAYMENTS_ENABLED').toLowerCase() === 'true'
 
 export type Interval = 'month' | 'year';
 
-/** Stripe price lookup keys, one per billing interval (the same for sitters
- *  and owners). */
-export const PLANS: Record<Interval, string> = {
-  month: 'myah_monthly',
-  year: 'myah_annual',
+export type Tier = 'basic' | 'premium';
+
+/** Stripe price lookup keys, one per tier and billing interval (the same for
+ *  sitters and owners). Basic is the classic one-page layout; Premium is the
+ *  founders' page design. */
+export const TIER_PLANS: Record<Tier, Record<Interval, string>> = {
+  basic: { month: 'myah_monthly', year: 'myah_annual' },
+  premium: { month: 'myah_premium_monthly', year: 'myah_premium_annual' },
 };
+export const PLANS = TIER_PLANS.basic;
+
+/** Which tier a Stripe lookup key belongs to. */
+export const tierOfPlan = (plan: string | null | undefined): Tier =>
+  String(plan || '').startsWith('myah_premium') ? 'premium' : 'basic';
 
 /** Subscription states that keep a membership open. past_due is the grace
  *  period while Stripe retries a failed card (Smart Retries). */
@@ -111,13 +119,16 @@ export async function syncSubscription(subscriptionId: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-/** The live price for each interval, for showing on /billing. */
-export async function prices(): Promise<Partial<Record<Interval, Stripe.Price>>> {
-  const { data } = await stripe().prices.list({ lookup_keys: [PLANS.month, PLANS.year], active: true });
-  const out: Partial<Record<Interval, Stripe.Price>> = {};
+/** The live price for each tier and interval, for showing on /billing. */
+export async function prices(): Promise<Record<Tier, Partial<Record<Interval, Stripe.Price>>>> {
+  const keys = Object.values(TIER_PLANS).flatMap((t) => [t.month, t.year]);
+  const { data } = await stripe().prices.list({ lookup_keys: keys, active: true });
+  const out: Record<Tier, Partial<Record<Interval, Stripe.Price>>> = { basic: {}, premium: {} };
   for (const p of data) {
-    if (p.lookup_key === PLANS.month) out.month = p;
-    if (p.lookup_key === PLANS.year) out.year = p;
+    for (const tier of ['basic', 'premium'] as Tier[]) {
+      if (p.lookup_key === TIER_PLANS[tier].month) out[tier].month = p;
+      if (p.lookup_key === TIER_PLANS[tier].year) out[tier].year = p;
+    }
   }
   return out;
 }

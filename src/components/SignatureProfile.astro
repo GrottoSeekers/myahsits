@@ -11,6 +11,7 @@ interface Props {
   hero: Pic[]; about: Pic[]; bio: string[]; reviews: any[]; revCount: string; rating: string;
   gallery: Pic[]; plats: any[]; waNum: string; waHref: string; location: string;
   launched: boolean; pageSlug: string; title: string; blurb: string; ogImage: string; isFounders: boolean;
+  joint: boolean; head: Record<string, string>; theme: { bg: string; accent: string; light: string; text: string; soft: string };
 }
 const p = Astro.props;
 // The top three reviews take turns in the large card; the rest sit in the row.
@@ -55,8 +56,16 @@ const cells = p.gallery.length + 3;
 const lastWideD = p.gallery.length > 4 && cells % 4 === 3;
 const lastWideM = p.gallery.length > 4 && cells % 3 === 2;
 const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
+// Headings and colours come from the member's edit page (see [slug].astro).
+// A title is split at " — ": the second half shows in italics.
+const split = (t: string) => {
+  const i = String(t || '').indexOf(' — ');
+  return i < 0 ? [t, ''] : [t.slice(0, i), t.slice(i + 3)];
+};
+const us = p.joint ? 'us' : 'me';
+const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:color-mix(in srgb, ${p.theme.accent} 82%, #fff);--tan:${p.theme.light};--ink:${p.theme.text};--soft:${p.theme.soft}`;
 ---
-<html lang="en">
+<html lang="en" style={themeVars}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -326,7 +335,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 <body>
   <header class="sg-top" data-top>
     <a class="sg-logo" href="/"><img src="/images/logo-mark-white.png" alt="" data-logo /><span>MYAH<small>Make Yourself At Home</small></span></a>
-    <a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a>
+    <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>
   </header>
 
   <section class="sg-hero" data-hero>
@@ -337,8 +346,8 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       <h1 class="sg-name serif">{p.nameA}{p.nameB && <em> &amp;</em>}{p.nameB && <>{' '}{p.nameB.replace(/^&\s*/, '')}</>}</h1>
       {p.tagline && <p class="sg-tag">{p.tagline}</p>}
       <div class="sg-acts">
-        <a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a>
-        {p.waNum && <a class="btn btn-glass sg-wa" href={p.waHref} target="_blank" rel="noopener" aria-label="Message us on WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2A9.7 9.7 0 0 0 3.7 16.9L2.4 21.6l4.8-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.2-.2-.2-.4-.3z"/></svg></a>}
+        <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>
+        {p.waNum && <a class="btn btn-glass sg-wa" href={p.waHref} target="_blank" rel="noopener" aria-label={`Message ${us} on WhatsApp`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2A9.7 9.7 0 0 0 3.7 16.9L2.4 21.6l4.8-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.2-.2-.2-.4-.3z"/></svg></a>}
       </div>
     </div>
     <div class="sg-seal" aria-hidden="true">
@@ -373,8 +382,8 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
           </div>
         )}
         <div>
-          <span class="lbl" style="color:#6e5438;display:block;margin:0 0 12px">Who we are</span>
-          <h2 class="sg-h serif">A home away from home, <em>for you and your pets.</em></h2>
+          <span class="lbl" style="color:#6e5438;display:block;margin:0 0 12px">{p.head.aboutLabel}</span>
+          <h2 class="sg-h serif">{split(p.head.aboutTitle)[0]}{split(p.head.aboutTitle)[1] && <>,{' '}<em>{split(p.head.aboutTitle)[1]}</em></>}</h2>
           <div class="sg-bio" data-bio>{p.bio.map((t) => <p>{t}</p>)}</div>
           <button type="button" class="sg-more" data-bio-more hidden>Read more</button>
           <div class="sg-glance">{glance.map((g) => <div><svg viewBox="0 0 24 24" aria-hidden="true" set:html={g.i}></svg><b data-count={g.n}>{g.n}</b><span>{g.l}</span></div>)}</div>
@@ -385,8 +394,8 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 
     {p.reviews.length > 0 && (
       <section class="sg-panel" id="reviews" role="tabpanel" hidden>
-        <span class="lbl">What pet owners say</span>
-        <h2 class="sg-h serif">{p.revCount}{' '}<em>five-star reviews</em></h2>
+        <span class="lbl">{p.head.reviewsLabel}</span>
+        <h2 class="sg-h serif">{split(p.head.reviewsTitle)[0]}{split(p.head.reviewsTitle)[1] && <>{' '}<em>{split(p.head.reviewsTitle)[1]}</em></>}</h2>
         <div class="sg-feature" data-feature>
           <span class="star">★★★★★</span>
           <div class="slides">
@@ -413,20 +422,20 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 
     {p.gallery.length > 0 && (
       <section class="sg-panel" id="photos" role="tabpanel" hidden>
-        <span class="lbl">Pets we've loved</span>
-        <h2 class="sg-h serif">Our <em>sits</em></h2>
-        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.alt && <span class="cap" aria-hidden="true"><b>{shortCap(g)}</b></span>}</button>)}</div>
+        <span class="lbl">{p.head.galleryLabel}</span>
+        <h2 class="sg-h serif">{split(p.head.galleryTitle)[0]}{split(p.head.galleryTitle)[1] && <>{' '}<em>{split(p.head.galleryTitle)[1]}</em></>}</h2>
+        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{(g.cap || g.alt) && <span class="cap" aria-hidden="true"><b>{shortCap(g)}</b></span>}</button>)}</div>
       </section>
     )}
 
     <section class="sg-panel" id="book" role="tabpanel" hidden>
       <div class="sg-book">
         <div>
-          <span class="lbl" style="color:#6e5438;display:block;margin:0 0 12px">Get in touch</span>
-          <h2 class="sg-h serif">Book {p.nameA}{p.nameB && <>{' '}<em>{p.nameB}</em></>}</h2>
+          <span class="lbl" style="color:#6e5438;display:block;margin:0 0 12px">{p.head.enquiryLabel}</span>
+          <h2 class="sg-h serif">{split(p.head.enquiryTitle)[0]}{split(p.head.enquiryTitle)[1] && <>{' '}<em>{split(p.head.enquiryTitle)[1]}</em></>}</h2>
           <ul class="sg-promise">
-            <li>We reply within 24 hours</li>
-            <li>Meet us before the sit, in person or on a call</li>
+            <li>{p.joint ? 'We reply' : 'I reply'} within 24 hours</li>
+            <li>Meet {us} before the sit, in person or on a call</li>
             <li>Daily photo updates while you're away</li>
           </ul>
           {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Message on WhatsApp</a>}
@@ -452,10 +461,10 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 
   <footer class="sg-foot"><div class="in"><span>&copy; 2026 MYAH · {p.name}</span><span><a href="/">MYAH</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span></div></footer>
 
-  <div class="sg-bar" data-bar><span>{p.name}<small>★ {p.rating} · replies within 24h</small></span><a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a></div>
+  <div class="sg-bar" data-bar><span>{p.name}<small>★ {p.rating} · replies within 24h</small></span><a class="btn btn-main" href="#book" data-open="book">Book {us}</a></div>
   <div class="sg-lb" data-lb><button type="button" aria-label="Close" data-lb-close>✕</button><img alt="" data-lb-img /></div>
 
-  <script is:inline define:vars={{ pageSlug: p.pageSlug }}>
+  <script is:inline define:vars={{ pageSlug: p.pageSlug, sentMsg: p.joint ? "Enquiry sent. We'll be in touch soon." : "Enquiry sent. I'll be in touch soon." }}>
   (() => {
     const q = s => document.querySelector(s), qa = s => Array.from(document.querySelectorAll(s));
     // tabs: one panel at a time
@@ -594,7 +603,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       if (form.hasAttribute('data-go')) { navigator.sendBeacon('/api/enquiry', fd); window.location.href = form.getAttribute('data-go'); return; }
       status.textContent = 'Sending…';
       fetch('/api/enquiry', { method: 'POST', body: fd }).then(r => r.json().catch(() => ({})).then(j => ({ ok: r.ok, j })))
-        .then(({ ok, j }) => { status.textContent = ok ? "Enquiry sent. We'll be in touch soon." : (j.error || 'That did not send. Please try again.'); if (ok) form.reset(); })
+        .then(({ ok, j }) => { status.textContent = ok ? sentMsg : (j.error || 'That did not send. Please try again.'); if (ok) form.reset(); })
         .catch(() => { status.textContent = 'That did not send. Please try again.'; });
     });
   })();

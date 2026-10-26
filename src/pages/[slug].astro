@@ -19,6 +19,10 @@ import {
 } from '../data/founders';
 import { regionOnly } from '../lib/region';
 import { offSite, privateLabel, scrubOffSite } from '../lib/offsite';
+import { getAccount } from '../lib/account';
+import { getBilling, PAYMENTS_ENABLED } from '../lib/billing';
+import { jsonObj } from '../lib/db';
+import { layoutOf } from '../lib/tier';
 
 const { slug } =
   Astro.params;
@@ -435,15 +439,59 @@ const title =
   name + ' — MYAH';
 // Photos shown before "Show all" (keeps the page short).
 const GAL_FIRST = 6;
-// The founders' page uses the 'Signature' design (owner, 26 Oct 2026).
-// ?layout=classic shows the previous design for comparison.
-const SIGNATURE = isFounders && Astro.url.searchParams.get('layout') !== 'classic';
-const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioParas, reviews, revCount, rating, gallery, plats, waNum, waHref, location, launched: LAUNCHED, pageSlug, title, blurb, ogImage, isFounders };
+// Page design: Basic is the classic layout below, Premium the 'Signature'
+// design (the founders' page, owner 26 Oct 2026). The founders always get
+// Premium; everyone else gets what they picked on their edit page (Premium
+// needs a Premium membership once payments are on, see lib/tier.ts).
+// ?layout=basic|premium lets the page's own member preview either design;
+// ?layout=classic still shows the founders' old page.
+const want = Astro.url.searchParams.get('layout');
+let SIGNATURE = isFounders
+  ? want !== 'classic'
+  : layoutOf(p, PAYMENTS_ENABLED ? await getBilling(p.user_id).catch(() => null) : null) === 'premium';
+if (!isFounders && (want === 'basic' || want === 'premium')) {
+  const viewer = await getAccount(Astro.request).catch(() => null);
+  if (viewer?.profile?.id === p.id) SIGNATURE = want === 'premium';
+}
+// "We" for couples, "I" for solo sitters, in the wording the member can't edit.
+const joint = !!nameB || p.account_type === 'joint';
+// Section headings from the edit page; blank keeps these defaults. A title is
+// split at " — " so the second half shows in italics.
+const hj = jsonObj(p.headings_json);
+const hv = (k: string, d: string) => String(hj[k] || '').trim() || d;
+const head = {
+  aboutLabel: hv('about_label', joint ? 'Who we are' : 'Who I am'),
+  aboutTitle: hv('about_title', 'A home away from home — for you and your pets.'),
+  reviewsLabel: hv('reviews_label', 'What pet owners say'),
+  reviewsTitle: hv('reviews_title', revCount + ' — five-star reviews'),
+  galleryLabel: hv('gallery_label', joint ? "Pets we've loved" : "Pets I've loved"),
+  galleryTitle: hv('gallery_title', joint ? 'Our — sits' : 'My — sits'),
+  platformsLabel: hv('platforms_label', joint ? 'Find us online' : 'Find me online'),
+  platformsTitle: hv('platforms_title', 'Verified profiles'),
+  enquiryLabel: hv('enquiry_label', 'Get in touch'),
+  enquiryTitle: hv('enquiry_title', 'Book ' + nameA + (nameB ? ' — ' + nameB.replace(/^&\s*/, '& ') : '')),
+};
+const split = (t: string) => {
+  const i = t.indexOf(' — ');
+  return i < 0 ? [t, ''] : [t.slice(0, i), t.slice(i + 3)];
+};
+// Colours from the edit page (defaults are MYAH's own).
+const tj = jsonObj(p.theme_json);
+const hex = (v: unknown, d: string) => (/^#[0-9a-fA-F]{6}$/.test(String(v)) ? String(v) : d);
+const theme = {
+  bg: hex(tj.background, '#faf6ee'),
+  accent: hex(tj.accent, '#2f5d45'),
+  light: hex(tj.accent_light, '#c4ab8a'),
+  text: hex(tj.text, '#2c1a0e'),
+  soft: hex(tj.text_soft, '#6b4e35'),
+};
+const themeVars = `--bg:${theme.bg};--ac:${theme.accent};--hl:${theme.light};--tx:${theme.text};--tx2:${theme.soft}`;
+const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioParas, reviews, revCount, rating, gallery, plats, waNum, waHref, location, launched: LAUNCHED, pageSlug, title, blurb, ogImage, isFounders, joint, head, theme };
 ---
 
 <!doctype html>
 {SIGNATURE ? <SignatureProfile {...sigProps} /> : (
-<html lang="en">
+<html lang="en" style={themeVars}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -463,28 +511,28 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   <meta property="og:url" content={'https://www.myahsits.com' + Astro.url.pathname} />
   <meta property="og:site_name" content="MYAH" />
   <style is:global>
-    body { margin:0; background:#faf6ee; color:#2c1a0e; font-family:"Montserrat",sans-serif; overflow-x:hidden; }
+    body { margin:0; background:var(--bg); color:var(--tx); font-family:"Montserrat",sans-serif; overflow-x:hidden; }
     * { box-sizing:border-box; }
-    a { color:#2f5d45; }
-    a:hover { color:#2c1a0e; }
+    a { color:var(--ac); }
+    a:hover { color:var(--tx); }
     input::placeholder, textarea::placeholder { color:rgba(44,26,14,.35); }
     @keyframes gs-ring { to { transform:rotate(360deg); } }
     @keyframes gs-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
 
-    .sp-nav-link:hover { color:#2f5d45 !important; }
+    .sp-nav-link:hover { color:var(--ac) !important; }
     .sp-btn:hover { background:#3e7a5b !important; border-color:#3e7a5b !important; transform:translateY(-2px) !important; box-shadow:0 12px 28px rgba(110,84,56,.36) !important; color:#fff !important; }
     .sp-btn:active { transform:translateY(0) scale(.98) !important; }
     .sp-scroll:hover { background:rgba(250,246,238,.25) !important; transform:translateX(-50%) translateY(3px) !important; color:#fff !important; }
     .sp-about-btn:hover { background:#fff !important; }
     .sp-rev-card:hover { box-shadow:0 10px 34px rgba(44,26,14,.08) !important; border-color:rgba(110,84,56,.4) !important; }
-    .sp-rev-btn:hover { background:#2f5d45 !important; color:#fff !important; border-color:#2f5d45 !important; }
+    .sp-rev-btn:hover { background:var(--ac) !important; color:#fff !important; border-color:var(--ac) !important; }
     .sp-gal-cap:hover { opacity:1 !important; }
     .sp-plat:hover { transform:translateY(-6px) !important; box-shadow:0 20px 50px rgba(44,26,14,.1) !important; border-color:rgba(110,84,56,.45) !important; }
     .sp-wa:hover { background:#1ebe5d !important; transform:translateY(-2px) !important; color:#fff !important; }
     .sp-wa:active { transform:translateY(0) scale(.98) !important; }
-    .sp-field:focus { border-color:#2f5d45 !important; box-shadow:0 0 0 3px rgba(110,84,56,.15) !important; }
+    .sp-field:focus { border-color:var(--ac) !important; box-shadow:0 0 0 3px rgba(110,84,56,.15) !important; }
     .sp-lb-close:hover { background:rgba(250,246,238,.25) !important; }
-    .sp-foot-link:hover { color:#c4ab8a !important; }
+    .sp-foot-link:hover { color:var(--hl) !important; }
 
     @media (max-width: 1000px) {
       [data-header-nav] { display: none !important; }
@@ -513,12 +561,12 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   <link rel="stylesheet" href="/mobile.css" />
 </head>
 <body>
-<div style="background:#faf6ee">
+<div style="background:var(--bg)">
 
   <div data-loader="1" aria-hidden="true" style="position:fixed;inset:0;z-index:9999;background:rgba(250,246,238,.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease">
     <div style="position:relative;width:132px;height:132px;display:flex;align-items:center;justify-content:center">
       <div style="position:absolute;inset:0;border-radius:50%;border:3px solid rgba(110,84,56,.18)"></div>
-      <div style="position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:#2f5d45;border-right-color:rgba(110,84,56,.45);animation:gs-ring 1s linear infinite"></div>
+      <div style="position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--ac);border-right-color:rgba(110,84,56,.45);animation:gs-ring 1s linear infinite"></div>
       <img src="/images/logo-mark.png" alt="" style="width:74px;height:74px;object-fit:contain;animation:gs-pulse 1.8s ease-in-out infinite" />
     </div>
   </div>
@@ -526,7 +574,7 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   <header data-topbar="1" style="position:fixed;top:0;left:0;right:0;z-index:210;padding:16px 48px;display:flex;justify-content:space-between;align-items:center;gap:40px;background:rgba(250,246,238,.97);backdrop-filter:blur(12px);box-shadow:0 1px 0 rgba(110,84,56,.2)">
     <a href="/" style="display:inline-flex;align-items:center;gap:14px;text-decoration:none;line-height:1;margin-left:-4px;font-family:'Montserrat',sans-serif;font-weight:500;font-size:1.4rem;flex-shrink:0;letter-spacing:.28em">
       <img src="/images/logo-mark.png" alt="" style="height:46px;width:46px;display:block;object-fit:contain" />
-      <span style="display:flex;flex-direction:column;gap:5px;padding-left:14px;border-left:1px solid rgba(110,84,56,.4)"><span style="color:#2f5d45;line-height:1">MYAH</span><span style="font-family:'Lato',sans-serif;font-weight:700;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:#8a6a4f;line-height:1">Make Yourself At Home</span></span>
+      <span style="display:flex;flex-direction:column;gap:5px;padding-left:14px;border-left:1px solid rgba(110,84,56,.4)"><span style="color:var(--ac);line-height:1">MYAH</span><span style="font-family:'Lato',sans-serif;font-weight:700;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:#8a6a4f;line-height:1">Make Yourself At Home</span></span>
     </a>
     <nav data-header-nav="1" style="display:flex;align-items:center;gap:30px;flex-wrap:nowrap">
       <a href="#about" class="sp-nav-link" style="font-size:.8rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;white-space:nowrap;transition:color .2s">About</a>
@@ -541,12 +589,12 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
 ) : (
       <a href="#launch" class="sp-nav-link" style="font-size:.8rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;white-space:nowrap;transition:color .2s">Launching soon</a>
 )}
-      <a href="#enquiry" class="sp-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 28px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(44,26,14,.18);transition:background .2s, border-color .2s, transform .12s">Book us today</a>
+      <a href="#enquiry" class="sp-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:var(--ac);border:1.5px solid var(--ac);border-radius:50px;padding:13px 28px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(44,26,14,.18);transition:background .2s, border-color .2s, transform .12s">Book us today</a>
     </nav>
   </header>
 
   <section data-hero="1" style="min-height:78vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:140px 48px 80px;text-align:center">
-    <div style="position:absolute;inset:0;z-index:0;background:#2c1a0e">
+    <div style="position:absolute;inset:0;z-index:0;background:var(--tx)">
       {hero.map((h, i) => (
         <img data-hero-slide="1" src={h.src} alt="" style={`position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${h.pos};opacity:${i === 0 ? 1 : 0};transition:opacity 1.2s ease`} />
       ))}
@@ -556,15 +604,15 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
 {badge && (
       <p style="display:inline-flex;align-items:center;gap:10px;background:rgba(250,246,238,.14);border:1px solid rgba(196,171,138,.45);backdrop-filter:blur(6px);color:#fff;padding:9px 20px;border-radius:50px;font-size:.76rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin:0 0 26px">{badge}</p>
 )}
-      <h1 data-hero-title="1" style="font-family:'Montserrat',sans-serif;font-weight:500;letter-spacing:.28em;font-size:4.6rem;color:#fff;line-height:1;margin:0 0 18px">MYAH<br /><em style="color:#c4ab8a;">Sitters</em></h1>
+      <h1 data-hero-title="1" style="font-family:'Montserrat',sans-serif;font-weight:500;letter-spacing:.28em;font-size:4.6rem;color:#fff;line-height:1;margin:0 0 18px">MYAH<br /><em style="color:var(--hl);">Sitters</em></h1>
       <p style="font-size:1.1rem;color:#fff;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin:0 0 18px">{name}</p>
 {tagline && (
       <p style="font-size:1.08rem;color:rgba(255,255,255,.85);line-height:1.75;max-width:540px;margin:0 auto 36px">{tagline}</p>
 )}
-      <a href="#enquiry" class="sp-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:16px 36px;cursor:pointer;box-shadow:0 8px 26px rgba(44,26,14,.3);transition:background .2s, border-color .2s, transform .12s">Book us today</a>
+      <a href="#enquiry" class="sp-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:var(--ac);border:1.5px solid var(--ac);border-radius:50px;padding:16px 36px;cursor:pointer;box-shadow:0 8px 26px rgba(44,26,14,.3);transition:background .2s, border-color .2s, transform .12s">Book us today</a>
       <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin:34px 0 0;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.72)">
 {hasRevs && (
-        <span style="display:flex;align-items:center;gap:8px"><span style="color:#c4ab8a;letter-spacing:.2em">★★★★★</span>{rating} rating</span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="color:var(--hl);letter-spacing:.2em">★★★★★</span>{rating} rating</span>
         <span style="width:5px;height:5px;border-radius:50%;background:rgba(196,171,138,.6)"></span>
         <span>{revCount} reviews</span>
 )}
@@ -580,29 +628,29 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   </section>
 
 {showStats && (
-  <section style="background:#2c1a0e;padding:0 48px" data-sec="1">
+  <section style="background:var(--tx);padding:0 48px" data-sec="1">
     <div data-stats="1" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-left:1px solid rgba(196,171,138,.18);border-right:1px solid rgba(196,171,138,.18)">
       <div style="padding:34px 26px;text-align:center;border-right:1px solid rgba(196,171,138,.18)">
-        <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">{revCount}</div>
+        <div style="font-family:'Marcellus',serif;font-size:2rem;color:var(--hl);line-height:1">{revCount}</div>
         <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">Five-star reviews</div>
       </div>
       <div style="padding:34px 26px;text-align:center;border-right:1px solid rgba(196,171,138,.18)">
-        <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">{rating}</div>
+        <div style="font-family:'Marcellus',serif;font-size:2rem;color:var(--hl);line-height:1">{rating}</div>
         <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">Average rating</div>
       </div>
       <div style="padding:34px 26px;text-align:center;border-right:1px solid rgba(196,171,138,.18)">
-        <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">{platforms.length ? platCount : '2'}</div>
+        <div style="font-family:'Marcellus',serif;font-size:2rem;color:var(--hl);line-height:1">{platforms.length ? platCount : '2'}</div>
         <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">{platforms.length ? 'Verified platforms' : 'Countries'}</div>
       </div>
       <div style="padding:34px 26px;text-align:center">
-        <div style="font-family:'Marcellus',serif;font-size:2rem;color:#c4ab8a;line-height:1">30+</div>
+        <div style="font-family:'Marcellus',serif;font-size:2rem;color:var(--hl);line-height:1">30+</div>
         <div style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px">Pets cared for</div>
       </div>
     </div>
   </section>
 )}
 
-  <section id="about" data-sec="1" style="padding:100px 48px;background:#faf6ee">
+  <section id="about" data-sec="1" style="padding:100px 48px;background:var(--bg)">
     <div data-split="1" style={`max-width:1100px;margin:0 auto;display:grid;grid-template-columns:${about.length ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,1fr)'};gap:60px;align-items:center`}>
 {about.length > 0 && (
       <div style="position:relative;width:100%;aspect-ratio:4/5;border-radius:18px;overflow:hidden;background:#e9e0d2;border:1px solid rgba(110,84,56,.22)">
@@ -610,8 +658,8 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
           <img data-about-slide="1" src={a.src} alt={a.alt} style={`position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:${i === 0 ? 1 : 0};transition:opacity .5s ease`} />
         ))}
 {about.length > 1 && (
-        <button data-about-prev="1" aria-label="Previous photo" class="sp-about-btn" style="position:absolute;top:50%;left:14px;transform:translateY(-50%);background:rgba(250,246,238,.9);border:1px solid rgba(110,84,56,.3);width:42px;height:42px;border-radius:50%;font-size:1.3rem;color:#2c1a0e;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;transition:background .2s">&#8249;</button>
-        <button data-about-next="1" aria-label="Next photo" class="sp-about-btn" style="position:absolute;top:50%;right:14px;transform:translateY(-50%);background:rgba(250,246,238,.9);border:1px solid rgba(110,84,56,.3);width:42px;height:42px;border-radius:50%;font-size:1.3rem;color:#2c1a0e;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;transition:background .2s">&#8250;</button>
+        <button data-about-prev="1" aria-label="Previous photo" class="sp-about-btn" style="position:absolute;top:50%;left:14px;transform:translateY(-50%);background:rgba(250,246,238,.9);border:1px solid rgba(110,84,56,.3);width:42px;height:42px;border-radius:50%;font-size:1.3rem;color:var(--tx);cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;transition:background .2s">&#8249;</button>
+        <button data-about-next="1" aria-label="Next photo" class="sp-about-btn" style="position:absolute;top:50%;right:14px;transform:translateY(-50%);background:rgba(250,246,238,.9);border:1px solid rgba(110,84,56,.3);width:42px;height:42px;border-radius:50%;font-size:1.3rem;color:var(--tx);cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;transition:background .2s">&#8250;</button>
 )}
         <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2">
           {about.map((_, i) => (
@@ -621,12 +669,12 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
       </div>
 )}
       <div>
-        <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Who we are</p>
-        <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">A home away from home — <em style="color:#2f5d45;">for you and your pets.</em></h2>
+        <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>{head.aboutLabel}</p>
+        <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:var(--tx);line-height:1.2;margin:0">{split(head.aboutTitle)[0]}{split(head.aboutTitle)[1] && <>{' — '}<em style="color:var(--ac);">{split(head.aboutTitle)[1]}</em></>}</h2>
         <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 26px"></div>
         <div data-bio="1">
         {bio.map((b) => (
-          <p style={`color:#6b4e35;line-height:1.85;margin:${b.m};font-size:.98rem`}>{b.t}</p>
+          <p style={`color:var(--tx2);line-height:1.85;margin:${b.m};font-size:.98rem`}>{b.t}</p>
         ))}
         </div>
         <button type="button" class="sp-read-more" data-read-more="1" hidden>Read more</button>
@@ -635,25 +683,25 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   </section>
 
 {hasRevs && (
-  <section id="reviews" data-sec="1" style="padding:100px 48px;background:#faf6ee">
+  <section id="reviews" data-sec="1" style="padding:100px 48px;background:var(--bg)">
     <div style="max-width:1100px;margin:0 auto">
-      <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>What pet owners say</p>
-      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">{revCount}{" "}<em style="color:#2f5d45;">five-star reviews.</em></h2>
+      <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>{head.reviewsLabel}</p>
+      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:var(--tx);line-height:1.2;margin:0">{split(head.reviewsTitle)[0]}{split(head.reviewsTitle)[1] && <>{' '}<em style="color:var(--ac);">{split(head.reviewsTitle)[1]}</em></>}</h2>
       <div style="display:flex;align-items:center;gap:14px;margin:24px 0 36px">
-        <span style="color:#2f5d45;font-size:1.05rem;letter-spacing:.24em">★★★★★</span>
-        <span style="color:#6b4e35;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">5.0 average rating</span>
+        <span style="color:var(--ac);font-size:1.05rem;letter-spacing:.24em">★★★★★</span>
+        <span style="color:var(--tx2);font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">5.0 average rating</span>
       </div>
       <div style="overflow:hidden;margin-bottom:26px">
         <div data-rev-track="1" style="display:flex;gap:24px;transition:transform .45s ease">
           {reviews.map((r: any) => (
             <div data-rev-card="1" class="sp-rev-card" style="min-width:330px;max-width:330px;flex-shrink:0;background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:30px 28px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-              <div style="color:#2f5d45;font-size:.85rem;letter-spacing:.3em">★★★★★</div>
-              <p style="color:#6b4e35;font-size:.92rem;line-height:1.8;margin:0;font-style:italic">"{r.text}"</p>
+              <div style="color:var(--ac);font-size:.85rem;letter-spacing:.3em">★★★★★</div>
+              <p style="color:var(--tx2);font-size:.92rem;line-height:1.8;margin:0;font-style:italic">"{r.text}"</p>
               <div style="display:flex;align-items:center;gap:13px;margin-top:auto;padding-top:18px;border-top:1px solid rgba(44,26,14,.08)">
-                <span style="width:42px;height:42px;border-radius:50%;background:#2f5d45;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:600;flex-shrink:0;letter-spacing:.04em">{r.initials}</span>
+                <span style="width:42px;height:42px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:600;flex-shrink:0;letter-spacing:.04em">{r.initials}</span>
                 <div style="min-width:0">
-                  <div style="font-weight:600;color:#2c1a0e;font-size:.92rem">{r.name}</div>
-                  <div style="color:#6b4e35;font-size:.78rem;letter-spacing:.04em">{r.platform}</div>
+                  <div style="font-weight:600;color:var(--tx);font-size:.92rem">{r.name}</div>
+                  <div style="color:var(--tx2);font-size:.78rem;letter-spacing:.04em">{r.platform}</div>
                 </div>
               </div>
             </div>
@@ -670,16 +718,16 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
 )}
 
 {gallery.length > 0 && (
-  <section id="gallery" data-sec="1" style="padding:100px 48px;background:#faf6ee">
+  <section id="gallery" data-sec="1" style="padding:100px 48px;background:var(--bg)">
     <div style="max-width:1100px;margin:0 auto">
-      <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Pets we've loved</p>
-      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">Our sits</h2>
+      <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>{head.galleryLabel}</p>
+      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:var(--tx);line-height:1.2;margin:0">{split(head.galleryTitle)[0]}{split(head.galleryTitle)[1] && <>{' '}<em style="color:var(--ac);">{split(head.galleryTitle)[1]}</em></>}</h2>
       <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 36px"></div>
       <div data-gal="1" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px">
         {gallery.map((g, gi) => (
           <button type="button" class={gi >= GAL_FIRST ? 'sp-more' : undefined} data-lightbox={g.src} data-lightbox-alt={g.alt} style="position:relative;border:none;padding:0;border-radius:14px;overflow:hidden;aspect-ratio:1;background:#e9e0d2;cursor:pointer;display:block;width:100%">
             <img src={g.src} alt={g.alt} style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease" />
-            <span class="sp-gal-cap" style="position:absolute;inset:0;background:linear-gradient(to top, rgba(44,26,14,.78) 0%, transparent 60%);opacity:0;transition:opacity .3s ease;display:flex;align-items:flex-end;padding:16px;font-family:'Montserrat',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.04em;color:#fff;text-align:left">{g.alt}</span>
+            <span class="sp-gal-cap" style="position:absolute;inset:0;background:linear-gradient(to top, rgba(44,26,14,.78) 0%, transparent 60%);opacity:0;transition:opacity .3s ease;display:flex;align-items:flex-end;padding:16px;font-family:'Montserrat',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.04em;color:#fff;text-align:left">{g.cap || g.alt}</span>
           </button>
         ))}
       </div>
@@ -691,18 +739,18 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
 )}
 
 {plats.length > 0 && (
-  <section id="profiles" data-sec="1" style="padding:100px 48px;background:#faf6ee">
+  <section id="profiles" data-sec="1" style="padding:100px 48px;background:var(--bg)">
     <div style="max-width:1100px;margin:0 auto">
-      <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Find us online</p>
-      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">Verified profiles</h2>
+      <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>{head.platformsLabel}</p>
+      <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:var(--tx);line-height:1.2;margin:0">{head.platformsTitle}</h2>
       <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 36px"></div>
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px">
         {plats.map((pl) => (
           <a href={pl.url} target="_blank" rel="noopener noreferrer" class="sp-plat" style="display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px 32px;text-decoration:none;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease">
-            <span style="font-family:'Marcellus',serif;font-size:1.5rem;width:48px;height:48px;border-radius:50%;background:#2f5d45;color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:6px">{pl.initial}</span>
-            <h3 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">{pl.name}</h3>
-            <p style="color:#6b4e35;line-height:1.75;font-size:.92rem;margin:0">{pl.description}</p>
-            <span style="color:#2f5d45;font-weight:600;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-top:6px">View profile &rarr;</span>
+            <span style="font-family:'Marcellus',serif;font-size:1.5rem;width:48px;height:48px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:6px">{pl.initial}</span>
+            <h3 style="font-family:'Marcellus',serif;font-size:1.3rem;color:var(--tx);margin:0">{pl.name}</h3>
+            <p style="color:var(--tx2);line-height:1.75;font-size:.92rem;margin:0">{pl.description}</p>
+            <span style="color:var(--ac);font-weight:600;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;margin-top:6px">View profile &rarr;</span>
           </a>
         ))}
       </div>
@@ -710,13 +758,13 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   </section>
 )}
 
-  <section id="enquiry" data-sec="1" style="padding:100px 48px;background:#faf6ee">
+  <section id="enquiry" data-sec="1" style="padding:100px 48px;background:var(--bg)">
     <div data-split="1" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:60px;align-items:start">
       <div>
-        <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Get in touch</p>
-        <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.2;margin:0">Book {nameA}{" "}<em style="color:#2f5d45;">{nameB}</em></h2>
+        <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>{head.enquiryLabel}</p>
+        <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:var(--tx);line-height:1.2;margin:0">{split(head.enquiryTitle)[0]}{split(head.enquiryTitle)[1] && <>{' '}<em style="color:var(--ac);">{split(head.enquiryTitle)[1]}</em></>}</h2>
         <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 26px"></div>
-        <p style="color:#6b4e35;line-height:1.85;font-size:.98rem;margin:0">Tell us about your home, your pets, and your dates and we'll get back to you within 24 hours.</p>
+        <p style="color:var(--tx2);line-height:1.85;font-size:.98rem;margin:0">{joint ? "Tell us about your home, your pets, and your dates and we'll get back to you within 24 hours." : "Tell me about your home, your pets, and your dates and I'll get back to you within 24 hours."}</p>
 {waNum && (
         <a href={waHref} target="_blank" rel="noopener" class="sp-wa" style="display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:14px 28px;background:#25D366;color:#fff;border-radius:50px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;box-shadow:0 6px 20px rgba(37,211,102,.25);transition:background .2s, transform .12s">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -728,32 +776,32 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div style="display:flex;flex-direction:column;gap:8px">
             <label for="fname" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">First name</label>
-            <input type="text" id="fname" name="first_name" placeholder="Jane" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:#faf6ee;color:#2c1a0e;font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
+            <input type="text" id="fname" name="first_name" placeholder="Jane" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:var(--bg);color:var(--tx);font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <label for="lname" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">Last name</label>
-            <input type="text" id="lname" name="last_name" placeholder="Smith" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:#faf6ee;color:#2c1a0e;font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
+            <input type="text" id="lname" name="last_name" placeholder="Smith" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:var(--bg);color:var(--tx);font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <label for="email" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">Email</label>
-          <input type="email" id="email" name="email" placeholder="jane@example.com" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:#faf6ee;color:#2c1a0e;font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
+          <input type="email" id="email" name="email" placeholder="jane@example.com" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:var(--bg);color:var(--tx);font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div style="display:flex;flex-direction:column;gap:8px">
             <label for="date-from" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">From</label>
-            <input type="date" id="date-from" name="date_from" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:#faf6ee;color:#2c1a0e;font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
+            <input type="date" id="date-from" name="date_from" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:var(--bg);color:var(--tx);font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
           </div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <label for="date-to" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">To</label>
-            <input type="date" id="date-to" name="date_to" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:#faf6ee;color:#2c1a0e;font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
+            <input type="date" id="date-to" name="date_to" required="required" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:var(--bg);color:var(--tx);font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s, box-shadow .2s" />
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <label for="message" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">Tell us about your pets &amp; home</label>
-          <textarea id="message" name="message" rows="4" placeholder="Breed, age, any special needs…" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:#faf6ee;color:#2c1a0e;font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;resize:vertical;min-height:110px;line-height:1.7;transition:border-color .2s, box-shadow .2s"></textarea>
+          <textarea id="message" name="message" rows="4" placeholder="Breed, age, any special needs…" class="sp-field" style="padding:12px 15px;border:1.5px solid rgba(110,84,56,.3);border-radius:10px;background:var(--bg);color:var(--tx);font-family:'Montserrat',sans-serif;font-size:.95rem;outline:none;resize:vertical;min-height:110px;line-height:1.7;transition:border-color .2s, box-shadow .2s"></textarea>
         </div>
-        <button type="submit" class="sp-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 32px;cursor:pointer;font-family:'Montserrat',sans-serif;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">Send enquiry</button>
+        <button type="submit" class="sp-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--ac);border:1.5px solid var(--ac);border-radius:50px;padding:13px 32px;cursor:pointer;font-family:'Montserrat',sans-serif;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">Send enquiry</button>
         <p data-enquiry-status="1" style="font-size:.86rem;text-align:center;min-height:1.2em;margin:0;color:#2f7d4f;font-weight:600"></p>
       </form>
     </div>
@@ -765,13 +813,13 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
     </button>
     <figure style="margin:0;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%">
       <img data-lb-img="1" alt="" style="max-width:min(880px,100%);max-height:72vh;object-fit:contain;border-radius:16px;display:block" />
-      <figcaption data-lb-cap="1" style="font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#c4ab8a"></figcaption>
+      <figcaption data-lb-cap="1" style="font-size:.82rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--hl)"></figcaption>
     </figure>
   </div>
 
 {!LAUNCHED && <LaunchSoon />}
 
-  <footer data-sec="1" style="background:#2c1a0e;color:rgba(255,255,255,.7);padding:0 48px 32px;border-top:3px solid #2f5d45">
+  <footer data-sec="1" style="background:var(--tx);color:rgba(255,255,255,.7);padding:0 48px 32px;border-top:3px solid var(--ac)">
     <div style="max-width:1100px;margin:0 auto">
       <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:56px;padding:64px 0 44px">
         <div style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
@@ -925,7 +973,7 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
     const paint = () => {
       track.style.transform = 'translateX(-' + (ri * cardW()) + 'px)';
       Array.from(dotsEl.children).forEach((d, j) => {
-        d.style.background = j === ri ? '#2f5d45' : '#e9e0d2';
+        d.style.background = j === ri ? 'var(--ac)' : '#e9e0d2';
       });
     };
     const go = i => { ri = Math.max(0, Math.min(i, maxIdx())); paint(); };
@@ -993,15 +1041,15 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
 <style is:global>
   .sp-more { display: none !important; }
   [data-gal].sp-open .sp-more { display: block !important; }
-  .sp-show-all, .sp-read-more { display: inline-flex; align-items: center; margin-top: 22px; font-family: 'Montserrat', sans-serif; font-size: .76rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #2f5d45; background: #fff; border: 1.5px solid rgba(110,84,56,.45); border-radius: 50px; padding: 12px 24px; cursor: pointer; }
-  .sp-show-all:hover, .sp-read-more:hover { background: #2f5d45; border-color: #2f5d45; color: #fff; }
+  .sp-show-all, .sp-read-more { display: inline-flex; align-items: center; margin-top: 22px; font-family: 'Montserrat', sans-serif; font-size: .76rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ac); background: #fff; border: 1.5px solid rgba(110,84,56,.45); border-radius: 50px; padding: 12px 24px; cursor: pointer; }
+  .sp-show-all:hover, .sp-read-more:hover { background: var(--ac); border-color: var(--ac); color: #fff; }
   .sp-read-more { margin-top: 14px; padding: 10px 20px; }
   .sp-dock { display: none; }
   @media (max-width: 1000px) {
     .sp-dock { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 205; gap: 4px; padding: 6px; background: rgba(255,255,255,.96); backdrop-filter: blur(12px); border: 1px solid rgba(110,84,56,.22); border-radius: 50px; box-shadow: 0 12px 32px rgba(44,26,14,.18); transform: translateY(140%); transition: transform .3s ease; }
     .sp-dock.on { transform: none; }
     .sp-dock a { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 50px; font-family: 'Montserrat', sans-serif; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5c3d20; text-decoration: none; white-space: nowrap; }
-    .sp-dock a.sp-dock-book { flex: 1.3; background: #2f5d45; color: #fff; }
+    .sp-dock a.sp-dock-book { flex: 1.3; background: var(--ac); color: #fff; }
     body { padding-bottom: 84px; }
   }
   @media (max-width: 640px) {

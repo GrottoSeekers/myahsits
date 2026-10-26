@@ -89,6 +89,27 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(null, { status: 302, headers: { Location: `/profile/edit?saved=${category}#${anchor}` } });
     }
 
+    // Names shown in white on the photos: caps = JSON list, one per photo.
+    if (action === 'captions') {
+      let caps: unknown = [];
+      try { caps = JSON.parse(String(form.get('caps') || '[]')); } catch {}
+      if (!Array.isArray(caps)) caps = [];
+      images.forEach((img, i) => {
+        const c = String((caps as unknown[])[i] ?? img?.cap ?? '').trim().slice(0, 40);
+        if (img && typeof img === 'object') {
+          if (c) img.cap = c; else delete img.cap;
+        }
+      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({ [column]: images })
+        .eq('id', profile.id);
+      if (error) {
+        return new Response(null, { status: 302, headers: { Location: `/profile/edit?error=server#${anchor}` } });
+      }
+      return new Response(null, { status: 302, headers: { Location: `/profile/edit?saved=${category}#${anchor}` } });
+    }
+
     if (action === 'delete') {
       const index = parseInt(form.get('index') as string, 10);
       if (isNaN(index) || index < 0 || index >= images.length) {
