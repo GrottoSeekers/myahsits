@@ -490,8 +490,11 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
         if (b.dataset.done || b.closest('[hidden]')) return;
         const m = /^(\d+(?:\.\d+)?)(.*)$/.exec(b.dataset.count); if (!m) return;
         const io = new IntersectionObserver(es => { if (!es[0].isIntersecting) return; io.disconnect(); b.dataset.done = '1';
-          const end = parseFloat(m[1]), dp = (m[1].split('.')[1] || '').length, t0 = performance.now();
-          const step = now => { const k = Math.min(1, (now - t0) / 1400), e = 1 - Math.pow(1 - k, 3); b.textContent = (end * e).toFixed(dp) + m[2]; if (k < 1) requestAnimationFrame(step); };
+          // time from the first frame (a frame's clock can run behind performance.now())
+          const end = parseFloat(m[1]), dp = (m[1].split('.')[1] || '').length; let t0 = null;
+          const step = now => { if (t0 === null) t0 = now; const k = Math.min(1, Math.max(0, (now - t0) / 1400)), e = 1 - Math.pow(1 - k, 3); b.textContent = (end * e).toFixed(dp) + m[2]; if (k < 1) requestAnimationFrame(step); };
+          // always land on the real number, even if frames stop (tab in the background)
+          setTimeout(() => { b.textContent = b.dataset.count; }, 1700);
           requestAnimationFrame(step); });
         io.observe(b);
       });
