@@ -331,7 +331,7 @@ const initial = {
       <div style="border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:30px;margin-bottom:26px">
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 16px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>MYAH owner</p>
         <h1 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.15;margin:0 0 18px">Edit your <em style="color:#2f5d45;">home</em></h1>
-        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Your home, your pets, and what you need from a sitter. Everything here is what sitters read before they enquire &mdash; the preview on the right moves as you type.</p>
+        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Choose a section to edit. Don&rsquo;t forget to save your changes.</p>
       </div>
 
       <div data-form-error="1" role="alert" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;background:#fdeeee;border:1px solid #f7cfcf;font-size:.86rem;font-weight:600;color:#a4442e"></div>
@@ -382,6 +382,7 @@ const initial = {
                 </div>
               </div>
             </div>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
           <section id="photos" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -389,6 +390,7 @@ const initial = {
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 24px"></div>
             <div data-photo-groups></div>
             <input data-photo-file="1" type="file" accept="image/*" multiple="multiple" hidden />
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
           <section id="pets" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -425,6 +427,7 @@ const initial = {
             </div>
 
             <button type="button" data-toggle-pet data-add-pet-btn>+ Add a pet</button>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
           <section id="amenities" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -433,6 +436,7 @@ const initial = {
             <p data-amenity-count style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:500px"></p>
 
             <div data-amenities style="display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px"></div>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
           <section id="looking-for" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -440,6 +444,7 @@ const initial = {
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:500px">Describe the ideal sitter &mdash; experience, expectations, house rules. Specific beats polite.</p>
             <textarea data-looking="1" rows="6" aria-label="What you're looking for" placeholder="e.g. Someone comfortable with a large dog, happy in a rural spot with no bus route, and around the house most of the day." style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;resize:vertical;line-height:1.7;transition:border-color .2s, box-shadow .2s">{initial.lookingFor}</textarea>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
           <section id="handover" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -467,6 +472,7 @@ const initial = {
             <div style="border-top:1px solid rgba(44,26,14,.08);margin-top:26px;padding-top:22px">
               <p style="font-size:.88rem;color:#6b4e35;line-height:1.7;margin:0">Arrival time and how keys change hands are set per sit, on the listing itself &mdash; everything above is the same whoever is sitting. <a href={sitUrl} style="font-weight:600">See how it reaches the sitter &rarr;</a></p>
             </div>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
           <section id="headings" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -475,6 +481,7 @@ const initial = {
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Leave anything blank to keep the wording shown.</p>
 
             <div data-headings style="display:flex;flex-direction:column;gap:26px"></div>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
         </div>
 
@@ -541,6 +548,7 @@ const initial = {
               <div style="display:flex;justify-content:center">
                 <button type="button" data-reset-colours class="eo-reset" style="font-family:'Montserrat',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;background:none;border:1.5px solid rgba(44,26,14,.15);border-radius:50px;padding:9px 22px;cursor:pointer;transition:border-color .2s, color .2s">Reset colours</button>
               </div>
+              <div style="display:flex;justify-content:center;margin-top:14px"><button type="button" data-save>Save changes</button></div>
             </div>
           </div>
 
@@ -773,10 +781,11 @@ const initial = {
     // Save bar
     q('[data-savebar]').setAttribute('style', 'position:fixed;left:0;right:0;bottom:0;z-index:40;padding:16px 48px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid rgba(110,84,56,.28);box-shadow:0 -6px 24px rgba(44,26,14,.06);transition:transform .3s ease, opacity .3s ease;' +
       (s.saved ? 'transform:translateY(100%);opacity:0;pointer-events:none;' : 'transform:translateY(0);opacity:1;'));
-    const btn = q('[data-save]');
-    btn.textContent = s.saving ? 'Saving…' : s.saved ? 'Changes saved' : 'Save changes';
-    btn.disabled = s.saving;
-    btn.setAttribute('style', 'font-family:\'Montserrat\',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:16px 36px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease');
+    qa('[data-save]').forEach(btn => {
+        btn.textContent = s.saving ? 'Saving…' : s.saved ? 'Changes saved' : 'Save changes';
+      btn.disabled = s.saving;
+      btn.setAttribute('style', 'font-family:\'Montserrat\',sans-serif;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:16px 36px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease');
+    });
   };
 
   // Text fields

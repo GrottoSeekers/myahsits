@@ -335,7 +335,7 @@ const enquiryTitlePh =
       <div style="border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:30px;margin-bottom:26px">
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 16px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>MYAH sitter</p>
         <h1 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.15;margin:0 0 18px">Edit your <em style="color:#2f5d45;">profile</em></h1>
-        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Choose a section and make your changes. Don&rsquo;t forget to save before you leave.</p>
+        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:600px;margin:0">Choose a section to edit. Don&rsquo;t forget to save your changes.</p>
       </div>
 
       <div data-form-msg="1" role="status" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;font-size:.86rem;font-weight:600"></div>
@@ -424,6 +424,9 @@ const enquiryTitlePh =
                 <p style="font-size:.82rem;color:#6b4e35;margin:12px 0 0;line-height:1.6">Neither is shown publicly. With a number set, a WhatsApp button appears on your page.</p>
               </div>
             </form>
+            <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
+              <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
+            </div>
           </section>
 
           <section id="photos" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -431,7 +434,7 @@ const enquiryTitlePh =
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 24px"></div>
 
             {photoGroups.map((g) => (
-              <div style={g.last ? 'padding-bottom:26px;' : 'padding-bottom:26px;margin-bottom:26px;border-bottom:1px solid rgba(44,26,14,.07);'}>
+              <div id={g.cat} style={g.last ? 'padding-bottom:26px;' : 'padding-bottom:26px;margin-bottom:26px;border-bottom:1px solid rgba(44,26,14,.07);'}>
                 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px">
                   <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0">{g.title}</p>
                   <span style="font-size:.78rem;color:#6b4e35">{plural(g.images.length)}</span>
@@ -460,6 +463,9 @@ const enquiryTitlePh =
                 <div class="ep-queue" data-queue-for={g.cat}></div>
               </div>
             ))}
+            <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
+              <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
+            </div>
           </section>
 
           <section id="reviews" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -493,6 +499,7 @@ const enquiryTitlePh =
                 <button type="submit" class="ep-ghost" style="display:inline-flex;align-items:center;gap:9px;font-family:'Montserrat',sans-serif;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;background:#fff;border:1.5px solid rgba(110,84,56,.45);border-radius:50px;padding:12px 26px;cursor:pointer;transition:background .25s ease, border-color .25s ease, transform .15s ease">Generate review link</button>
               </form>
             </div>
+            <p class="ep-sec-note" style="margin:22px 0 0;padding-top:18px;border-top:1px solid rgba(44,26,14,.07);font-size:.84rem;color:#6b4e35;line-height:1.6">Anything you add or remove here saves straight away.</p>
           </section>
 
           <section id="platforms" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -525,6 +532,7 @@ const enquiryTitlePh =
               </div>
               <button type="submit" class="ep-ghost" style="font-family:'Montserrat',sans-serif;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;background:#fff;border:1.5px solid rgba(110,84,56,.45);border-radius:50px;padding:12px 26px;cursor:pointer;transition:background .25s ease, border-color .25s ease, transform .15s ease">Add site</button>
             </form>
+            <p class="ep-sec-note" style="margin:22px 0 0;padding-top:18px;border-top:1px solid rgba(44,26,14,.07);font-size:.84rem;color:#6b4e35;line-height:1.6">Anything you add or remove here saves straight away.</p>
           </section>
 
           <section id="headings" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
@@ -568,10 +576,12 @@ const enquiryTitlePh =
                 </div>
               </div>
             </form>
+            <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
+              <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
+            </div>
           </section>
 
           <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-            <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
             <a href="/dashboard" class="ep-cancel" style="font-size:.8rem;color:#6b4e35;text-decoration:none;letter-spacing:.1em;text-transform:uppercase;font-weight:600;transition:color .2s">Back to dashboard</a>
           </div>
         </div>
@@ -646,7 +656,7 @@ const enquiryTitlePh =
             </div>
 
             <div style="padding:18px 20px 20px;background:#fff;border-top:1px solid rgba(110,84,56,.2)">
-              <form data-theme-form="1" action="/api/profile/theme" method="POST" style="margin:0">
+              <form id="colours" data-theme-form="1" action="/api/profile/theme" method="POST" style="margin:0">
                 <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:14px">
                   {swatches.map((s) => (
                     <label style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer">
@@ -657,6 +667,9 @@ const enquiryTitlePh =
                 </div>
                 <div style="display:flex;justify-content:center">
                   <button type="button" data-reset="1" class="ep-reset" style="font-family:'Montserrat',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;background:none;border:1.5px solid rgba(44,26,14,.15);border-radius:50px;padding:9px 22px;cursor:pointer;transition:border-color .2s, color .2s">Reset colours</button>
+                </div>
+                <div style="display:flex;justify-content:center;margin-top:14px">
+                  <button type="button" data-save="1" class="ep-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:16px 36px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Save changes</button>
                 </div>
               </form>
             </div>
@@ -919,7 +932,8 @@ const enquiryTitlePh =
       showMsg(errors.join(' '), true);
       render();
     } else {
-      window.location.href = '/profile/edit?saved=1';
+      // A fresh query each time so the page always reloads (a change of #tab alone would not).
+      window.location.href = '/profile/edit?saved=' + Date.now() + (location.hash || '');
     }
   };
   saveBtns.forEach(b => b.addEventListener('click', saveAll));

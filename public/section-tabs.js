@@ -65,8 +65,15 @@
     }, true);
     window.matchMedia(NARROW).addEventListener('change', function () { paint(current); });
 
-    var start = (location.hash || '').slice(1);
-    paint(ids.indexOf(start) !== -1 ? start : current);
+    // Open the tab named in the address (#photos), or the tab holding that
+    // spot (a save returns to #colours, which sits inside #preview).
+    var start = (location.hash || '').slice(1), target = current;
+    if (ids.indexOf(start) !== -1) target = start;
+    else if (start) {
+      var el = document.getElementById(start);
+      ids.forEach(function (sid) { var sec = document.getElementById(sid); if (el && sec.contains(el)) target = sid; });
+    }
+    paint(target);
     document.documentElement.classList.add('st-ready');
   }
 
