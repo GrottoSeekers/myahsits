@@ -5,7 +5,7 @@
 // The founders page uses it (approved 26 Oct 2026); ?layout=classic shows the old one.
 import LaunchSoon from '../pages/_launchsoon.astro';
 
-interface Pic { src: string; pos?: string; alt?: string }
+interface Pic { src: string; pos?: string; alt?: string; wide?: boolean }
 interface Props {
   name: string; nameA: string; nameB: string; tagline: string; badge: string;
   hero: Pic[]; about: Pic[]; bio: string[]; reviews: any[]; revCount: string; rating: string;
@@ -15,6 +15,14 @@ interface Props {
 const p = Astro.props;
 // The top three reviews take turns in the large card; the rest sit in the row.
 const featured = p.reviews.slice(0, 3);
+// One still photo at the top (the owner picked the field photo, 26 Oct 2026);
+// the other photos move down to the About photos, each used once.
+const fileOf = (src: string) => String(src || '').split('/').pop();
+const heroPic = p.hero.find((h) => fileOf(h.src) === 'couple-field-1.jpg') || p.hero[0];
+const seen = new Set([fileOf(heroPic?.src || '')]);
+const pool = [...p.about, ...p.hero].filter((x) => { const k = fileOf(x.src); if (seen.has(k)) return false; seen.add(k); return true; });
+const aboutSmall = pool.slice(1, 3);
+const aboutBig = [pool[0], ...pool.slice(3)].filter(Boolean);
 const rest = p.reviews.slice(3);
 const ICON = {
   star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
@@ -34,7 +42,6 @@ const ribbon = [
   p.reviews.length ? `${p.revCount} five-star reviews` : '',
   'ID verified',
   p.isFounders ? '30+ pets cared for' : '',
-  ...p.plats.map((x: any) => x.name),
   p.location || '',
 ].filter(Boolean);
 // The first photo takes a 2x2 tile; widen the last one so the final row is full
@@ -87,12 +94,15 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-top .btn { min-height:40px; padding:0 18px; font-size:.68rem; }
 
     /* hero */
-    .sg-hero { position:relative; min-height:min(92svh,820px); display:flex; align-items:flex-end; color:#fff; overflow:hidden; background:var(--ink); }
+    .sg-hero { position:relative; min-height:min(100vh,940px); min-height:min(100svh,940px); display:flex; align-items:flex-end; color:#fff; overflow:hidden; background:var(--ink); }
     .sg-hero .bg img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.4s ease; }
-    .sg-hero .bg img.on { opacity:1; animation:sg-kb 9s ease-out both; }
+    .sg-hero .bg img.fit { object-fit:contain; }
+    .sg-hero .bg img.on { opacity:1; animation:sg-kb 14s ease-out both; }
     @keyframes sg-kb { from { transform:scale(1.09); } to { transform:scale(1); } }
     @keyframes sg-rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
     .sg-hero .in > * { animation:sg-rise .9s cubic-bezier(.2,.7,.2,1) both; }
+    /* wait for the first photo (slow on mobile data) before the words rise */
+    .sg-hero.wait .in > *, .sg-hero.wait .sg-seal, .sg-hero.wait .bg img.on { animation-play-state:paused; }
     .sg-hero .in > :nth-child(2) { animation-delay:.12s; } .sg-hero .in > :nth-child(3) { animation-delay:.24s; }
     .sg-hero .in > :nth-child(4) { animation-delay:.36s; } .sg-hero .in > :nth-child(5) { animation-delay:.48s; }
     .sg-hero .in > :nth-child(6) { animation-delay:.6s; } .sg-hero .in > :nth-child(7) { animation-delay:.72s; }
@@ -114,8 +124,13 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-ribbon li { font:400 1.02rem 'Marcellus',serif; letter-spacing:.04em; padding:13px 0; white-space:nowrap; display:flex; align-items:center; }
     .sg-ribbon li::after { content:"✦"; font-size:.6rem; margin:0 22px; color:rgba(196,171,138,.6); }
     @keyframes sg-run { to { transform:translateX(-50%); } }
-    .sg-hero .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.35) 0%,rgba(20,13,7,0) 30%,rgba(20,13,7,.25) 55%,rgba(20,13,7,.88) 100%); }
+    .sg-hero .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.35) 0%,rgba(20,13,7,0) 26%,rgba(20,13,7,.35) 52%,rgba(20,13,7,.9) 78%,rgba(20,13,7,.95) 100%); }
     .sg-hero .in { position:relative; width:100%; max-width:1180px; margin:0 auto; padding:120px max(22px,env(safe-area-inset-right,0px)) 40px max(22px,env(safe-area-inset-left,0px)); }
+    .sg-now { display:flex; align-items:center; gap:9px; margin:0 0 14px; font-size:.78rem; font-weight:600; letter-spacing:.03em; color:#f1e6d6; text-shadow:0 1px 8px rgba(20,13,7,.6); }
+    .sg-now i { flex:none; width:7px; height:7px; border-radius:50%; background:#8fd1a8; box-shadow:0 0 0 0 rgba(143,209,168,.6); animation:sg-ping 2.4s ease-out infinite; }
+    @keyframes sg-ping { 70% { box-shadow:0 0 0 8px rgba(143,209,168,0); } 100% { box-shadow:0 0 0 0 rgba(143,209,168,0); } }
+    .sg-acts .btn.sg-wa { width:48px; padding:0; flex:none; }
+    .sg-wa svg { width:22px; height:22px; fill:#fff; }
     .sg-badge { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:50px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(6px); font-size:.72rem; font-weight:600; letter-spacing:.04em; margin-bottom:18px; }
     .sg-badge i { width:7px; height:7px; border-radius:50%; background:#8fd1a8; }
     .sg-hero .lbl { color:#f1e6d6; text-shadow:0 1px 8px rgba(20,13,7,.6); display:flex; align-items:center; gap:12px; margin:0 0 12px; }
@@ -140,8 +155,9 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-tabs.js .sg-pill { display:block; }
     .sg-tabs button { position:relative; z-index:1; }
     .sg-tabs.js button[aria-selected="true"] { background:transparent; border-color:transparent; }
-    .sg-panel.show > * { animation:sg-rise .6s cubic-bezier(.2,.7,.2,1) both; }
-    .sg-panel.show > :nth-child(2) { animation-delay:.07s; } .sg-panel.show > :nth-child(3) { animation-delay:.14s; } .sg-panel.show > :nth-child(4) { animation-delay:.21s; }
+    /* scroll reveal: fades up as it comes into view (phone and desktop) */
+    .rv { opacity:0; transform:translateY(24px); transition:opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1), box-shadow .3s; transition-delay:var(--d,0s); }
+    .rv.in { opacity:1; transform:none; }
 
     .sg-panel { max-width:1180px; margin:0 auto; padding:44px max(22px,env(safe-area-inset-right,0px)) 56px max(22px,env(safe-area-inset-left,0px)); }
     .sg-panel[hidden] { display:none; }
@@ -154,6 +170,9 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-strip { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
     .sg-strip button { padding:0; border:0; border-radius:18px; overflow:hidden; cursor:zoom-in; aspect-ratio:4/5; background:var(--cream); }
     .sg-strip button:first-child { grid-column:1 / -1; aspect-ratio:16/11; }
+    .sg-big { position:relative; }
+    .sg-big img { position:absolute; inset:0; opacity:0; transition:opacity 1.3s ease, transform .6s ease; }
+    .sg-big img.on { opacity:1; }
     .sg-strip img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
     .sg-strip button:hover img { transform:scale(1.04); }
     .sg-bio { position:relative; }
@@ -184,7 +203,6 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-feature blockquote { margin:14px 0 18px; font:400 clamp(1.2rem,2.6vw,1.65rem)/1.45 'Marcellus',serif; max-width:820px; }
     .sg-feature cite { font-style:normal; font-size:.74rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--tan); }
     .sg-rows { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px 2px 14px; scrollbar-width:thin; }
-    .sg-panel.show .sg-rev { animation:sg-rise .6s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(.2s + var(--i,0) * .07s); }
     .sg-rev { flex:none; width:min(330px,82vw); scroll-snap-align:start; background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px 20px 18px; display:flex; flex-direction:column; gap:12px; }
     .sg-rev p { margin:0; font-size:.88rem; line-height:1.65; color:var(--soft); font-style:italic; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
     .sg-rev.open p { display:block; }
@@ -198,9 +216,11 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:22px; }
     .sg-grid button { padding:0; border:0; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--cream); cursor:zoom-in; position:relative; }
     .sg-grid img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+    .sg-grid .cap { position:absolute; left:0; right:0; bottom:0; padding:28px 12px 10px; background:linear-gradient(transparent,rgba(20,13,7,.78)); color:#fff; font:600 .74rem/1.35 'Montserrat',sans-serif; letter-spacing:.02em; text-align:left; text-shadow:0 1px 4px rgba(0,0,0,.4); pointer-events:none; }
+    .sg-grid button:first-child .cap { font-size:.9rem; padding:40px 18px 14px; }
     .sg-grid button:hover img { transform:scale(1.05); }
     .sg-grid button:first-child { grid-column:span 2; grid-row:span 2; border-radius:18px; }
-    .sg-panel.show .sg-grid button { animation:sg-rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(.15s + var(--i,0) * .035s); }
+
 
     /* book */
     .sg-book { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:44px; align-items:start; }
@@ -236,6 +256,15 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-foot .in { max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; align-items:center; font-size:.78rem; }
     .sg-foot a { color:rgba(255,255,255,.75); text-decoration:none; margin-left:18px; }
 
+    /* short, wide screens (laptops): keep the words compact so the photo shows */
+    @media (min-width:561px) and (max-height:760px) {
+      .sg-hero .in { padding-bottom:28px; }
+      .sg-badge { margin-bottom:12px; }
+      .sg-name { font-size:clamp(2.6rem,6vw,3.9rem); margin-bottom:10px; }
+      .sg-tag { margin-bottom:16px; }
+      .sg-trust { margin-bottom:18px; }
+      .sg-progress { margin-top:18px; }
+    }
     @media (max-width:900px) {
       .sg-about, .sg-book { grid-template-columns:minmax(0,1fr); gap:28px; }
       .sg-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
@@ -254,15 +283,23 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       .sg-feature { padding:28px 24px; border-radius:20px; }
       .sg-form { padding:20px; border-radius:18px; }
       .sg-foot a { margin:0 14px 0 0; }
-      .sg-seal { width:92px; height:92px; bottom:auto; top:calc(78px + env(safe-area-inset-top,0px)); }
+      .sg-seal { width:76px; height:76px; bottom:auto; top:calc(76px + env(safe-area-inset-top,0px)); }
+      .sg-seal svg { animation-duration:45s; }
+      .sg-name { font-size:2.6rem; margin-bottom:10px; }
+      .sg-tag { font-size:.9rem; line-height:1.55; color:rgba(255,255,255,.8); }
+      .sg-now { font-size:.72rem; margin-bottom:12px; }
+      .sg-hero { min-height:88vh; min-height:88svh; }
+      .sg-ribbon .track { animation-duration:60s; }
       .sg-seal text { font-size:9.4px; }
-      .sg-seal img { width:32px; height:32px; }
-      .sg-seal::before { inset:16px; }
+      .sg-seal img { width:26px; height:26px; }
+      .sg-seal::before { inset:15px; }
       .sg-glance { gap:10px; }
+      .sg-grid .cap { font-size:.6rem; padding:20px 7px 6px; line-height:1.25; }
+      .sg-grid button:first-child .cap { font-size:.74rem; padding:28px 10px 9px; }
       .sg-glance div { grid-template-columns:1fr; padding:16px 14px 14px; }
       .sg-glance svg { grid-row:auto; width:36px; height:36px; padding:9px; margin-bottom:12px; }
       .sg-glance b { font-size:1.75rem; }
-      .sg-ribbon li { font-size:.92rem; padding:11px 0; }
+      .sg-ribbon li { font-size:.84rem; padding:10px 0; }
       .sg-ribbon li::after { margin:0 16px; }
     }
     .sg-grid button.wide-d { grid-column:span 2; aspect-ratio:2 / 1; }
@@ -270,9 +307,19 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       .sg-grid button.wide-d { grid-column:auto; aspect-ratio:1; }
       .sg-grid button.wide-m { grid-column:span 2; aspect-ratio:2 / 1; }
     }
+    /* phones have no hover: give a small response to a tap instead */
+    @media (hover:none) {
+      .sg-strip button:active img, .sg-grid button:active img { transform:scale(1.05); transition-duration:.25s; }
+      .btn:active { transform:scale(.97); }
+      .sg-glance div:active { transform:translateY(-3px); box-shadow:0 16px 34px rgba(44,26,14,.11); }
+      .sg-rev:active { transform:scale(.985); }
+    }
+    /* Reduce Motion (iPhone setting): stop the moving effects, keep the fades */
+    @keyframes sg-fade { from { opacity:0; } to { opacity:1; } }
     @media (prefers-reduced-motion:reduce) {
-      *, *::before, *::after { animation:none !important; transition:none !important; }
-      .sg-ribbon .track { transform:none; }
+      .sg-hero .bg img.on, .sg-seal svg, .sg-ribbon .track, .sg-now i { animation:none; }
+      .sg-hero .in > *, .sg-seal { animation-name:sg-fade; }
+      .rv { transform:none; }
     }
   </style>
 </head>
@@ -283,23 +330,16 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
   </header>
 
   <section class="sg-hero" data-hero>
-    <div class="bg">{p.hero.map((h, i) => <img src={h.src} alt="" class={i === 0 ? 'on' : undefined} style={`object-position:${h.pos || 'center 30%'}`} data-slide />)}</div>
+    <div class="bg">{[heroPic].filter(Boolean).map((h, i) => <img src={h.src} alt="" class={i === 0 ? 'on' : undefined} style={`object-position:${h.pos || 'center 30%'}`} data-focus={(/(\d+(?:\.\d+)?)%\s*$/.exec(h.pos || '') || [])[1]} data-wide={h.wide ? '1' : undefined} data-slide />)}</div>
     <div class="shade"></div>
     <div class="in">
-      {p.badge && <p class="sg-badge"><i></i>{p.badge}</p>}
-      <p class="lbl">{eyebrow}</p>
+      <p class="sg-now">{p.badge ? <><i></i>{p.badge}</> : eyebrow}</p>
       <h1 class="sg-name serif">{p.nameA}{p.nameB && <em> &amp;</em>}{p.nameB && <>{' '}{p.nameB.replace(/^&\s*/, '')}</>}</h1>
       {p.tagline && <p class="sg-tag">{p.tagline}</p>}
-      <ul class="sg-trust">
-        {p.reviews.length > 0 && <li><span class="star">★★★★★</span>{p.rating} · {p.revCount} reviews</li>}
-        <li>✓ ID verified</li>
-        {p.location && <li>{p.location}</li>}
-      </ul>
       <div class="sg-acts">
         <a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a>
-        {p.waNum && <a class="btn btn-glass" href={p.waHref} target="_blank" rel="noopener">WhatsApp</a>}
+        {p.waNum && <a class="btn btn-glass sg-wa" href={p.waHref} target="_blank" rel="noopener" aria-label="Message us on WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2A9.7 9.7 0 0 0 3.7 16.9L2.4 21.6l4.8-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.2-.2-.2-.4-.3z"/></svg></a>}
       </div>
-      {p.hero.length > 1 && <div class="sg-progress" aria-hidden="true">{p.hero.map((_, i) => <i class={i === 0 ? 'on' : undefined}></i>)}</div>}
     </div>
     <div class="sg-seal" aria-hidden="true">
       <svg viewBox="0 0 132 132"><defs><path id="sg-ring" d="M66,66 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0" /></defs><text><textPath href="#sg-ring" textLength="337" lengthAdjust="spacing">{(p.isFounders ? 'FOUNDERS OF MYAH · ' : 'MYAH SITTER · ') + 'MAKE YOURSELF AT HOME · '}</textPath></text></svg>
@@ -324,9 +364,12 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
   <main>
     <section class="sg-panel" id="about" role="tabpanel">
       <div class="sg-about">
-        {p.about.length > 0 && (
+        {pool.length > 0 && (
           <div class="sg-strip">
-            {p.about.slice(0, 3).map((a) => <button type="button" data-lightbox={a.src} data-alt={a.alt}><img src={a.src} alt={a.alt || ''} loading="lazy" /></button>)}
+            <button type="button" class="sg-big" data-lightbox={aboutBig[0].src} data-alt={aboutBig[0].alt} data-big>
+              {aboutBig.map((a: any, i: number) => <img src={a.src} alt={i === 0 ? a.alt || '' : ''} class={i === 0 ? 'on' : undefined} loading={i === 0 ? 'lazy' : 'eager'} style={`object-position:${a.pos || 'center top'}`} data-bslide data-alt={a.alt || ''} />)}
+            </button>
+            {aboutSmall.map((a: any) => <button type="button" data-lightbox={a.src} data-alt={a.alt}><img src={a.src} alt={a.alt || ''} loading="lazy" style={`object-position:${a.pos || 'center top'}`} /></button>)}
           </div>
         )}
         <div>
@@ -372,7 +415,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       <section class="sg-panel" id="photos" role="tabpanel" hidden>
         <span class="lbl">Pets we've loved</span>
         <h2 class="sg-h serif">Our <em>sits</em></h2>
-        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" /></button>)}</div>
+        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.alt && <span class="cap" aria-hidden="true">{g.alt}</span>}</button>)}</div>
       </section>
     )}
 
@@ -417,11 +460,23 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     const q = s => document.querySelector(s), qa = s => Array.from(document.querySelectorAll(s));
     // tabs: one panel at a time
     const tabs = qa('[data-tab]');
+    // scroll reveal (set up before the first tab opens)
+    const RV = '.sg-panel > .lbl, .sg-panel > .sg-h, .sg-strip button, .sg-about > div:last-child > :not(.sg-glance), .sg-glance > div, .sg-feature, .sg-rev, .sg-hint, .sg-grid button, .sg-book > div:first-child > :not(ul), .sg-promise li, .sg-form';
+    const rvs = qa(RV); rvs.forEach(el => el.classList.add('rv'));
+    const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+      es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
+        .forEach((e, i) => { e.target.style.setProperty('--d', Math.min(i * .07, .6) + 's'); e.target.classList.add('in'); io.unobserve(e.target); });
+    }, { threshold: .12, rootMargin: '0px 0px -6% 0px' }) : null;
+    if (io) rvs.forEach(el => io.observe(el)); else rvs.forEach(el => el.classList.add('in'));
+    window.replay = panel => { if (!io) return; panel.querySelectorAll('.rv').forEach(el => { el.classList.remove('in'); el.style.removeProperty('--d'); io.observe(el); }); };
     const nav = q('.sg-tabs'), pill = q('.sg-pill');
     const movePill = () => { const t = tabs.find(b => b.getAttribute('aria-selected') === 'true'); if (t) { pill.style.width = t.offsetWidth + 'px'; pill.style.transform = 'translateX(' + t.offsetLeft + 'px)'; } };
     nav.classList.add('js');
     const open = (id, scroll) => {
-      tabs.forEach(t => { const on = t.dataset.tab === id; t.setAttribute('aria-selected', String(on)); const panel = q('#' + t.dataset.tab); panel.hidden = !on; panel.classList.toggle('show', on); });
+      tabs.forEach(t => { const on = t.dataset.tab === id; t.setAttribute('aria-selected', String(on)); const panel = q('#' + t.dataset.tab);
+        // a closed tab plays its reveal again next time it opens
+        if (!on && !panel.hidden && window.replay) window.replay(panel);
+        panel.hidden = !on; panel.classList.toggle('show', on); });
       movePill(); counts();
       if (scroll) { const top = q('.sg-tabs').getBoundingClientRect().top + window.scrollY - (q('[data-top]').offsetHeight - 2); window.scrollTo({ top, behavior: 'smooth' }); }
     };
@@ -430,10 +485,9 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     window.addEventListener('resize', movePill);
     document.fonts && document.fonts.ready.then(movePill);
     // the numbers count up the first time they come into view
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function counts() {
       qa('[data-count]').forEach(b => {
-        if (b.dataset.done || still || b.closest('[hidden]')) return;
+        if (b.dataset.done || b.closest('[hidden]')) return;
         const m = /^(\d+(?:\.\d+)?)(.*)$/.exec(b.dataset.count); if (!m) return;
         const io = new IntersectionObserver(es => { if (!es[0].isIntersecting) return; io.disconnect(); b.dataset.done = '1';
           const end = parseFloat(m[1]), dp = (m[1].split('.')[1] || '').length, t0 = performance.now();
@@ -445,6 +499,13 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     const h = location.hash.slice(1); open(h && q('[data-tab="' + h + '"]') ? h : 'about', false);
     // top bar and phone bar
     const top = q('[data-top]'), logo = q('[data-logo]'), bar = q('[data-bar]'), hero = q('[data-hero]');
+    // start the hero once its first photo has arrived (or after 2.5s)
+    const firstSlide = q('[data-slide]');
+    if (firstSlide && !firstSlide.complete) {
+      hero.classList.add('wait');
+      const go = () => hero.classList.remove('wait');
+      firstSlide.addEventListener('load', go); firstSlide.addEventListener('error', go); setTimeout(go, 2500);
+    }
     const tick = () => {
       const past = hero.getBoundingClientRect().bottom < 90;
       top.classList.toggle('solid', past); logo.src = past ? '/images/logo-mark.png' : '/images/logo-mark-white.png';
@@ -454,16 +515,47 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     tabs.forEach(t => t.addEventListener('click', tick));
     // hero slideshow
     const slides = qa('[data-slide]'); let si = 0;
-    const bars = qa('.sg-progress i');
-    if (slides.length > 1) setInterval(() => {
-      slides[si].classList.remove('on'); bars[si] && bars[si].classList.remove('on');
-      si = (si + 1) % slides.length;
-      slides[si].classList.add('on'); bars[si] && (void bars[si].offsetWidth, bars[si].classList.add('on'));
-    }, 5000);
+    // Put our faces in the clear space between the top bar and the words,
+    // whatever the shape of the screen. data-focus is how far down the photo
+    // the faces are (per cent).
+    const words = q('.sg-hero .in > *');
+    const aim = img => {
+      const f = parseFloat(img.dataset.focus) / 100, nw = img.naturalWidth, nh = img.naturalHeight;
+      if (!(f >= 0) || !nw) return;
+      const bw = img.clientWidth, bh = img.clientHeight, H = nh * Math.max(bw / nw, bh / nh);
+      const box = hero.getBoundingClientRect(), barB = top.offsetHeight;
+      const wordsTop = words ? words.getBoundingClientRect().top - box.top : bh * .45;
+      const want = Math.max(barB + 30, (barB + wordsTop) / 2);
+      const off = Math.max(0, Math.min(H - bh, f * H - want));
+      // On a tall phone screen, if filling the frame would hide a face (behind
+      // the words, or off the side of a wide photo): show the whole photo under the top bar instead,
+      // fading into the dark behind the words.
+      const hidden = bw < bh && (f * H - off > wordsTop - 24 || !!img.dataset.wide);
+      img.classList.toggle('fit', hidden);
+      if (hidden) {
+        const end = barB + nh * (bw / nw);
+        img.style.objectPosition = 'center ' + barB + 'px';
+        img.style.webkitMaskImage = img.style.maskImage = 'linear-gradient(#000 ' + Math.round(end - 110) + 'px, transparent ' + Math.round(end) + 'px)';
+      } else {
+        img.style.webkitMaskImage = img.style.maskImage = '';
+        img.style.objectPosition = H - bh < 2 ? '' : 'center ' + (off / (H - bh) * 100).toFixed(1) + '%';
+      }
+    };
+    const aimAll = () => slides.forEach(aim);
+    slides.forEach(img => img.complete ? aim(img) : img.addEventListener('load', () => aim(img)));
+    window.addEventListener('resize', aimAll);
+    document.fonts && document.fonts.ready.then(aimAll);
+    // the big About photo fades through the other photos
+    const bs = qa('[data-bslide]'), big = q('[data-big]'); let bi = 0;
+    if (bs.length > 1) setInterval(() => {
+      if (big.closest('[hidden]')) return;
+      bs[bi].classList.remove('on'); bi = (bi + 1) % bs.length; bs[bi].classList.add('on');
+      big.dataset.lightbox = bs[bi].src; big.dataset.alt = bs[bi].dataset.alt;
+    }, 4500);
     // featured reviews take turns; tapping a dot shows that one
     const fs = qa('[data-fslide]'), fd = qa('[data-fdot]'); let fi = 0, ft;
     const showF = i => { fi = i; fs.forEach((s, k) => s.classList.toggle('on', k === i)); fd.forEach((d, k) => d.setAttribute('aria-current', String(k === i))); };
-    const runF = () => { clearInterval(ft); if (fs.length > 1 && !still) ft = setInterval(() => showF((fi + 1) % fs.length), 7000); };
+    const runF = () => { clearInterval(ft); if (fs.length > 1) ft = setInterval(() => showF((fi + 1) % fs.length), 7000); };
     fd.forEach(d => d.addEventListener('click', () => { showF(+d.dataset.fdot); runF(); }));
     runF();
     // bio read more
