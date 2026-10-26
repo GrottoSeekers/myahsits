@@ -9,6 +9,9 @@ export const prerender = false;
 import { supabase } from '../../lib/supabase';
 import { getAccount } from '../../lib/account';
 import { jsonArr, jsonObj } from '../../lib/db';
+import { PAYMENTS_ENABLED, getBilling } from '../../lib/billing';
+import { layoutOf } from '../../lib/tier';
+import OwnerSignature from '../../components/OwnerSignature.astro';
 
 const { slug } = Astro.params;
 if (!slug) return new Response('Not found', { status: 404 });
@@ -52,7 +55,7 @@ const bio = esc(p.bio).split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
 const lookingFor = esc(p.looking_for).split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
 const pets = jsonArr(p.pets_json).filter((x: any) => x && x.name);
 const amenities = jsonArr(p.amenities_json).map(esc).filter(Boolean);
-const gallery = jsonArr(p.gallery_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), alt: esc(g.alt) }));
+const gallery = jsonArr(p.gallery_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), alt: esc(g.alt), cap: esc(g.cap) }));
 const aboutPics = jsonArr(p.about_images_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), alt: esc(g.alt) }));
 const heroPics = jsonArr(p.hero_images_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), pos: esc(g.pos) || 'center' }));
 const hero = heroPics.length
@@ -105,9 +108,22 @@ const sections = [
   { id: 'photos', label: 'Photos', show: gallery.length > 0 },
   { id: 'sits', label: 'Sits', show: sitCards.length > 0 },
 ].filter((s) => s.show);
+// Page design: Basic (below) or Premium (OwnerSignature), see lib/tier.ts.
+// ?layout=basic|premium lets the owner preview either design.
+let PREMIUM = layoutOf(p, PAYMENTS_ENABLED ? await getBilling(p.user_id).catch(() => null) : null) === 'premium';
+const want = Astro.url.searchParams.get('layout');
+if (isMe && (want === 'basic' || want === 'premium')) PREMIUM = want === 'premium';
+const premiumProps = {
+  name, first, location, tagline, badge: esc(p.badge_text),
+  hero, about: aboutPics, bio, lookingFor, amenities,
+  pets: pets.map((x: any) => ({ name: esc(x.name), line: petLine(x), temperament: esc(x.temperament), needs: esc(x.special_needs), photo: x.photo_url ? local(x.photo_url) : '', initials: initials(esc(x.name)) })),
+  gallery, sits: sitCards, waNum, slug, ownerId: p.id, isMe, canMessage, signedIn: !!viewer,
+  head, theme, description, ogImage: hero[0].src.startsWith('http') ? hero[0].src : '/images/logo-tile.png',
+};
 ---
 
 <!doctype html>
+{PREMIUM ? <OwnerSignature {...premiumProps} /> : (
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -188,6 +204,7 @@ const sections = [
     .op-gal button { position:relative; border:none; padding:0; border-radius:14px; overflow:hidden; aspect-ratio:4/3; cursor:pointer; background:#e9e0d2; }
     .op-gal img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
     .op-gal button:hover img { transform:scale(1.04); }
+    .op-gal .op-cap { position:absolute; left:0; right:0; bottom:0; padding:26px 14px 11px; background:linear-gradient(transparent,rgba(20,13,7,.75)); color:#fff; font-size:.82rem; font-weight:600; text-align:left; pointer-events:none; }
 
     .op-sits { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
     .op-sit { display:flex; flex-direction:column; gap:10px; background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; padding:26px 26px 24px; text-decoration:none; color:inherit; transition:box-shadow .3s, border-color .3s, transform .2s; }
@@ -361,7 +378,7 @@ const sections = [
         <div class="op-rule"></div>
         <div class="op-gal">
           {gallery.map((g) => (
-            <button type="button" data-lightbox={g.src} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" /></button>
+            <button type="button" data-lightbox={g.src} aria-label={g.cap || g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.cap && <span class="op-cap">{g.cap}</span>}</button>
           ))}
         </div>
       </div>
@@ -533,3 +550,4 @@ const sections = [
 <script is:inline src="/page-dock.js"></script>
 </body>
 </html>
+)}

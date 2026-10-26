@@ -2,12 +2,12 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { getAccount } from '../../../lib/account';
-import { PAYMENTS_ENABLED, PLANS, customerFor, getBilling, hasAccess, stripe, type Interval } from '../../../lib/billing';
+import { PAYMENTS_ENABLED, TIER_PLANS, customerFor, getBilling, hasAccess, stripe, type Interval, type Tier } from '../../../lib/billing';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
-// Start a membership: { interval: 'month' | 'year' } → { url } of a Stripe
+// Start a membership: { tier: 'basic' | 'premium', interval: 'month' | 'year' } → { url } of a Stripe
 // Checkout page. Sitters and owners pay the same; the side is kept on the
 // subscription's metadata for reporting.
 // Someone who already has a membership is sent to the billing portal instead,
@@ -20,6 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const body = await request.json().catch(() => ({}));
     const interval: Interval = body.interval === 'year' ? 'year' : 'month';
+    const tier: Tier = body.tier === 'premium' ? 'premium' : 'basic';
     const origin = new URL(request.url).origin;
 
     const billing = await getBilling(acct.userId);
@@ -29,7 +30,7 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ url: portal.url });
     }
 
-    const lookupKey = PLANS[interval];
+    const lookupKey = TIER_PLANS[tier][interval];
     const { data: prices } = await stripe().prices.list({ lookup_keys: [lookupKey], active: true, limit: 1 });
     if (!prices[0]) return json({ error: `No active Stripe price with lookup key ${lookupKey}` }, 500);
 

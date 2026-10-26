@@ -21,6 +21,7 @@ import {
   PAYMENTS_ENABLED,
   getBilling,
   hasAccess,
+  tierOfPlan,
   prices as livePrices,
 } from
   '../lib/billing';
@@ -55,8 +56,29 @@ const prices =
   PAYMENTS_ENABLED &&
   !member
     ? await livePrices()
-      .catch(() => ({}))
-    : {};
+      .catch(() => ({ basic: {}, premium: {} }))
+    : { basic: {}, premium: {} };
+const editHref =
+  acct!.side === 'owner'
+    ? '/owner/profile/edit#page-style'
+    : '/profile/edit#page-style';
+// The two memberships: Basic is the classic one-page layout, Premium the
+// founders' page design. Same features otherwise.
+const TIERS = [
+  {
+    key: 'basic',
+    name: 'Basic',
+    blurb: 'Your page in our classic layout: banner photos, About, Reviews, Photos and an enquiry form, with your own headings and colours.',
+  },
+  {
+    key: 'premium',
+    name: 'Premium',
+    blurb: 'Your page in our founders\u2019 design: one full-screen photo, a moving highlights strip, tabs for each section and gentle animations.',
+  },
+] as const;
+const upgrade =
+  Astro.url.searchParams
+    .get('upgrade') === 'premium';
 
 const money = (p: any) =>
   p
@@ -85,10 +107,11 @@ const fmt = (v: any) =>
       )
     : '';
 const planName =
-  billing?.plan
+  (tierOfPlan(billing?.plan) === 'premium' ? 'Premium' : 'Basic') +
+  (billing?.plan
     ?.endsWith('annual')
-    ? 'Yearly'
-    : 'Monthly';
+    ? ' · Yearly'
+    : ' · Monthly');
 const sideName =
   acct!.side === 'owner'
     ? 'Owner'
@@ -137,7 +160,8 @@ const btn =
 
       {!PAYMENTS_ENABLED && (
         <section style={card}>
-          <p style="margin:0;color:#6b4e35;line-height:1.75">MYAH is free while we grow. There's nothing to pay, and we'll give everyone plenty of notice before memberships begin.</p>
+          <p style="margin:0 0 12px;color:#6b4e35;line-height:1.75">MYAH is free while we grow. There's nothing to pay, and we'll give everyone plenty of notice before memberships begin.</p>
+          <p style="margin:0;color:#6b4e35;line-height:1.75">There will be two memberships: <strong>Basic</strong>, our classic page layout, and <strong>Premium</strong>, our founders&rsquo; page design. Until then you can use either. <a href={editHref}>Choose your page design</a></p>
         </section>
       )}
 
@@ -152,6 +176,7 @@ const btn =
                 ? `Ends on ${fmt(billing!.current_period_end)}. You can restart it any time before then.`
                 : `Renews on ${fmt(billing!.current_period_end)}.`}
           </p>
+          {tierOfPlan(billing?.plan) === 'basic' && <p style="margin:0 0 18px;color:#6b4e35;line-height:1.75">{upgrade && <strong>Premium needs a Premium membership. </strong>}Want the founders&rsquo; page design? Switch to Premium under &ldquo;Manage membership&rdquo;.</p>}
           <button type="button" data-billing="portal" style={btn}>Manage membership &amp; invoices</button>
         </section>
       )}
@@ -159,13 +184,19 @@ const btn =
       {PAYMENTS_ENABLED && !member && (
         <div>
           {welcome && <p style="margin:0 0 18px;color:#6b4e35">Thanks! We're confirming your payment — refresh in a moment.</p>}
+          {upgrade && <p style="margin:0 0 18px;color:#2f5d45;font-weight:600">The founders&rsquo; page design comes with Premium.</p>}
           <div data-plans="1" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px">
-            {(['month', 'year'] as const).map((iv) => (
-              <section style={card}>
-                <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 10px">{iv === 'month' ? 'Monthly' : 'Yearly'}</p>
-                <p style="font-family:'Marcellus',serif;font-size:2rem;margin:0 0 6px">{money((prices as any)[iv]) || '—'}<span style="font-size:1rem;color:#6b4e35"> / {iv}</span></p>
-                <p style="margin:0 0 22px;color:#6b4e35;font-size:.9rem">Including VAT where it applies. Cancel any time.</p>
-                <button type="button" data-billing="checkout" data-interval={iv} style={btn} disabled={!(prices as any)[iv]}>Choose {iv === 'month' ? 'monthly' : 'yearly'}</button>
+            {TIERS.map((t) => (
+              <section style={card + (t.key === 'premium' ? ';border-color:#2f5d45;box-shadow:0 0 0 1px #2f5d45' : '')}>
+                <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 10px">{t.name}</p>
+                <p style="margin:0 0 18px;color:#6b4e35;font-size:.9rem;line-height:1.7">{t.blurb}</p>
+                {(['month', 'year'] as const).map((iv) => (
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid rgba(110,84,56,.15)">
+                    <p style="font-family:'Marcellus',serif;font-size:1.5rem;margin:0">{money((prices as any)[t.key][iv]) || '—'}<span style="font-size:.9rem;color:#6b4e35"> / {iv}</span></p>
+                    <button type="button" data-billing="checkout" data-tier={t.key} data-interval={iv} style={btn} disabled={!(prices as any)[t.key][iv]}>Choose</button>
+                  </div>
+                ))}
+                <p style="margin:8px 0 0;color:#6b4e35;font-size:.82rem">Including VAT where it applies. Cancel any time.</p>
               </section>
             ))}
           </div>
@@ -188,7 +219,7 @@ const btn =
           const res = await fetch(`/api/billing/${b.dataset.billing}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ interval: b.dataset.interval }),
+            body: JSON.stringify({ interval: b.dataset.interval, tier: b.dataset.tier }),
           });
           const out = await res.json();
           if (out.url) { location.href = out.url; return; }

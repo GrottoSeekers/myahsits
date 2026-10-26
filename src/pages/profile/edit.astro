@@ -15,6 +15,18 @@ import {
   supabase,
 } from
   '../../lib/supabase';
+import PageDesign from
+  '../../components/PageDesign.astro';
+import {
+  PAYMENTS_ENABLED,
+  getBilling,
+} from
+  '../../lib/billing';
+import {
+  canUsePremium,
+  chosenLayout,
+} from
+  '../../lib/tier';
 
 const session =
   await getSession(
@@ -118,17 +130,33 @@ const pic: string =
   '/images/' +
   'avatar-cream.png';
 
+// Page design (Basic or Premium): the sections below are worded for it.
+const billing =
+  PAYMENTS_ENABLED
+    ? await getBilling(
+      session.userId,
+    ).catch(() => null)
+    : null;
+const premiumOk =
+  canUsePremium(billing);
+const premium =
+  chosenLayout(profile) ===
+    'premium' &&
+  premiumOk;
 const photoGroups = [
   {
     cat: 'hero',
-    title:
-      'Banner photos',
+    title: premium
+      ? 'Top photo'
+      : 'Banner photos',
     images: hero,
     last: false,
   },
   {
     cat: 'about',
-    title: tx(`
+    title: premium
+      ? 'About photos'
+      : tx(`
 Photos beside your bio
 `),
     images: about,
@@ -136,7 +164,9 @@ Photos beside your bio
   },
   {
     cat: 'gallery',
-    title: 'Gallery',
+    title: premium
+      ? 'Photos tab'
+      : 'Gallery',
     images: gallery,
     last: true,
   },
@@ -225,6 +255,9 @@ const pvData = {
   platformsN:
     platforms.length,
   token: newToken,
+  premium,
+  aboutLabel:
+    h.about_label || '',
 };
 const heroSrc: string =
   hero[0]?.src ||
@@ -241,16 +274,16 @@ const pvGallery = gallery
   );
 const aboutLabelPh =
   joint
-    ? 'Who We Are'
-    : 'Who I Am';
+    ? 'Who we are'
+    : 'Who I am';
 const galleryLabelPh =
   joint
-    ? "Pets We've Loved"
-    : "Pets I've Loved";
+    ? "Pets we've loved"
+    : "Pets I've loved";
 const galleryTitlePh =
   joint
-    ? 'Our Sits'
-    : 'My Sits';
+    ? 'Our — sits'
+    : 'My — sits';
 const enquiryTitlePh =
   'Book ' +
   (profile.name || 'us');
@@ -343,6 +376,7 @@ const REV_FIRST = 6;
       <div data-form-msg="1" role="status" style="display:none;margin-bottom:24px;padding:14px 18px;border-radius:12px;font-size:.86rem;font-weight:600"></div>
 
       <div data-section-tabs="1" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:34px">
+        <a href="#page-style" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Page design</a>
         <a href="#details" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Name &amp; bio</a>
         <a href="#photos" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Photos</a>
         <a href="#reviews" class="ep-jump" style="font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;text-decoration:none;padding:8px 16px;border-radius:50px;background:#fff;border:1px solid rgba(110,84,56,.28);transition:background .2s, color .2s, border-color .2s">Reviews</a>
@@ -355,8 +389,10 @@ const REV_FIRST = 6;
 
         <div style="display:flex;flex-direction:column;gap:24px">
 
+          <PageDesign side="sitter" current={premium ? 'premium' : 'basic'} premiumOk={premiumOk} paymentsOn={PAYMENTS_ENABLED} slug={slug} num="01" />
+
           <section id="details" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">01</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your name &amp; bio</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">02</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your name &amp; bio</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 28px;max-width:460px">Your name, a short line about you, and the story pet owners read first.</p>
 
@@ -386,13 +422,13 @@ const REV_FIRST = 6;
               <div style="margin-bottom:24px">
                 <label for="tagline" style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:10px">Short description</label>
                 <input data-tagline="1" type="text" id="tagline" name="tagline" value={profile.tagline ?? ''} placeholder="e.g. Experienced pet sitters based in Bath" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
-                <p style="font-size:.82rem;color:#6b4e35;margin:8px 0 0;line-height:1.6">One line under your name on the banner.</p>
+                <p style="font-size:.82rem;color:#6b4e35;margin:8px 0 0;line-height:1.6">{premium ? 'One line under your name, over your top photo.' : 'One line under your name on the banner.'}</p>
               </div>
 
               <div style="margin-bottom:24px">
-                <label for="badge" style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:10px">Highlight badge</label>
+                <label for="badge" style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:10px">{premium ? 'Status line' : 'Highlight badge'}</label>
                 <input data-badge="1" type="text" id="badge" name="badge_text" value={profile.badge_text ?? ''} placeholder="e.g. 5★ rated by every owner" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
-                <p style="font-size:.82rem;color:#6b4e35;margin:8px 0 0;line-height:1.6">A small pill on your banner photo. Leave blank to hide it.</p>
+                <p style="font-size:.82rem;color:#6b4e35;margin:8px 0 0;line-height:1.6">{premium ? 'Above your name with a small pulsing dot, e.g. “Free for sits from March”. Leave blank to show “MYAH sitter”.' : 'A small pill on your banner photo. Leave blank to hide it.'}</p>
               </div>
 
               <div style="margin-bottom:26px">
@@ -434,7 +470,7 @@ const REV_FIRST = 6;
           </section>
 
           <section id="photos" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">02</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Photos</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Photos</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 24px"></div>
 
             {photoGroups.map((g) => (
@@ -443,20 +479,23 @@ const REV_FIRST = 6;
                   <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0">{g.title}</p>
                   <span style="font-size:.78rem;color:#6b4e35">{plural(g.images.length)}</span>
                 </div>
-                {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">The big photos at the top of your page. They play as a slideshow, so wide photos look best.</p>}
-                {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">A small slideshow beside your About text. Photos of you with pets work well.</p>}
-                {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">Your photo grid. Show the pets you&rsquo;ve cared for and the places you&rsquo;ve stayed.</p>}
+                {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">{premium ? 'One still photo fills the screen when your page opens: the Cover photo. Any others join your About photos. A photo of you, with faces near the middle, works best.' : 'The big photos at the top of your page. They play as a slideshow, so wide photos look best.'}</p>}
+                {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">{premium ? 'Shown one at a time in a rounded frame beside your bio, with a soft zoom from one to the next. Upright photos of you with pets work well.' : 'A small slideshow beside your About text. Photos of you with pets work well.'}</p>}
+                {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">{premium ? 'The grid in your Photos tab; the first photo shows large. ' : 'Your photo grid. Show the pets you’ve cared for and the places you’ve stayed. '}Type the pet&rsquo;s name under a photo to show it in white on the photo.</p>}
                 <div style="display:flex;flex-wrap:wrap;gap:12px">
                   {g.images.map((img, i) => (
-                    <div class="ep-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">
-                      <img src={img.src} alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
-                      <span style={g.cat === 'hero' && i === 0 ? 'position:absolute;left:6px;bottom:6px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(44,26,14,.62);padding:3px 9px;border-radius:50px' : 'display:none'}>Cover</span>
-                      <form action="/api/profile/images" method="POST" style="display:contents">
-                        <input type="hidden" name="_action" value="delete" />
-                        <input type="hidden" name="category" value={g.cat} />
-                        <input type="hidden" name="index" value={String(i)} />
-                        <button type="submit" title="Remove photo" class="ep-thumb-x" style="position:absolute;top:6px;right:6px;width:23px;height:23px;border-radius:50%;background:rgba(44,26,14,.6);color:#fff;border:none;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .2s ease">&times;</button>
-                      </form>
+                    <div style="display:flex;flex-direction:column;gap:6px;width:118px">
+                      <div class="ep-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">
+                        <img src={img.src} alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
+                        <span style={g.cat === 'hero' && i === 0 ? 'position:absolute;left:6px;bottom:6px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(44,26,14,.62);padding:3px 9px;border-radius:50px' : 'display:none'}>Cover</span>
+                        <form action="/api/profile/images" method="POST" style="display:contents">
+                          <input type="hidden" name="_action" value="delete" />
+                          <input type="hidden" name="category" value={g.cat} />
+                          <input type="hidden" name="index" value={String(i)} />
+                          <button type="submit" title="Remove photo" class="ep-thumb-x" style="position:absolute;top:6px;right:6px;width:23px;height:23px;border-radius:50%;background:rgba(44,26,14,.6);color:#fff;border:none;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .2s ease">&times;</button>
+                        </form>
+                      </div>
+                      {g.cat === 'gallery' && <input type="text" data-cap={String(i)} value={img.cap || ''} maxlength="40" placeholder="Pet's name" aria-label={`Name on photo ${i + 1}`} style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:8px;padding:7px 9px;font-size:.78rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none" />}
                     </div>
                   ))}
                   <label class="ep-add" style="width:118px;height:88px;border-radius:10px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:'Montserrat',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease, border-color .25s ease;position:relative">
@@ -473,7 +512,7 @@ const REV_FIRST = 6;
           </section>
 
           <section id="reviews" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Reviews</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Reviews</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Send an owner your review link and what they write goes straight onto your page.</p>
 
@@ -510,9 +549,9 @@ const REV_FIRST = 6;
           </section>
 
           <section id="platforms" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your other profiles</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">05</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Your other profiles</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Add your other sitting sites or social pages, so owners can check you out.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:500px">Add your other sitting sites or social pages, so owners can check you out. {premium ? 'They show as small links under your bio.' : 'They show as cards in their own section.'}</p>
 
             <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
               {plats.map((p, i) => (
@@ -543,30 +582,30 @@ const REV_FIRST = 6;
           </section>
 
           <section id="headings" data-card="1" class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">05</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">06</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Change the titles on your page. Leave a box empty to keep the current wording.</p>
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Change the titles on your page. Leave a box empty to keep the current wording. Put &ldquo; &mdash; &rdquo; in a title to show the words after it in italics.</p>
 
             <form data-headings-form="1" action="/api/profile/headings" method="POST" style="margin:0">
               <div style="display:flex;flex-direction:column;gap:26px">
                 <div>
-                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">About section</p>
-                  <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">Your bio text and photos.</p>
+                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">{premium ? 'About tab' : 'About section'}</p>
+                  <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">{premium ? 'The small label and the title above your bio.' : 'Your bio text and photos.'}</p>
                   <div data-field-row="1" style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px">
                     <input type="text" name="about_label" value={h.about_label ?? ''} placeholder={aboutLabelPh} style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
                     <input type="text" name="about_title" value={h.about_title ?? ''} placeholder="A home away from home — for you and your pets." style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
                   </div>
                 </div>
                 <div>
-                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">Reviews section</p>
-                  <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">Your review cards.</p>
+                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">{premium ? 'Reviews tab' : 'Reviews section'}</p>
+                  <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">{premium ? 'Above your featured review and review cards.' : 'Your review cards.'}</p>
                   <div data-field-row="1" style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px">
-                    <input type="text" name="reviews_label" value={h.reviews_label ?? ''} placeholder="What Pet Owners Say" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
+                    <input type="text" name="reviews_label" value={h.reviews_label ?? ''} placeholder="What pet owners say" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
                     <input type="text" name="reviews_title" value={h.reviews_title ?? ''} placeholder="Leave blank to show your review count" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
                   </div>
                 </div>
                 <div>
-                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">Gallery section</p>
+                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">{premium ? 'Photos tab' : 'Gallery section'}</p>
                   <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">The photo grid.</p>
                   <div data-field-row="1" style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px">
                     <input type="text" name="gallery_label" value={h.gallery_label ?? ''} placeholder={galleryLabelPh} style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
@@ -574,10 +613,10 @@ const REV_FIRST = 6;
                   </div>
                 </div>
                 <div>
-                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">Contact section</p>
-                  <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">The enquiry form at the bottom.</p>
+                  <p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 4px">{premium ? 'Book tab' : 'Contact section'}</p>
+                  <p style="font-size:.84rem;color:#6b4e35;line-height:1.6;margin:0 0 14px">{premium ? 'Above the booking form.' : 'The enquiry form at the bottom.'}</p>
                   <div data-field-row="1" style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px">
-                    <input type="text" name="enquiry_label" value={h.enquiry_label ?? ''} placeholder="Get In Touch" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
+                    <input type="text" name="enquiry_label" value={h.enquiry_label ?? ''} placeholder="Get in touch" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
                     <input type="text" name="enquiry_title" value={h.enquiry_title ?? ''} placeholder={enquiryTitlePh} style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />
                   </div>
                 </div>
@@ -609,6 +648,36 @@ const REV_FIRST = 6;
               <span style="flex:1;min-width:0;font-size:.7rem;color:#6b4e35;background:#fff;border:1px solid rgba(44,26,14,.08);border-radius:50px;padding:5px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">myahsits.com/{slug}</span>
             </div>
 
+            {premium ? (
+            <div data-pv-body="1">
+              <div style="position:relative;height:230px;overflow:hidden;background:#2c1a0e">
+                <img src={heroSrc} alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
+                <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(20,13,7,.86) 0%, rgba(20,13,7,.2) 55%, rgba(20,13,7,.35) 100%)"></div>
+                <div style="position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;align-items:flex-start;gap:5px">
+                  <span data-pv-badge="1"></span>
+                  <p data-pv-name="1" style="font-family:'Marcellus',serif;font-size:1.35rem;color:#fff;line-height:1.1;margin:2px 0 0"></p>
+                  <p data-pv-tagline="1"></p>
+                  <span data-pv-btn="1"></span>
+                </div>
+              </div>
+              <div data-pv2-strip="1" style="padding:6px 14px;font-size:.52rem;font-weight:600;letter-spacing:.06em;color:#fff;white-space:nowrap;overflow:hidden">{pvData.reviewsN > 0 && <>5.0 average rating &nbsp;·&nbsp; {pvData.reviewsN} five-star reviews &nbsp;·&nbsp; </>}ID verified</div>
+              <div style="display:flex;gap:6px;padding:12px 14px 4px">
+                {['About', 'Reviews', 'Photos', 'Book'].map((t, i) => <span data-pv2-tab={i === 0 ? 'on' : ''} style="font-size:.52rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:50px;border:1px solid rgba(110,84,56,.25)">{t}</span>)}
+              </div>
+              <div style="padding:12px 16px 18px;display:flex;gap:12px;align-items:flex-start">
+                <img src={aboutSrc} alt="" style="width:66px;height:82px;border-radius:12px;object-fit:cover;flex-shrink:0" />
+                <div style="min-width:0">
+                  <p data-pv-label="1" data-pv-about-label="1"></p>
+                  <p data-pv-bio="1"></p>
+                </div>
+              </div>
+              <div hidden>
+                <div data-pv-reviews-wrap="1"><div data-pv-reviews="1"></div></div>
+                <div data-pv-mock-btn="1"></div>
+                <div data-pv-footer="1"><span data-pv-footer-name="1"></span></div>
+              </div>
+            </div>
+            ) : (
             <div data-pv-body="1">
               <div style="position:relative;height:186px;overflow:hidden">
                 <img src={heroSrc} alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
@@ -661,6 +730,7 @@ const REV_FIRST = 6;
                 <span data-pv-footer-name="1" style="font-size:.6rem;color:rgba(255,255,255,.45)"></span>
               </div>
             </div>
+            )}
 
             <div style="padding:18px 20px 20px;background:#fff;border-top:1px solid rgba(110,84,56,.2)">
               <form id="colours" data-theme-form="1" action="/api/profile/theme" method="POST" style="margin:0">
@@ -754,7 +824,7 @@ const REV_FIRST = 6;
     const btn = q('[data-pv-btn]');
     btn.textContent = joint ? 'Book Us Today' : 'Book Me Today';
     btn.style.cssText = 'display:inline-block;margin-top:6px;background:' + t.accent + ';color:#fff;font-size:.55rem;font-weight:600;padding:6px 15px;border-radius:6px;letter-spacing:.07em;text-transform:uppercase;';
-    q('[data-pv-about-label]').textContent = joint ? 'Who We Are' : 'Who I Am';
+    q('[data-pv-about-label]').textContent = s.aboutLabel || (joint ? 'Who we are' : 'Who I am');
     const pvBio = q('[data-pv-bio]');
     pvBio.textContent = bio ? (bio.length > 130 ? bio.slice(0, 130) + '…' : bio) : 'No bio yet';
     pvBio.style.cssText = 'font-size:.66rem;line-height:1.65;margin:0;color:' + t.text_soft + ';' + (bio ? '' : 'font-style:italic;opacity:.5;');
@@ -773,6 +843,16 @@ const REV_FIRST = 6;
     }).join('');
     q('[data-pv-mock-btn]').style.cssText = 'text-align:center;padding:6px;border-radius:4px;font-size:.52rem;font-weight:700;color:#fff;background:' + t.accent + ';';
     q('[data-pv-footer]').style.cssText = 'padding:12px 20px;display:flex;justify-content:space-between;align-items:center;background:' + t.text + ';';
+    // Premium preview: the founders' page design.
+    if (s.premium) {
+      badge.textContent = s.badge.trim() || 'MYAH sitter';
+      badge.style.cssText = 'font-size:.5rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);padding:4px 10px;border-radius:50px;';
+      tag.style.cssText = 'font-size:.6rem;color:rgba(255,255,255,.82);margin:0;line-height:1.4;' + (s.tagline.trim() ? '' : 'font-style:italic;opacity:.6;');
+      btn.textContent = joint ? 'Book us' : 'Book me';
+      btn.style.cssText = 'display:inline-block;margin-top:5px;background:' + t.accent + ';color:#fff;font-size:.5rem;font-weight:600;padding:6px 14px;border-radius:50px;letter-spacing:.1em;text-transform:uppercase;';
+      q('[data-pv2-strip]').style.background = t.accent;
+      qa('[data-pv2-tab]').forEach(el => { const on = el.getAttribute('data-pv2-tab') === 'on'; el.style.background = on ? t.accent : '#fff'; el.style.color = on ? '#fff' : t.text_soft; el.style.borderColor = on ? t.accent : 'rgba(110,84,56,.25)'; });
+    }
 
     // strength
     const filled = [s.name.trim(), s.tagline.trim(), bio.length > 80, s.heroN > 0, s.aboutN > 0, s.galleryN >= 4, s.reviewsN >= 2, s.platformsN > 0].filter(Boolean).length;
@@ -812,6 +892,7 @@ const REV_FIRST = 6;
   });
   ['#email', '#whatsapp'].forEach(sel => { const el = q(sel); el && el.addEventListener('input', dirty); });
   qa('[data-headings-form] input').forEach(el => el.addEventListener('input', dirty));
+  qa('[data-cap]').forEach(el => el.addEventListener('input', dirty));
 
   // colours
   qa('[data-swatch]').forEach(inp => {
@@ -919,6 +1000,17 @@ const REV_FIRST = 6;
         done.forEach(f => pfd.append('files', f, f.name));
         r = await fetch('/api/profile/images', { method: 'POST', body: pfd });
         if (r.url.includes('error=')) errors.push('Failed to upload ' + cat + ' photos.');
+      }
+
+      const caps = qa('[data-cap]');
+      if (caps.some(el => el.value !== el.defaultValue)) {
+        label('Saving photo names…');
+        const cfd = new FormData();
+        cfd.set('_action', 'captions');
+        cfd.set('category', 'gallery');
+        cfd.set('caps', JSON.stringify(caps.map(el => el.value.trim())));
+        r = await fetch('/api/profile/images', { method: 'POST', body: cfd });
+        if (r.url.includes('error=')) errors.push('Failed to save photo names.');
       }
 
       label('Saving headings…');
