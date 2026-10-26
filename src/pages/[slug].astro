@@ -378,6 +378,7 @@ const gallery = (isFounders
   )).map((g: Pic) => ({
   src: local(g.src),
   alt: g.alt || '',
+  cap: (g as any).cap || '',
 }));
 const platforms = list(
   p.platforms_json,

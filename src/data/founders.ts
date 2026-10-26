@@ -150,7 +150,8 @@ export const foundersGallery = [
   },
   {
     "src": "/images/hero-ted-1.jpg",
-    "alt": "Hero the Doberman and Ted cuddling on the couch"
+    "alt": "Hero the Doberman and Ted cuddling on the couch",
+    "cap": "Hero & Ted"
   },
   {
     "src": "/images/finley-1.jpg",
@@ -174,7 +175,8 @@ export const foundersGallery = [
   },
   {
     "src": "/images/angela-pets-3.jpg",
-    "alt": "Angela's cat in a paper bag"
+    "alt": "A cat in a paper bag",
+    "cap": "Paper-bag cat"
   },
   {
     "src": "/images/poppy-1.jpg",

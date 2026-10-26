@@ -21,8 +21,14 @@ const fileOf = (src: string) => String(src || '').split('/').pop();
 const heroPic = p.hero.find((h) => fileOf(h.src) === 'couple-field-1.jpg') || p.hero[0];
 const seen = new Set([fileOf(heroPic?.src || '')]);
 const pool = [...p.about, ...p.hero].filter((x) => { const k = fileOf(x.src); if (seen.has(k)) return false; seen.add(k); return true; });
-const aboutSmall = pool.slice(1, 3);
-const aboutBig = [pool[0], ...pool.slice(3)].filter(Boolean);
+// Sit photo captions kept short: "Chester · cocker spaniel".
+const shortCap = (g: any) => {
+  if (g.cap) return g.cap;
+  let c = String(g.alt || '').split(/\s+(?:with|on|in|at|giving|being|cuddling|playing|by)\s+/)[0];
+  c = c.replace(/^[A-Z][\w-]*'s\s+/, '').replace(/^(.+?) the (.+)$/, '$1 · $2').replace(/ and /g, ' & ')
+    .replace(/· (?:black|chocolate|white|golden|little|young) /, '· ');
+  return c.charAt(0).toUpperCase() + c.slice(1);
+};
 const rest = p.reviews.slice(3);
 const ICON = {
   star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
@@ -123,7 +129,8 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-ribbon ul { display:flex; list-style:none; margin:0; padding:0; }
     .sg-ribbon li { font:400 1.02rem 'Marcellus',serif; letter-spacing:.04em; padding:13px 0; white-space:nowrap; display:flex; align-items:center; }
     .sg-ribbon li::after { content:"✦"; font-size:.6rem; margin:0 22px; color:rgba(196,171,138,.6); }
-    @keyframes sg-run { to { transform:translateX(-50%); } }
+    .sg-ribbon .track { will-change:transform; }
+    @keyframes sg-run { from { transform:translate3d(0,0,0); } to { transform:translate3d(-50%,0,0); } }
     .sg-hero .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.35) 0%,rgba(20,13,7,0) 26%,rgba(20,13,7,.35) 52%,rgba(20,13,7,.9) 78%,rgba(20,13,7,.95) 100%); }
     .sg-hero .in { position:relative; width:100%; max-width:1180px; margin:0 auto; padding:120px max(22px,env(safe-area-inset-right,0px)) 40px max(22px,env(safe-area-inset-left,0px)); }
     .sg-now { display:flex; align-items:center; gap:9px; margin:0 0 14px; font-size:.78rem; font-weight:600; letter-spacing:.03em; color:#f1e6d6; text-shadow:0 1px 8px rgba(20,13,7,.6); }
@@ -167,14 +174,15 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 
     /* about */
     .sg-about { display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr); gap:48px; align-items:start; }
-    .sg-strip { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-    .sg-strip button { padding:0; border:0; border-radius:18px; overflow:hidden; cursor:zoom-in; aspect-ratio:4/5; background:var(--cream); }
-    .sg-strip button:first-child { grid-column:1 / -1; aspect-ratio:16/11; }
-    .sg-big { position:relative; }
-    .sg-big img { position:absolute; inset:0; opacity:0; transition:opacity 1.3s ease, transform .6s ease; }
-    .sg-big img.on { opacity:1; }
-    .sg-strip img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
-    .sg-strip button:hover img { transform:scale(1.04); }
+    /* one photo frame: each photo drifts in with a slow zoom, the last one fades out soft */
+    .sg-frame { position:relative; display:block; width:100%; padding:0; border:0; border-radius:24px; overflow:hidden; aspect-ratio:4/5; background:var(--ink); cursor:zoom-in; box-shadow:0 22px 50px rgba(44,26,14,.16); }
+    .sg-frame img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transform:scale(1.12); filter:blur(8px); transition:opacity 1.4s ease, transform 7s cubic-bezier(.2,.6,.2,1), filter 1.2s ease; }
+    .sg-frame img.on { opacity:1; transform:scale(1); filter:none; }
+    .sg-frame img.out { opacity:0; transform:scale(1.04); filter:blur(6px); transition:opacity 1.2s ease, transform 1.4s ease, filter 1.2s ease; }
+    .sg-fdots { display:flex; justify-content:center; gap:6px; margin-top:14px; }
+    .sg-fdots button { width:30px; height:18px; padding:0; border:0; background:none; cursor:pointer; display:flex; align-items:center; }
+    .sg-fdots i { display:block; width:100%; height:3px; border-radius:3px; background:rgba(110,84,56,.22); overflow:hidden; }
+    .sg-fdots button.on i::after { content:""; display:block; height:100%; background:var(--forest); animation:sg-fill 5.5s linear both; }
     .sg-bio { position:relative; }
     .sg-bio p { color:var(--soft); line-height:1.85; margin:0 0 14px; font-size:.98rem; }
     .sg-bio.clamp { max-height:13.2em; overflow:hidden; -webkit-mask-image:linear-gradient(#000 65%,transparent); mask-image:linear-gradient(#000 65%,transparent); }
@@ -218,6 +226,8 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-grid img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
     .sg-grid .cap { position:absolute; left:0; right:0; bottom:0; padding:28px 12px 10px; background:linear-gradient(transparent,rgba(20,13,7,.78)); color:#fff; font:600 .74rem/1.35 'Montserrat',sans-serif; letter-spacing:.02em; text-align:left; text-shadow:0 1px 4px rgba(0,0,0,.4); pointer-events:none; }
     .sg-grid button:first-child .cap { font-size:.9rem; padding:40px 18px 14px; }
+    .sg-grid .cap b { display:block; font-weight:600; }
+    .sg-grid .cap small { display:block; font-size:.82em; font-weight:500; opacity:.82; margin-top:1px; }
     .sg-grid button:hover img { transform:scale(1.05); }
     .sg-grid button:first-child { grid-column:span 2; grid-row:span 2; border-radius:18px; }
 
@@ -278,8 +288,6 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       .sg-trust li { font-size:.7rem; padding:7px 11px; }
       .sg-acts .btn { flex:1; padding:0 16px; }
       .sg-panel { padding-top:30px; padding-bottom:40px; }
-      .sg-strip { gap:8px; }
-      .sg-strip button:not(:first-child) { aspect-ratio:1; }
       .sg-feature { padding:28px 24px; border-radius:20px; }
       .sg-form { padding:20px; border-radius:18px; }
       .sg-foot a { margin:0 14px 0 0; }
@@ -309,17 +317,10 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     }
     /* phones have no hover: give a small response to a tap instead */
     @media (hover:none) {
-      .sg-strip button:active img, .sg-grid button:active img { transform:scale(1.05); transition-duration:.25s; }
+      .sg-grid button:active img { transform:scale(1.05); transition-duration:.25s; }
       .btn:active { transform:scale(.97); }
       .sg-glance div:active { transform:translateY(-3px); box-shadow:0 16px 34px rgba(44,26,14,.11); }
       .sg-rev:active { transform:scale(.985); }
-    }
-    /* Reduce Motion (iPhone setting): stop the moving effects, keep the fades */
-    @keyframes sg-fade { from { opacity:0; } to { opacity:1; } }
-    @media (prefers-reduced-motion:reduce) {
-      .sg-hero .bg img.on, .sg-seal svg, .sg-ribbon .track, .sg-now i { animation:none; }
-      .sg-hero .in > *, .sg-seal { animation-name:sg-fade; }
-      .rv { transform:none; }
     }
   </style>
 </head>
@@ -365,11 +366,11 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     <section class="sg-panel" id="about" role="tabpanel">
       <div class="sg-about">
         {pool.length > 0 && (
-          <div class="sg-strip">
-            <button type="button" class="sg-big" data-lightbox={aboutBig[0].src} data-alt={aboutBig[0].alt} data-big>
-              {aboutBig.map((a: any, i: number) => <img src={a.src} alt={i === 0 ? a.alt || '' : ''} class={i === 0 ? 'on' : undefined} loading={i === 0 ? 'lazy' : 'eager'} style={`object-position:${a.pos || 'center top'}`} data-bslide data-alt={a.alt || ''} />)}
+          <div class="sg-frame-wrap">
+            <button type="button" class="sg-frame" data-lightbox={pool[0].src} data-alt={pool[0].alt} aria-label="Open photo" data-big>
+              {pool.map((a: any, i: number) => <img src={a.src} alt={i === 0 ? a.alt || '' : ''} class={i === 0 ? 'on' : undefined} loading={i === 0 ? 'lazy' : 'eager'} style={`object-position:${a.pos || 'center top'}`} data-bslide data-alt={a.alt || ''} />)}
             </button>
-            {aboutSmall.map((a: any) => <button type="button" data-lightbox={a.src} data-alt={a.alt}><img src={a.src} alt={a.alt || ''} loading="lazy" style={`object-position:${a.pos || 'center top'}`} /></button>)}
+            {pool.length > 1 && <div class="sg-fdots">{pool.map((_: any, i: number) => <button type="button" aria-label={'Photo ' + (i + 1)} class={i === 0 ? 'on' : undefined} data-pdot={i}><i></i></button>)}</div>}
           </div>
         )}
         <div>
@@ -415,7 +416,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       <section class="sg-panel" id="photos" role="tabpanel" hidden>
         <span class="lbl">Pets we've loved</span>
         <h2 class="sg-h serif">Our <em>sits</em></h2>
-        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.alt && <span class="cap" aria-hidden="true">{g.alt}</span>}</button>)}</div>
+        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.alt && <span class="cap" aria-hidden="true">{shortCap(g).split(' · ').map((t: string, k: number) => k ? <small>{t}</small> : <b>{t}</b>)}</span>}</button>)}</div>
       </section>
     )}
 
@@ -461,7 +462,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     // tabs: one panel at a time
     const tabs = qa('[data-tab]');
     // scroll reveal (set up before the first tab opens)
-    const RV = '.sg-panel > .lbl, .sg-panel > .sg-h, .sg-strip button, .sg-about > div:last-child > :not(.sg-glance), .sg-glance > div, .sg-feature, .sg-rev, .sg-hint, .sg-grid button, .sg-book > div:first-child > :not(ul), .sg-promise li, .sg-form';
+    const RV = '.sg-panel > .lbl, .sg-panel > .sg-h, .sg-frame-wrap, .sg-about > div:last-child > :not(.sg-glance), .sg-glance > div, .sg-feature, .sg-rev, .sg-hint, .sg-grid button, .sg-book > div:first-child > :not(ul), .sg-promise li, .sg-form';
     const rvs = qa(RV); rvs.forEach(el => el.classList.add('rv'));
     const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
       es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
@@ -549,12 +550,25 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     window.addEventListener('resize', aimAll);
     document.fonts && document.fonts.ready.then(aimAll);
     // the big About photo fades through the other photos
-    const bs = qa('[data-bslide]'), big = q('[data-big]'); let bi = 0;
-    if (bs.length > 1) setInterval(() => {
-      if (big.closest('[hidden]')) return;
-      bs[bi].classList.remove('on'); bi = (bi + 1) % bs.length; bs[bi].classList.add('on');
-      big.dataset.lightbox = bs[bi].src; big.dataset.alt = bs[bi].dataset.alt;
-    }, 4500);
+    const bs = qa('[data-bslide]'), big = q('[data-big]'), pd = qa('[data-pdot]'); let bi = 0, bt, swiped = false;
+    const showB = i => {
+      if (i === bi) return;
+      const old = bs[bi]; old.classList.remove('on'); old.classList.add('out'); setTimeout(() => old.classList.remove('out'), 1400);
+      bi = i; bs[bi].classList.add('on'); big.dataset.lightbox = bs[bi].src; big.dataset.alt = bs[bi].dataset.alt;
+      pd.forEach((d, k) => { d.classList.remove('on'); if (k === i) { void d.offsetWidth; d.classList.add('on'); } });
+    };
+    const runB = () => { clearInterval(bt); if (bs.length > 1) bt = setInterval(() => { if (!big.closest('[hidden]')) showB((bi + 1) % bs.length); }, 5500); };
+    pd.forEach(d => d.addEventListener('click', () => { showB(+d.dataset.pdot); runB(); }));
+    // swipe left or right on a phone
+    let sx = null;
+    if (big) {
+      big.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+      big.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null;
+        if (Math.abs(dx) > 40) { swiped = true; showB((bi + (dx < 0 ? 1 : bs.length - 1)) % bs.length); runB(); } });
+      big.addEventListener('click', e => { if (swiped) { swiped = false; e.stopPropagation(); } }, true);
+      if (bs[0]) { bs[0].classList.remove('on'); requestAnimationFrame(() => requestAnimationFrame(() => bs[0].classList.add('on'))); }
+    }
+    runB();
     // featured reviews take turns; tapping a dot shows that one
     const fs = qa('[data-fslide]'), fd = qa('[data-fdot]'); let fi = 0, ft;
     const showF = i => { fi = i; fs.forEach((s, k) => s.classList.toggle('on', k === i)); fd.forEach((d, k) => d.setAttribute('aria-current', String(k === i))); };
