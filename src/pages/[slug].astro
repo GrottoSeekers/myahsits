@@ -17,6 +17,7 @@ import {
   foundersReviews,
   foundersGallery,
 } from '../data/founders';
+import { regionOnly } from '../lib/region';
 
 const { slug } =
   Astro.params;
@@ -344,7 +345,7 @@ const about = list(
   src: local(a.src),
   alt: a.alt || '',
 }));
-const reviews = isFounders
+const reviews = (isFounders
   ? mergeBy(
     arrOf(p.reviews_json),
     foundersReviews,
@@ -352,7 +353,7 @@ const reviews = isFounders
   )
   : arrOf(
     p.reviews_json,
-  );
+  )).map((r: any) => (r && r.platform ? { ...r, platform: regionOnly(String(r.platform)) } : r));
 const gallery = (isFounders
   ? foundersGallery
   : arrOf(
@@ -441,9 +442,9 @@ const title =
   name + ' — MYAH';
 // Photos shown before "Show all" (keeps the page short).
 const GAL_FIRST = 6;
-// Proposed 'Signature' design for the founders' page, shown with
-// ?layout=signature until the owner approves it.
-const SIGNATURE = isFounders && Astro.url.searchParams.get('layout') === 'signature';
+// The founders' page uses the 'Signature' design (owner, 26 Oct 2026).
+// ?layout=classic shows the previous design for comparison.
+const SIGNATURE = isFounders && Astro.url.searchParams.get('layout') !== 'classic';
 const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioParas, reviews, revCount, rating, gallery, plats, waNum, waHref, location, launched: LAUNCHED, pageSlug, title, blurb, ogImage, isFounders };
 ---
 

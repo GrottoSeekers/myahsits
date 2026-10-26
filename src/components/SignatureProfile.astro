@@ -2,7 +2,7 @@
 // "Signature" sitter page: the founders' page design proposed on 26 Oct 2026.
 // One screen of hero, then a sticky row of tabs (About, Reviews, Photos, Book)
 // with one panel open at a time, so the page stays short on a phone.
-// Shown at /<slug>?layout=signature until the owner approves it.
+// The founders page uses it (approved 26 Oct 2026); ?layout=classic shows the old one.
 import LaunchSoon from '../pages/_launchsoon.astro';
 
 interface Pic { src: string; pos?: string; alt?: string }
@@ -13,14 +13,35 @@ interface Props {
   launched: boolean; pageSlug: string; title: string; blurb: string; ogImage: string; isFounders: boolean;
 }
 const p = Astro.props;
-const first = p.reviews[0];
-const rest = p.reviews.slice(1);
+// The top three reviews take turns in the large card; the rest sit in the row.
+const featured = p.reviews.slice(0, 3);
+const rest = p.reviews.slice(3);
+const ICON = {
+  star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+  quote: '<path d="M5 18v-5.5C5 8.9 7 6.5 10 6v2.4c-1.6.5-2.5 1.8-2.5 3.6H10V18zm9 0v-5.5c0-3.6 2-6 5-6.5v2.4c-1.6.5-2.5 1.8-2.5 3.6H19V18z"/>',
+  paw: '<circle cx="7" cy="9" r="2"/><circle cx="12" cy="6.5" r="2"/><circle cx="17" cy="9" r="2"/><path d="M12 11c-3 0-5.5 3.2-5.5 5.3 0 1.6 1.3 2.2 2.6 2.2 1.1 0 1.9-.5 2.9-.5s1.8.5 2.9.5c1.3 0 2.6-.6 2.6-2.2C17.5 14.2 15 11 12 11z"/>',
+  shield: '<path d="M12 3l7 3v5.5c0 4.3-3 8-7 9.5-4-1.5-7-5.2-7-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+};
 const glance = [
-  { n: p.revCount, l: 'five-star reviews' },
-  { n: p.rating, l: 'average rating' },
-  ...(p.isFounders ? [{ n: '30+', l: 'pets cared for' }] : []),
-  { n: String(p.plats.length || '—'), l: 'verified profiles' },
+  { n: p.revCount, l: 'five-star reviews', i: ICON.quote },
+  { n: p.rating, l: 'average rating', i: ICON.star },
+  ...(p.isFounders ? [{ n: '30+', l: 'pets cared for', i: ICON.paw }] : []),
+  { n: String(p.plats.length || '—'), l: 'verified profiles', i: ICON.shield },
 ];
+// Running ribbon under the photo.
+const ribbon = [
+  p.reviews.length ? `${p.rating} average rating` : '',
+  p.reviews.length ? `${p.revCount} five-star reviews` : '',
+  'ID verified',
+  p.isFounders ? '30+ pets cared for' : '',
+  ...p.plats.map((x: any) => x.name),
+  p.location || '',
+].filter(Boolean);
+// The first photo takes a 2x2 tile; widen the last one so the final row is full
+// (4 across on desktop, 3 on phones).
+const cells = p.gallery.length + 3;
+const lastWideD = p.gallery.length > 4 && cells % 4 === 3;
+const lastWideM = p.gallery.length > 4 && cells % 3 === 2;
 const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 ---
 <html lang="en">
@@ -68,7 +89,31 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     /* hero */
     .sg-hero { position:relative; min-height:min(92svh,820px); display:flex; align-items:flex-end; color:#fff; overflow:hidden; background:var(--ink); }
     .sg-hero .bg img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.4s ease; }
-    .sg-hero .bg img.on { opacity:1; }
+    .sg-hero .bg img.on { opacity:1; animation:sg-kb 9s ease-out both; }
+    @keyframes sg-kb { from { transform:scale(1.09); } to { transform:scale(1); } }
+    @keyframes sg-rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+    .sg-hero .in > * { animation:sg-rise .9s cubic-bezier(.2,.7,.2,1) both; }
+    .sg-hero .in > :nth-child(2) { animation-delay:.12s; } .sg-hero .in > :nth-child(3) { animation-delay:.24s; }
+    .sg-hero .in > :nth-child(4) { animation-delay:.36s; } .sg-hero .in > :nth-child(5) { animation-delay:.48s; }
+    .sg-hero .in > :nth-child(6) { animation-delay:.6s; } .sg-hero .in > :nth-child(7) { animation-delay:.72s; }
+    .sg-seal { position:absolute; right:max(22px,env(safe-area-inset-right,0px)); bottom:44px; width:132px; height:132px; animation:sg-rise 1s .8s both; }
+    .sg-seal svg { width:100%; height:100%; animation:sg-spin 28s linear infinite; }
+    .sg-seal text { font:700 9.4px 'Lato',sans-serif; letter-spacing:.2em; fill:#f1e6d6; }
+    .sg-seal img { position:absolute; inset:0; margin:auto; width:46px; height:46px; }
+    .sg-seal::before { content:""; position:absolute; inset:22px; border-radius:50%; border:1px solid rgba(241,230,214,.35); background:rgba(20,13,7,.28); backdrop-filter:blur(4px); }
+    @keyframes sg-spin { to { transform:rotate(360deg); } }
+    .sg-progress { display:flex; gap:6px; margin-top:26px; }
+    .sg-progress i { width:34px; height:3px; border-radius:3px; background:rgba(255,255,255,.28); overflow:hidden; }
+    .sg-progress i.on::after { content:""; display:block; height:100%; background:#f1e6d6; animation:sg-fill 5s linear both; }
+    @keyframes sg-fill { from { width:0; } to { width:100%; } }
+
+    /* ribbon */
+    .sg-ribbon { background:var(--ink); color:var(--tan); overflow:hidden; border-top:1px solid rgba(196,171,138,.25); }
+    .sg-ribbon .track { display:flex; width:max-content; animation:sg-run 38s linear infinite; }
+    .sg-ribbon ul { display:flex; list-style:none; margin:0; padding:0; }
+    .sg-ribbon li { font:400 1.02rem 'Marcellus',serif; letter-spacing:.04em; padding:13px 0; white-space:nowrap; display:flex; align-items:center; }
+    .sg-ribbon li::after { content:"✦"; font-size:.6rem; margin:0 22px; color:rgba(196,171,138,.6); }
+    @keyframes sg-run { to { transform:translateX(-50%); } }
     .sg-hero .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.35) 0%,rgba(20,13,7,0) 30%,rgba(20,13,7,.25) 55%,rgba(20,13,7,.88) 100%); }
     .sg-hero .in { position:relative; width:100%; max-width:1180px; margin:0 auto; padding:120px max(22px,env(safe-area-inset-right,0px)) 40px max(22px,env(safe-area-inset-left,0px)); }
     .sg-badge { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:50px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(6px); font-size:.72rem; font-weight:600; letter-spacing:.04em; margin-bottom:18px; }
@@ -85,12 +130,18 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
 
     /* tabs */
     .sg-tabs { position:sticky; top:calc(68px + env(safe-area-inset-top,0px)); z-index:50; background:rgba(250,246,238,.96); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
-    .sg-tabs .in { max-width:1180px; margin:0 auto; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:12px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px)); }
+    .sg-tabs .in { position:relative; max-width:1180px; margin:0 auto; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:12px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px)); }
     .sg-tabs .in::-webkit-scrollbar { display:none; }
     .sg-tabs button { flex:none; display:inline-flex; align-items:center; gap:8px; min-height:42px; padding:0 18px; border-radius:50px; border:1px solid var(--line); background:#fff; color:var(--soft); font:600 .74rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
     .sg-tabs button small { font:700 .62rem 'Lato',sans-serif; letter-spacing:.04em; padding:2px 7px; border-radius:50px; background:var(--cream); color:var(--brown); }
     .sg-tabs button[aria-selected="true"] { background:var(--ink); border-color:var(--ink); color:#fff; }
     .sg-tabs button[aria-selected="true"] small { background:rgba(255,255,255,.16); color:var(--tan); }
+    .sg-pill { position:absolute; top:12px; left:0; height:42px; width:0; border-radius:50px; background:var(--ink); transition:transform .45s cubic-bezier(.3,.8,.2,1), width .45s cubic-bezier(.3,.8,.2,1); pointer-events:none; }
+    .sg-tabs.js .sg-pill { display:block; }
+    .sg-tabs button { position:relative; z-index:1; }
+    .sg-tabs.js button[aria-selected="true"] { background:transparent; border-color:transparent; }
+    .sg-panel.show > * { animation:sg-rise .6s cubic-bezier(.2,.7,.2,1) both; }
+    .sg-panel.show > :nth-child(2) { animation-delay:.07s; } .sg-panel.show > :nth-child(3) { animation-delay:.14s; } .sg-panel.show > :nth-child(4) { animation-delay:.21s; }
 
     .sg-panel { max-width:1180px; margin:0 auto; padding:44px max(22px,env(safe-area-inset-right,0px)) 56px max(22px,env(safe-area-inset-left,0px)); }
     .sg-panel[hidden] { display:none; }
@@ -109,10 +160,13 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-bio p { color:var(--soft); line-height:1.85; margin:0 0 14px; font-size:.98rem; }
     .sg-bio.clamp { max-height:13.2em; overflow:hidden; -webkit-mask-image:linear-gradient(#000 65%,transparent); mask-image:linear-gradient(#000 65%,transparent); }
     .sg-more { background:none; border:0; padding:0; margin:4px 0 0; font:600 .74rem 'Montserrat',sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--forest); cursor:pointer; border-bottom:1px solid currentColor; }
-    .sg-glance { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:28px 0 0; }
-    .sg-glance div { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
-    .sg-glance b { display:block; font:400 1.8rem 'Marcellus',serif; color:var(--forest); line-height:1.1; }
-    .sg-glance span { font-size:.74rem; color:var(--soft); letter-spacing:.02em; }
+    .sg-glance { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:30px 0 0; }
+    .sg-glance div { position:relative; overflow:hidden; display:grid; grid-template-columns:auto 1fr; grid-template-rows:auto auto; column-gap:14px; align-items:center; background:linear-gradient(160deg,#fff 0%,#fbf7f0 100%); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 10px 28px rgba(44,26,14,.07); transition:transform .3s, box-shadow .3s; }
+    .sg-glance div:hover { transform:translateY(-3px); box-shadow:0 16px 34px rgba(44,26,14,.11); }
+    .sg-glance div::after { content:""; position:absolute; left:18px; right:18px; top:0; height:2px; border-radius:0 0 2px 2px; background:linear-gradient(90deg,var(--forest),var(--tan)); }
+    .sg-glance svg { grid-row:1 / 3; width:44px; height:44px; padding:11px; border-radius:50%; background:var(--forest); fill:#fff; box-shadow:0 6px 14px rgba(47,93,69,.3); }
+    .sg-glance b { display:block; font:400 2rem 'Marcellus',serif; color:var(--ink); line-height:1; }
+    .sg-glance span { font:700 .62rem 'Lato',sans-serif; color:var(--brown); letter-spacing:.16em; text-transform:uppercase; margin-top:6px; }
     .sg-plats { display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 0; }
     .sg-plats a { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:50px; background:#fff; border:1px solid var(--line); text-decoration:none; font-size:.78rem; font-weight:600; color:var(--ink); }
     .sg-plats a::before { content:"✓"; color:#fff; background:var(--forest); width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.62rem; }
@@ -121,9 +175,16 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-feature { background:var(--ink); color:#fff; border-radius:24px; padding:38px 40px; position:relative; overflow:hidden; margin:24px 0 18px; }
     .sg-feature::after { content:"\201D"; position:absolute; right:26px; top:-18px; font:400 9rem 'Marcellus',serif; color:rgba(196,171,138,.16); }
     .sg-feature .star { color:#e8c36a; letter-spacing:.22em; font-size:.86rem; }
+    .sg-feature .slides { display:grid; }
+    .sg-feature .slide { grid-area:1 / 1; opacity:0; transform:translateY(10px); transition:opacity .7s ease, transform .7s ease; visibility:hidden; }
+    .sg-feature .slide.on { opacity:1; transform:none; visibility:visible; }
+    .sg-dots { display:flex; gap:8px; margin-top:22px; }
+    .sg-dots button { width:28px; height:4px; padding:0; border:0; border-radius:4px; background:rgba(196,171,138,.3); cursor:pointer; }
+    .sg-dots button[aria-current="true"] { background:var(--tan); }
     .sg-feature blockquote { margin:14px 0 18px; font:400 clamp(1.2rem,2.6vw,1.65rem)/1.45 'Marcellus',serif; max-width:820px; }
     .sg-feature cite { font-style:normal; font-size:.74rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--tan); }
     .sg-rows { display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px 2px 14px; scrollbar-width:thin; }
+    .sg-panel.show .sg-rev { animation:sg-rise .6s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(.2s + var(--i,0) * .07s); }
     .sg-rev { flex:none; width:min(330px,82vw); scroll-snap-align:start; background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px 20px 18px; display:flex; flex-direction:column; gap:12px; }
     .sg-rev p { margin:0; font-size:.88rem; line-height:1.65; color:var(--soft); font-style:italic; display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; }
     .sg-rev.open p { display:block; }
@@ -138,13 +199,16 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     .sg-grid button { padding:0; border:0; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--cream); cursor:zoom-in; position:relative; }
     .sg-grid img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
     .sg-grid button:hover img { transform:scale(1.05); }
+    .sg-grid button:first-child { grid-column:span 2; grid-row:span 2; border-radius:18px; }
+    .sg-panel.show .sg-grid button { animation:sg-rise .55s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(.15s + var(--i,0) * .035s); }
 
     /* book */
     .sg-book { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:44px; align-items:start; }
     .sg-promise { list-style:none; padding:0; margin:20px 0 22px; display:grid; gap:10px; }
     .sg-promise li { display:flex; gap:10px; align-items:flex-start; font-size:.92rem; color:var(--soft); line-height:1.5; }
     .sg-promise li::before { content:"✓"; flex:none; width:22px; height:22px; border-radius:50%; background:#e4efe7; color:var(--forest); display:flex; align-items:center; justify-content:center; font-size:.7rem; font-weight:700; }
-    .sg-form { background:#fff; border:1px solid var(--line); border-radius:22px; padding:26px; display:grid; gap:14px; box-shadow:0 18px 50px rgba(44,26,14,.06); }
+    .sg-form { position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:22px; padding:30px 26px 26px; display:grid; gap:14px; box-shadow:0 18px 50px rgba(44,26,14,.08); }
+    .sg-form::before { content:""; position:absolute; left:0; right:0; top:0; height:4px; background:linear-gradient(90deg,var(--forest),var(--tan)); }
     .sg-form .two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
     .sg-form label { display:grid; gap:6px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
     .sg-form input, .sg-form textarea { font:400 .95rem 'Montserrat',sans-serif; color:var(--ink); background:var(--paper); border:1.5px solid rgba(110,84,56,.25); border-radius:12px; padding:12px 14px; width:100%; min-width:0; }
@@ -176,7 +240,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       .sg-about, .sg-book { grid-template-columns:minmax(0,1fr); gap:28px; }
       .sg-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
       .sg-bar { display:flex; }
-      body { padding-bottom:84px; }
+      footer.sg-foot { padding-bottom:calc(110px + env(safe-area-inset-bottom,0px)); }
     }
     @media (max-width:560px) {
       .sg-top .btn { display:none; }
@@ -190,8 +254,26 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       .sg-feature { padding:28px 24px; border-radius:20px; }
       .sg-form { padding:20px; border-radius:18px; }
       .sg-foot a { margin:0 14px 0 0; }
+      .sg-seal { width:92px; height:92px; bottom:auto; top:calc(78px + env(safe-area-inset-top,0px)); }
+      .sg-seal text { font-size:9.4px; }
+      .sg-seal img { width:32px; height:32px; }
+      .sg-seal::before { inset:16px; }
+      .sg-glance { gap:10px; }
+      .sg-glance div { grid-template-columns:1fr; padding:16px 14px 14px; }
+      .sg-glance svg { grid-row:auto; width:36px; height:36px; padding:9px; margin-bottom:12px; }
+      .sg-glance b { font-size:1.75rem; }
+      .sg-ribbon li { font-size:.92rem; padding:11px 0; }
+      .sg-ribbon li::after { margin:0 16px; }
     }
-    @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+    .sg-grid button.wide-d { grid-column:span 2; aspect-ratio:2 / 1; }
+    @media (max-width:900px) {
+      .sg-grid button.wide-d { grid-column:auto; aspect-ratio:1; }
+      .sg-grid button.wide-m { grid-column:span 2; aspect-ratio:2 / 1; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after { animation:none !important; transition:none !important; }
+      .sg-ribbon .track { transform:none; }
+    }
   </style>
 </head>
 <body>
@@ -217,11 +299,21 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
         <a class="btn btn-main" href="#book" data-open="book">Book {p.nameB ? 'us' : 'me'}</a>
         {p.waNum && <a class="btn btn-glass" href={p.waHref} target="_blank" rel="noopener">WhatsApp</a>}
       </div>
+      {p.hero.length > 1 && <div class="sg-progress" aria-hidden="true">{p.hero.map((_, i) => <i class={i === 0 ? 'on' : undefined}></i>)}</div>}
+    </div>
+    <div class="sg-seal" aria-hidden="true">
+      <svg viewBox="0 0 132 132"><defs><path id="sg-ring" d="M66,66 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0" /></defs><text><textPath href="#sg-ring" textLength="337" lengthAdjust="spacing">{(p.isFounders ? 'FOUNDERS OF MYAH · ' : 'MYAH SITTER · ') + 'MAKE YOURSELF AT HOME · '}</textPath></text></svg>
+      <img src="/images/logo-mark-white.png" alt="" />
     </div>
   </section>
 
+  <div class="sg-ribbon" aria-label={ribbon.join(', ')}>
+    <div class="track">{[0, 1].map((k) => <ul aria-hidden="true">{ribbon.concat(ribbon).map((t) => <li>{t}</li>)}</ul>)}</div>
+  </div>
+
   <nav class="sg-tabs" aria-label="About this sitter">
     <div class="in" role="tablist">
+      <span class="sg-pill" aria-hidden="true"></span>
       <button type="button" role="tab" aria-selected="true" aria-controls="about" data-tab="about">About</button>
       {p.reviews.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="reviews" data-tab="reviews">Reviews <small>{p.revCount}</small></button>}
       {p.gallery.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="photos" data-tab="photos">Photos <small>{p.gallery.length}</small></button>}
@@ -242,7 +334,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
           <h2 class="sg-h serif">A home away from home, <em>for you and your pets.</em></h2>
           <div class="sg-bio" data-bio>{p.bio.map((t) => <p>{t}</p>)}</div>
           <button type="button" class="sg-more" data-bio-more hidden>Read more</button>
-          <div class="sg-glance">{glance.map((g) => <div><b>{g.n}</b><span>{g.l}</span></div>)}</div>
+          <div class="sg-glance">{glance.map((g) => <div><svg viewBox="0 0 24 24" aria-hidden="true" set:html={g.i}></svg><b data-count={g.n}>{g.n}</b><span>{g.l}</span></div>)}</div>
           {p.plats.length > 0 && <div class="sg-plats">{p.plats.map((x: any) => <a href={x.url} target="_blank" rel="noopener noreferrer">{x.name}</a>)}</div>}
         </div>
       </div>
@@ -252,20 +344,27 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       <section class="sg-panel" id="reviews" role="tabpanel" hidden>
         <span class="lbl">What pet owners say</span>
         <h2 class="sg-h serif">{p.revCount}{' '}<em>five-star reviews</em></h2>
-        <div class="sg-feature">
+        <div class="sg-feature" data-feature>
           <span class="star">★★★★★</span>
-          <blockquote>&ldquo;{first.text}&rdquo;</blockquote>
-          <cite>{first.name}{first.platform ? ' · ' + first.platform : ''}</cite>
+          <div class="slides">
+            {featured.map((r: any, i: number) => (
+              <div class={'slide' + (i === 0 ? ' on' : '')} data-fslide>
+                <blockquote>&ldquo;{r.text}&rdquo;</blockquote>
+                <cite>{r.name}{r.platform ? ' · ' + r.platform : ''}</cite>
+              </div>
+            ))}
+          </div>
+          {featured.length > 1 && <div class="sg-dots">{featured.map((r: any, i: number) => <button type="button" aria-label={'Review ' + (i + 1)} aria-current={i === 0 ? 'true' : 'false'} data-fdot={i}></button>)}</div>}
         </div>
-        <div class="sg-rows" data-rows>
-          {rest.map((r: any) => (
-            <article class="sg-rev">
+        {rest.length > 0 && <div class="sg-rows" data-rows>
+          {rest.map((r: any, i: number) => (
+            <article class="sg-rev" style={`--i:${Math.min(i, 6)}`}>
               <p>&ldquo;{r.text}&rdquo;</p>
               <div class="who"><span class="av">{r.initials || String(r.name || '?').charAt(0)}</span><div><b>{r.name}</b><span>{r.platform}</span></div></div>
             </article>
           ))}
-        </div>
-        <p class="sg-hint">Swipe for more · tap a review to read it all</p>
+        </div>}
+        {rest.length > 0 && <p class="sg-hint">Swipe for more · tap a review to read it all</p>}
       </section>
     )}
 
@@ -273,7 +372,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       <section class="sg-panel" id="photos" role="tabpanel" hidden>
         <span class="lbl">Pets we've loved</span>
         <h2 class="sg-h serif">Our <em>sits</em></h2>
-        <div class="sg-grid">{p.gallery.map((g) => <button type="button" data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" /></button>)}</div>
+        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" /></button>)}</div>
       </section>
     )}
 
@@ -318,13 +417,32 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     const q = s => document.querySelector(s), qa = s => Array.from(document.querySelectorAll(s));
     // tabs: one panel at a time
     const tabs = qa('[data-tab]');
+    const nav = q('.sg-tabs'), pill = q('.sg-pill');
+    const movePill = () => { const t = tabs.find(b => b.getAttribute('aria-selected') === 'true'); if (t) { pill.style.width = t.offsetWidth + 'px'; pill.style.transform = 'translateX(' + t.offsetLeft + 'px)'; } };
+    nav.classList.add('js');
     const open = (id, scroll) => {
-      tabs.forEach(t => { const on = t.dataset.tab === id; t.setAttribute('aria-selected', String(on)); q('#' + t.dataset.tab).hidden = !on; });
+      tabs.forEach(t => { const on = t.dataset.tab === id; t.setAttribute('aria-selected', String(on)); const panel = q('#' + t.dataset.tab); panel.hidden = !on; panel.classList.toggle('show', on); });
+      movePill(); counts();
       if (scroll) { const top = q('.sg-tabs').getBoundingClientRect().top + window.scrollY - (q('[data-top]').offsetHeight - 2); window.scrollTo({ top, behavior: 'smooth' }); }
     };
     tabs.forEach(t => t.addEventListener('click', () => open(t.dataset.tab, window.scrollY > q('[data-hero]').offsetHeight - 200)));
     qa('[data-open]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); open(a.dataset.open, true); }));
-    const h = location.hash.slice(1); if (h && q('[data-tab="' + h + '"]')) open(h, false);
+    window.addEventListener('resize', movePill);
+    document.fonts && document.fonts.ready.then(movePill);
+    // the numbers count up the first time they come into view
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function counts() {
+      qa('[data-count]').forEach(b => {
+        if (b.dataset.done || still || b.closest('[hidden]')) return;
+        const m = /^(\d+(?:\.\d+)?)(.*)$/.exec(b.dataset.count); if (!m) return;
+        const io = new IntersectionObserver(es => { if (!es[0].isIntersecting) return; io.disconnect(); b.dataset.done = '1';
+          const end = parseFloat(m[1]), dp = (m[1].split('.')[1] || '').length, t0 = performance.now();
+          const step = now => { const k = Math.min(1, (now - t0) / 1400), e = 1 - Math.pow(1 - k, 3); b.textContent = (end * e).toFixed(dp) + m[2]; if (k < 1) requestAnimationFrame(step); };
+          requestAnimationFrame(step); });
+        io.observe(b);
+      });
+    }
+    const h = location.hash.slice(1); open(h && q('[data-tab="' + h + '"]') ? h : 'about', false);
     // top bar and phone bar
     const top = q('[data-top]'), logo = q('[data-logo]'), bar = q('[data-bar]'), hero = q('[data-hero]');
     const tick = () => {
@@ -336,7 +454,18 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
     tabs.forEach(t => t.addEventListener('click', tick));
     // hero slideshow
     const slides = qa('[data-slide]'); let si = 0;
-    if (slides.length > 1) setInterval(() => { slides[si].classList.remove('on'); si = (si + 1) % slides.length; slides[si].classList.add('on'); }, 5000);
+    const bars = qa('.sg-progress i');
+    if (slides.length > 1) setInterval(() => {
+      slides[si].classList.remove('on'); bars[si] && bars[si].classList.remove('on');
+      si = (si + 1) % slides.length;
+      slides[si].classList.add('on'); bars[si] && (void bars[si].offsetWidth, bars[si].classList.add('on'));
+    }, 5000);
+    // featured reviews take turns; tapping a dot shows that one
+    const fs = qa('[data-fslide]'), fd = qa('[data-fdot]'); let fi = 0, ft;
+    const showF = i => { fi = i; fs.forEach((s, k) => s.classList.toggle('on', k === i)); fd.forEach((d, k) => d.setAttribute('aria-current', String(k === i))); };
+    const runF = () => { clearInterval(ft); if (fs.length > 1 && !still) ft = setInterval(() => showF((fi + 1) % fs.length), 7000); };
+    fd.forEach(d => d.addEventListener('click', () => { showF(+d.dataset.fdot); runF(); }));
+    runF();
     // bio read more
     const bio = q('[data-bio]'), more = q('[data-bio-more]');
     if (bio && more) { bio.classList.add('clamp'); if (bio.scrollHeight > bio.clientHeight + 8) more.hidden = false; else bio.classList.remove('clamp');
