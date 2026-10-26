@@ -461,7 +461,7 @@ UPDATE profiles p SET
  },
  {
   "src": "/images/angela-pets-3.jpg",
-  "alt": "Angela's cat in a paper bag"
+  "alt": "Fraser the cat in a paper bag"
  },
  {
   "src": "/images/poppy-1.jpg",
