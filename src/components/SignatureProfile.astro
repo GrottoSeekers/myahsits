@@ -21,12 +21,11 @@ const fileOf = (src: string) => String(src || '').split('/').pop();
 const heroPic = p.hero.find((h) => fileOf(h.src) === 'couple-field-1.jpg') || p.hero[0];
 const seen = new Set([fileOf(heroPic?.src || '')]);
 const pool = [...p.about, ...p.hero].filter((x) => { const k = fileOf(x.src); if (seen.has(k)) return false; seen.add(k); return true; });
-// Sit photo captions kept short: "Chester · cocker spaniel".
+// Sit photo captions: just the pet's name, e.g. "Chester".
 const shortCap = (g: any) => {
   if (g.cap) return g.cap;
   let c = String(g.alt || '').split(/\s+(?:with|on|in|at|giving|being|cuddling|playing|by)\s+/)[0];
-  c = c.replace(/^[A-Z][\w-]*'s\s+/, '').replace(/^(.+?) the (.+)$/, '$1 · $2').replace(/ and /g, ' & ')
-    .replace(/· (?:black|chocolate|white|golden|little|young) /, '· ');
+  c = c.replace(/^[A-Z][\w-]*'s\s+/, '').replace(/ the .+$/, '').replace(/ and /g, ' & ');
   return c.charAt(0).toUpperCase() + c.slice(1);
 };
 const rest = p.reviews.slice(3);
@@ -416,7 +415,7 @@ const eyebrow = p.isFounders ? 'Founders of MYAH' : 'MYAH sitter';
       <section class="sg-panel" id="photos" role="tabpanel" hidden>
         <span class="lbl">Pets we've loved</span>
         <h2 class="sg-h serif">Our <em>sits</em></h2>
-        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.alt && <span class="cap" aria-hidden="true">{shortCap(g).split(' · ').map((t: string, k: number) => k ? <small>{t}</small> : <b>{t}</b>)}</span>}</button>)}</div>
+        <div class="sg-grid">{p.gallery.map((g, i) => <button type="button" class={i === p.gallery.length - 1 ? [lastWideD && 'wide-d', lastWideM && 'wide-m'].filter(Boolean).join(' ') || undefined : undefined} style={`--i:${Math.min(i, 14)}`} data-lightbox={g.src} data-alt={g.alt} aria-label={g.alt || 'Open photo'}><img src={g.src} alt={g.alt} loading="lazy" />{g.alt && <span class="cap" aria-hidden="true"><b>{shortCap(g)}</b></span>}</button>)}</div>
       </section>
     )}
 

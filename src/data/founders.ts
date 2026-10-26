@@ -175,8 +175,8 @@ export const foundersGallery = [
   },
   {
     "src": "/images/angela-pets-3.jpg",
-    "alt": "A cat in a paper bag",
-    "cap": "Paper-bag cat"
+    "alt": "Fraser the cat in a paper bag",
+    "cap": "Fraser"
   },
   {
     "src": "/images/poppy-1.jpg",
