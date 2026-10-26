@@ -670,9 +670,9 @@ const initial = {
   const P = s.premium;
   const HEADINGS = [
     { title: P ? 'Home tab' : 'About section', where: P ? 'The small label and the title above your words about the home.' : 'Your bio text and photos.', label: 'about_label', titleKey: 'about_title', labelPh: 'About our home', titlePh: () => 'A great place to stay — for you and the pets.' },
-    { title: P ? 'Pets tab' : 'Pets section', where: P ? 'Above your pet cards.' : 'The row of pet cards.', label: 'pets_label', titleKey: 'pets_title', labelPh: 'Meet the pets', titlePh: () => 'Who you would be looking after' },
-    { title: P ? 'Photos tab' : 'Gallery section', where: 'The photo grid.', label: 'gallery_label', titleKey: 'gallery_title', labelPh: 'Our home', titlePh: () => 'Room by room' },
-    { title: P ? 'Contact tab' : 'Contact section', where: P ? 'Above the enquiry form.' : 'The enquiry form at the bottom.', label: 'enquiry_label', titleKey: 'enquiry_title', labelPh: 'Get in touch', titlePh: () => 'Contact ' + (s.name.trim() || 'us') }
+    { title: P ? 'Pets tab' : 'Pets section', where: P ? 'Above your pet cards.' : 'The row of pet cards.', label: 'pets_label', titleKey: 'pets_title', labelPh: 'Meet the pets', titlePh: () => 'Who you would be — looking after' },
+    { title: P ? 'Photos tab' : 'Gallery section', where: 'The photo grid.', label: 'gallery_label', titleKey: 'gallery_title', labelPh: 'Our home', titlePh: () => 'Room — by room' },
+    { title: P ? 'Contact tab' : 'Contact section', where: P ? 'Above the enquiry form.' : 'The enquiry form at the bottom.', label: 'enquiry_label', titleKey: 'enquiry_title', labelPh: 'Get in touch', titlePh: () => 'Contact — ' + (s.name.trim() || 'us') }
   ];
   const headInput = (key, ph) => '<input type="text" data-heading="' + key + '" aria-label="' + esc(ph) + '" value="' + esc(s.headings[key]) + '" placeholder="' + esc(ph) + '" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 15px;font-size:.93rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;transition:border-color .2s, box-shadow .2s" />';
   q('[data-headings]').innerHTML = HEADINGS.map(h =>
