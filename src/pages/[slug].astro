@@ -326,6 +326,20 @@ const plainHero: Pic[] = [{
   ),
   pos: 'center',
 }];
+// Where our faces sit in each founders photo (from the top), so a wide,
+// short frame crops to the faces instead of the sky (owner, 26 Oct 2026).
+const FOCUS: Record<string, string> = {
+  'couple-airport-1.jpg': 'center 28%',
+  'couple-boat-1.jpg': 'center 20%',
+  'couple-bw-1.jpg': 'center 25%',
+  'couple-dinner-1.jpg': 'center 42%',
+  'couple-field-1.jpg': 'center 48%',
+  'couple-night-1.jpg': 'center 30%',
+  'couple-villa-1.jpg': 'center 26%',
+};
+const focusOf = (src: string) => FOCUS[String(src || '').split('/').pop() || ''];
+// Photos where we stand far apart: a narrow phone crop would cut one of us off.
+const WIDE = new Set(['couple-dinner-1.jpg']);
 const hero = list(
   p.hero_images_json,
   F ? heroDef
@@ -335,14 +349,17 @@ const hero = list(
 ).map((h: Pic) => ({
   src: local(h.src),
   pos:
+    focusOf(h.src) ||
     h.pos ||
     'center 30%',
+  wide: WIDE.has(String(h.src || '').split('/').pop() || ''),
 }));
 const about = list(
   p.about_images_json,
   F ? aboutDef : ownPic,
 ).map((a: Pic) => ({
   src: local(a.src),
+  pos: focusOf(a.src) || a.pos || 'center top',
   alt: a.alt || '',
 }));
 const reviews = (isFounders
