@@ -2,30 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="robots" content="noindex" />
-  <meta name="theme-color" content="#faf6ee" />
+  <meta name="theme-color" content="#2c1a0e" />
   <title>MYAH — you're offline</title>
   <link rel="icon" href="/images/favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:wght@400;500;600&family=Lato:wght@700&display=swap" rel="stylesheet" />
   <style>
-    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:#faf6ee; color:#2c1a0e; font-family:"Montserrat","Helvetica Neue",Arial,sans-serif; padding:24px 16px; box-sizing:border-box; text-align:center; }
-    main { max-width:420px; }
-    img { width:72px; height:72px; display:block; margin:0 auto 22px; }
-    .brand { font-weight:500; letter-spacing:.28em; color:#2f5d45; font-size:1.1rem; margin:0 0 4px; }
-    .tag { font-family:"Lato","Helvetica Neue",Arial,sans-serif; font-weight:700; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:#8a6a4f; margin:0 0 28px; }
-    h1 { font-family:"Marcellus",Georgia,serif; font-weight:400; font-size:1.8rem; line-height:1.2; margin:0 0 12px; }
-    p.copy { color:#6b4e35; font-size:.98rem; line-height:1.75; margin:0 0 26px; }
-    button { font:inherit; font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:#2f5d45; border:0; border-radius:999px; padding:15px 30px; cursor:pointer; }
+    * { box-sizing:border-box; }
+    html, body { height:100%; }
+    body { margin:0; background:#2c1a0e; color:#fff; font-family:"Montserrat","Helvetica Neue",Arial,sans-serif; overflow:hidden; }
+    .bg { position:fixed; inset:0; background:#2c1a0e url('/images/slideshow-springer-beach.jpeg') center 40% / cover no-repeat; animation:kb 16s ease-out both; }
+    .shade { position:fixed; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.55) 0%,rgba(20,13,7,.2) 30%,rgba(20,13,7,.75) 62%,rgba(20,13,7,.95) 100%); }
+    @keyframes kb { from { transform:scale(1.08); } to { transform:scale(1); } }
+    @keyframes rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .logo { position:fixed; top:calc(22px + env(safe-area-inset-top,0px)); left:24px; display:flex; align-items:center; gap:12px; z-index:2; }
+    .logo img { width:40px; height:40px; }
+    .logo span { display:flex; flex-direction:column; gap:4px; padding-left:12px; border-left:1px solid rgba(255,255,255,.45); font-weight:500; letter-spacing:.28em; font-size:1.1rem; line-height:1; }
+    .logo small { font-family:"Lato","Helvetica Neue",Arial,sans-serif; font-weight:700; font-size:.45rem; letter-spacing:.2em; text-transform:uppercase; opacity:.85; }
+    main { position:relative; z-index:2; min-height:100%; display:flex; flex-direction:column; justify-content:flex-end; max-width:1100px; margin:0 auto; padding:120px 24px calc(48px + env(safe-area-inset-bottom,0px)); }
+    main > * { animation:rise .9s cubic-bezier(.2,.7,.2,1) both; }
+    main > :nth-child(2) { animation-delay:.12s; } main > :nth-child(3) { animation-delay:.24s; } main > :nth-child(4) { animation-delay:.36s; }
+    .pill { align-self:flex-start; display:inline-flex; align-items:center; gap:9px; padding:8px 14px; border-radius:50px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(6px); font-size:.74rem; font-weight:600; letter-spacing:.04em; color:#f1e6d6; margin:0 0 18px; }
+    .pill i { width:8px; height:8px; border-radius:50%; background:#e2b866; box-shadow:0 0 0 0 rgba(226,184,102,.6); animation:ping 2.2s ease-out infinite; }
+    .pill.on i { background:#8fd1a8; }
+    @keyframes ping { 70% { box-shadow:0 0 0 9px rgba(226,184,102,0); } 100% { box-shadow:0 0 0 0 rgba(226,184,102,0); } }
+    h1 { font-family:"Marcellus",Georgia,serif; font-weight:400; font-size:clamp(2.6rem,7vw,4.6rem); line-height:1.04; margin:0 0 16px; text-shadow:0 2px 24px rgba(20,13,7,.4); }
+    h1 em { color:#d9c3a5; font-style:italic; }
+    p.copy { color:rgba(255,255,255,.85); font-size:1rem; line-height:1.75; margin:0 0 28px; max-width:470px; }
+    button { align-self:flex-start; font:inherit; font-size:.78rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:#fff; background:#2f5d45; border:0; border-radius:999px; padding:16px 32px; cursor:pointer; box-shadow:0 10px 28px rgba(20,13,7,.4); }
+    button:hover { background:#3e7a5b; }
+    .seal { position:fixed; right:28px; bottom:calc(40px + env(safe-area-inset-bottom,0px)); width:124px; height:124px; z-index:2; animation:rise 1s .6s both; }
+    .seal svg { width:100%; height:100%; animation:spin 28s linear infinite; }
+    .seal text { font:700 9.4px "Lato",Arial,sans-serif; letter-spacing:.2em; fill:#f1e6d6; }
+    .seal img { position:absolute; inset:0; margin:auto; width:42px; height:42px; }
+    .seal::before { content:""; position:absolute; inset:21px; border-radius:50%; border:1px solid rgba(241,230,214,.35); background:rgba(20,13,7,.28); backdrop-filter:blur(4px); }
+    @media (max-width:640px) {
+      .seal { width:76px; height:76px; bottom:auto; top:calc(18px + env(safe-area-inset-top,0px)); right:16px; }
+      .seal img { width:26px; height:26px; }
+      .seal::before { inset:14px; }
+      .logo { left:16px; }
+      main { padding:120px 16px calc(32px + env(safe-area-inset-bottom,0px)); }
+      button { align-self:stretch; }
+    }
+    @media (prefers-reduced-motion: reduce) { .bg, main > *, .seal, .seal svg, .pill i { animation:none; } }
   </style>
 </head>
 <body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="shade" aria-hidden="true"></div>
+  <div class="logo"><img src="/images/logo-mark-white.png" alt="" /><span>MYAH<small>Make Yourself At Home</small></span></div>
+  <div class="seal" aria-hidden="true">
+    <svg viewBox="0 0 132 132"><defs><path id="ring" d="M66,66 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0" /></defs><text><textPath href="#ring" textLength="337" lengthAdjust="spacing">MYAH · MAKE YOURSELF AT HOME · </textPath></text></svg>
+    <img src="/images/logo-mark-white.png" alt="" />
+  </div>
   <main>
-    <img src="/icons/icon-192.png" alt="" />
-    <p class="brand">MYAH</p>
-    <p class="tag">Make Yourself At Home</p>
-    <h1>You are offline</h1>
-    <p class="copy">MYAH needs a connection to load this page. Check your wifi or signal, then try again.</p>
+    <p class="pill" id="state" role="status"><i></i><span>Waiting for a connection</span></p>
+    <h1>You are <em>offline</em></h1>
+    <p class="copy">MYAH needs a connection to load this page. Check your wifi or signal, then try again. We'll reload by ourselves as soon as you're back online.</p>
     <button type="button" onclick="location.reload()">Try again</button>
   </main>
+  <script>
+    // Back online: say so, then reload the page they wanted.
+    window.addEventListener('online', function () {
+      var s = document.getElementById('state');
+      s.className = 'pill on'; s.lastChild.textContent = 'Back online, reloading';
+      setTimeout(function () { location.reload(); }, 700);
+    });
+  </script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 // images, icons and fonts. Nothing under /api/ is ever touched.
 // Bump VERSION to drop old caches after a change to this file.
 
-const VERSION = 'myah-v1';
+const VERSION = 'myah-v2';
 const STATIC = VERSION + '-static';
 const RUNTIME = VERSION + '-runtime';
 const OFFLINE = '/offline.html';
@@ -19,6 +19,8 @@ const PRECACHE = [
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png',
   '/images/logo-mark.png',
+  '/images/logo-mark-white.png',
+  '/images/slideshow-springer-beach.jpeg',
   '/images/favicon.png',
 ];
 
