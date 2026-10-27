@@ -23,6 +23,23 @@ try {
   const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? JSON.parse(raw || '[]') : [];
   ourPics = list.map((x: any) => (typeof x === 'string' ? x : x?.src)).filter((x: any) => typeof x === 'string' && x);
 } catch {}
+// The big photo at the top: our own sits, a dog then a home, in turn
+// (owner, 27 Oct 2026). Each is [file, which part of the photo to keep in view].
+const heroPics: [string, string][] = [
+  ['hero-dog-springer-beach', 'center 80%'],
+  ['hero-home-ocean-living', 'center 60%'],
+  ['hero-dog-collie-lawn', 'center 72%'],
+  ['hero-home-sunset-balcony', 'center 45%'],
+  ['hero-dog-snow', 'center 62%'],
+  ['hero-home-sunroom-kitchen', 'center 42%'],
+  ['hero-dog-harbour-beach', 'center 70%'],
+  ['hero-home-harbour-window', 'center 50%'],
+  ['hero-dog-cavapoo-lawn', 'center 62%'],
+  ['hero-home-green-sunroom', 'center 50%'],
+  ['hero-dog-vizsla-path', 'center 45%'],
+  ['hero-home-living-room', 'center 55%'],
+];
+
 // Callum (1st), the two of us (2nd) and Niamh (3rd), as on our page.
 if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple-boat-1.jpg', '/images/couple-field-1.jpg'];
 ---
@@ -351,9 +368,9 @@ if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple
     <!-- Hero -->
     <section class="hero" data-hero>
       <div class="bg" aria-hidden="true">
-        <img class="on" src="/images/slideshow-springer-beach.jpeg" alt="" style="object-position:center 40%" />
-        <img src="/images/slideshow-living-room.jpeg" alt="" loading="lazy" />
-        <img src="/images/slideshow-cockapoo-window.jpeg" alt="" loading="lazy" />
+        {heroPics.map(([f, pos], i) => i === 0
+          ? <img class="on" src={`/images/${f}.jpg`} alt="" style={`object-position:${pos}`} fetchpriority="high" />
+          : <img data-src={`/images/${f}.jpg`} alt="" style={`object-position:${pos}`} />)}
       </div>
       <div class="shade"></div>
       <div class="seal" aria-hidden="true">
@@ -572,9 +589,17 @@ if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple
     const solid = () => top.classList.toggle('solid', window.scrollY > 40);
     solid(); window.addEventListener('scroll', solid, { passive: true });
     const pics = [...document.querySelectorAll('[data-hero] .bg img')];
+    // Photos load one ahead of when they're shown, so the page stays quick.
+    const load = (img) => { if (img && img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; } };
     if (pics.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       let i = 0;
-      setInterval(() => { pics[i].classList.remove('on'); i = (i + 1) % pics.length; pics[i].classList.add('on'); }, 6000);
+      window.addEventListener('load', () => load(pics[1]));
+      setInterval(() => {
+        const next = (i + 1) % pics.length;
+        if (pics[next].dataset.src || !pics[next].complete) { load(pics[next]); return; }
+        pics[i].classList.remove('on'); i = next; pics[i].classList.add('on');
+        load(pics[(i + 1) % pics.length]);
+      }, 6000);
     }
     // Fade sections in as they scroll into view.
     const els = document.querySelectorAll('.reveal');
