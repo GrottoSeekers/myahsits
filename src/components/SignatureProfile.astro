@@ -438,7 +438,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
             <li>Meet {us} before the sit, in person or on a call</li>
             <li>Daily photo updates while you're away</li>
           </ul>
-          {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Message on WhatsApp</a>}
+          {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Text on WhatsApp</a>}
         </div>
         <form class="sg-form" data-enquiry data-go={p.launched ? '/messages' : undefined}>
           <div class="two">
@@ -451,7 +451,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
             <label>To<input type="date" name="date_to" required /></label>
           </div>
           <label>Your pets &amp; home<textarea name="message" rows="3" placeholder="Breed, age, anything we should know"></textarea></label>
-          <button type="submit" class="btn btn-main">Send enquiry</button>
+          <button type="submit" class="btn btn-main">Send email</button>
           <p class="sg-status" data-enquiry-status role="status"></p>
         </form>
       </div>
@@ -464,7 +464,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
   <div class="sg-bar" data-bar><span>{p.name}<small>★ {p.rating} · replies within 24h</small></span><a class="btn btn-main" href="#book" data-open="book">Book {us}</a></div>
   <div class="sg-lb" data-lb><button type="button" aria-label="Close" data-lb-close>✕</button><img alt="" data-lb-img /></div>
 
-  <script is:inline define:vars={{ pageSlug: p.pageSlug, sentMsg: p.joint ? "Enquiry sent. We'll be in touch soon." : "Enquiry sent. I'll be in touch soon." }}>
+  <script is:inline define:vars={{ pageSlug: p.pageSlug, sentMsg: p.joint ? "Email sent. We'll be in touch soon." : "Email sent. I'll be in touch soon." }}>
   (() => {
     const q = s => document.querySelector(s), qa = s => Array.from(document.querySelectorAll(s));
     // tabs: one panel at a time

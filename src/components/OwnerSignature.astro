@@ -493,13 +493,13 @@ const title = p.name + ' — MYAH';
           </ul>
           <div class="og-acts">
             {p.canMessage && <button type="button" class="btn btn-main" data-chat>Message {p.first} on MYAH</button>}
-            {p.waNum && <a class="btn btn-line" href={'https://wa.me/' + p.waNum} target="_blank" rel="noopener">WhatsApp</a>}
+            {p.waNum && <a class="btn btn-line" href={'https://wa.me/' + p.waNum} target="_blank" rel="noopener">Text on WhatsApp</a>}
             {!p.signedIn && <a class="btn btn-line" href="/signup">Join MYAH as a sitter</a>}
           </div>
         </div>
         {p.isMe ? (
           <div class="og-card">
-            <p><strong>This is where sitters contact you.</strong> They can send an enquiry by email, message you on MYAH, or apply to one of your open sits.</p>
+            <p><strong>This is where sitters contact you.</strong> They can send you an email, text you on WhatsApp, message you on MYAH, or apply to one of your open sits.</p>
             <div class="og-acts" style="margin:0 0 14px"><a href="/applications" class="btn btn-main">See applications</a><a href="/messages" class="btn btn-line">Messages</a></div>
           </div>
         ) : (
@@ -514,7 +514,7 @@ const title = p.name + ' — MYAH';
               <label>Until<input type="date" name="date_to" /></label>
             </div>
             <label>Your experience<textarea name="message" rows="3" placeholder="Pets you've cared for, reviews, why you'd be a great fit"></textarea></label>
-            <button type="submit" class="btn btn-main">Send enquiry</button>
+            <button type="submit" class="btn btn-main">Send email</button>
             <p class="sg-status" data-enquiry-status role="status"></p>
           </form>
         )}
@@ -527,7 +527,7 @@ const title = p.name + ' — MYAH';
   <div class="sg-bar" data-bar><span>{p.name}<small>{status}</small></span><a class="btn btn-main" href="#contact" data-open="contact">Get in touch</a></div>
   <div class="sg-lb" data-lb><button type="button" aria-label="Close" data-lb-close>✕</button><img alt="" data-lb-img /></div>
 
-  <script is:inline define:vars={{ pageSlug: p.slug, sentMsg: "Enquiry sent. You'll hear back soon.", chatId: p.canMessage ? p.ownerId : "" }}>
+  <script is:inline define:vars={{ pageSlug: p.slug, sentMsg: "Email sent. You'll hear back soon.", chatId: p.canMessage ? p.ownerId : "" }}>
   (() => {
     const q = s => document.querySelector(s), qa = s => Array.from(document.querySelectorAll(s));
     // tabs: one panel at a time

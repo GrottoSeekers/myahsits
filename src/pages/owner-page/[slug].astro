@@ -508,9 +508,9 @@ const premiumProps = {
         <div class="op-rule"></div>
         <p class="op-p">Tell {first} a little about yourself, your experience with pets and the dates you're free.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px">
-          {!isMe && <button type="button" class="op-btn" data-enq-open="1">Send an enquiry</button>}
+          {!isMe && <button type="button" class="op-btn" data-enq-open="1">Send an email</button>}
           {canMessage && <button type="button" class="op-btn" data-chat={p.id}>Message {first} on MYAH</button>}
-          {waNum && <a href={'https://wa.me/' + waNum} target="_blank" rel="noopener" class="op-wa">WhatsApp</a>}
+          {waNum && <a href={'https://wa.me/' + waNum} target="_blank" rel="noopener" class="op-wa">Text on WhatsApp</a>}
           {!viewer && <a href={'/signup'} class="op-ghost">Join MYAH as a sitter</a>}
         </div>
       </div>
@@ -534,7 +534,7 @@ const premiumProps = {
           <label>Until<input type="date" name="date_to" /></label>
         </div>
         <label>Tell {first} about your experience<textarea name="message" rows="4" placeholder="Pets you've cared for, reviews, why you'd be a great fit…"></textarea></label>
-        <button type="submit" class="op-btn" style="width:100%">Send enquiry</button>
+        <button type="submit" class="op-btn" style="width:100%">Send email</button>
         <p class="op-status" data-enquiry-status="1"></p>
       </form>
       )}
@@ -595,7 +595,7 @@ const premiumProps = {
   ad.forEach((d) => d.addEventListener('click', () => { showA(+d.getAttribute('data-about-dot')); runA(); }));
   runA();
 
-  // Enquiry form opens from "Send an enquiry" or any "Get in touch" link.
+  // Email form opens from "Send an email" or any "Get in touch" link.
   const enq = q('.op-enq');
   const openEnq = () => { if (enq && !enq.classList.contains('open')) enq.classList.add('open'); };
   const eo = q('[data-enq-open]');
@@ -658,7 +658,7 @@ const premiumProps = {
       const res = await fetch('/api/enquiry', { method: 'POST', body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not send right now.');
-      status.textContent = 'Enquiry sent — you’ll hear back soon.';
+      status.textContent = 'Email sent. You’ll hear back soon.';
       form.reset();
     } catch (err) {
       status.style.color = '#a4442e';

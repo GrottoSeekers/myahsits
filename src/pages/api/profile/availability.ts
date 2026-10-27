@@ -13,7 +13,7 @@ const NOTICES = ['Any time', '1 week', '2 weeks', 'A month'];
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 // Saves /availability for the signed-in user.
-//   { days: { "YYYY-MM-DD": "free" | "maybe" }, prefs: { lengths, pets, notice } }
+//   { days: { "YYYY-MM-DD": "free" | "maybe" | "no" }, prefs: { lengths, pets, notice } }
 export const POST: APIRoute = async ({ request }) => {
   try {
     const session = await getSession(request);
@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request }) => {
     const days: Record<string, string> = {};
     const raw = body && typeof body.days === 'object' && body.days ? body.days : {};
     for (const k of Object.keys(raw).slice(0, 1500)) {
-      if (DAY.test(k) && (raw[k] === 'free' || raw[k] === 'maybe')) days[k] = raw[k];
+      if (DAY.test(k) && (raw[k] === 'free' || raw[k] === 'maybe' || raw[k] === 'no')) days[k] = raw[k];
     }
 
     const p = (body && body.prefs) || {};
