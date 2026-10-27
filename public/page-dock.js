@@ -25,7 +25,7 @@
     '[data-page-dock] a{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 6px;border-radius:50px;font-family:Montserrat,sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#5c3d20;text-decoration:none;white-space:nowrap}' +
     '[data-page-dock] a.pd-main{flex:1.4;background:#2f5d45;color:#fff}' +
     'body{padding-bottom:84px}}' +
-    '@media (prefers-reduced-motion:reduce){[data-page-dock]{transition:none}}';
+    '';
   document.head.appendChild(css);
 
   var tick = function () { nav.classList.toggle('on', window.scrollY > 360); };

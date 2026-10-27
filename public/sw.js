@@ -6,7 +6,7 @@
 // images, icons and fonts. Nothing under /api/ is ever touched.
 // Bump VERSION to drop old caches after a change to this file.
 
-const VERSION = 'myah-v2';
+const VERSION = 'myah-v3';
 const STATIC = VERSION + '-static';
 const RUNTIME = VERSION + '-runtime';
 const OFFLINE = '/offline.html';
