@@ -1,171 +1,44 @@
 ---
-export const prerender =
-  false;
-import {
-  getSession,
-} from '../lib/auth';
-const sess =
-  await getSession(
-    Astro.request,
-  );
-if (sess)
-  return Astro.redirect(
-    '/dashboard',
-  );
+export const prerender = false;
+import { getSession } from '../lib/auth';
+import AuthShell from '../components/AuthShell.astro';
 
-const sp =
-  Astro.url.searchParams;
+const sess = await getSession(Astro.request);
+if (sess) return Astro.redirect('/dashboard');
+
+const sp = Astro.url.searchParams;
 const e = sp.get('error');
-const missing =
-  'Please enter ' +
-  'your email and ' +
-  'password.';
-const invalid =
-  'Incorrect email' +
-  ' or password.';
-const fallback =
-  'Something went wrong.';
-const errTxt =
-  !e
-    ? null
-    : e === 'missing'
-      ? missing
-      : e === 'invalid'
-        ? invalid
-        : fallback;
+const email = sp.get('email') || '';
+const errTxt = !e ? null
+  : e === 'missing' ? 'Please enter your email and password.'
+  : e === 'invalid' ? 'Incorrect email or password.'
+  : e === 'link' ? "That link has expired or isn't right. Log in and we'll send you a new one."
+  : e === 'unverified' ? null
+  : 'Something went wrong.';
+const unverified = e === 'unverified';
+const okTxt = sp.has('verified') ? 'Your email is confirmed. Log in to set up your page.'
+  : sp.has('resent') ? `We've sent a new link to ${email || 'your email'}. It works for 3 days.`
+  : null;
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="/images/favicon.png" />
-  <link rel="apple-touch-icon" href="/images/app-tile.png" />
-  <meta property="og:image" content="/images/logo-tile.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
-  <title>Log in — MYAH</title>
-  <link rel="canonical" href={'https://www.myahsits.com' + Astro.url.pathname} />
-  <meta property="og:url" content={'https://www.myahsits.com' + Astro.url.pathname} />
-  <meta property="og:site_name" content="MYAH" />
-  <style>
-    body { margin:0; background:#faf6ee; color:#2c1a0e; font-family:"Montserrat",sans-serif; }
-    * { box-sizing:border-box; }
-    a { color:#2f5d45; text-decoration:none; }
-    input::placeholder { color:rgba(44,26,14,.35); }
-    @keyframes gs-ring { to { transform:rotate(360deg); } }
-    @keyframes gs-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
-  </style>
-  <link rel="stylesheet" href="/mobile.css" />
-</head>
-<body>
-<div>
-  <div style="min-height:100vh; display:flex; flex-direction:column; background:#faf6ee">
+<AuthShell title="Log in">
+  <p class="au-eye">MYAH</p>
+  <h1>Welcome <em>back</em></h1>
+  <p class="au-lead">Log in to manage your page, enquiries and sits.</p>
 
-    <!-- Loading overlay -->
-    <div data-loader="1" aria-hidden="true" style="position:fixed; inset:0; z-index:9999; background:rgba(250,246,238,.92); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s ease">
-      <div style="position:relative; width:132px; height:132px; display:flex; align-items:center; justify-content:center">
-        <div style="position:absolute; inset:0; border-radius:50%; border:3px solid rgba(110,84,56,.18)"></div>
-        <div style="position:absolute; inset:0; border-radius:50%; border:3px solid transparent; border-top-color:#2f5d45; border-right-color:rgba(110,84,56,.45); animation:gs-ring 1s linear infinite"></div>
-        <img src="/images/logo-mark.png" alt="" style="width:74px; height:74px; object-fit:contain; animation:gs-pulse 1.8s ease-in-out infinite" />
-      </div>
-    </div>
+  {errTxt && <div class="au-note err" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>{errTxt}</span></div>}
+  {okTxt && <div class="au-note ok" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg><span>{okTxt}</span></div>}
+  {unverified && (
+    <div class="au-note err" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Please confirm your email first. We sent a link to <b>{email}</b>; tap it and you'll come straight back here.
+      <form method="POST" action="/api/auth/resend" style="margin:10px 0 0"><input type="hidden" name="email" value={email} /><button type="submit" class="au-btn line" style="height:42px;font-size:.7rem">Send the link again</button></form>
+    </span></div>
+  )}
 
-    <!-- Header -->
-    <nav data-auth-nav="1" style="padding:16px 48px; border-bottom:1px solid rgba(110,84,56,.2); background:#faf6ee">
-      <a href="/" style="display:inline-flex; align-items:center; gap:14px; line-height:1; font-family:'Montserrat',sans-serif; font-weight:500; font-size:1.4rem; letter-spacing:.28em">
-        <img src="/images/logo-mark.png" alt="" style="height:46px; width:46px; display:block; object-fit:contain" />
-        <span style="display:flex; flex-direction:column; gap:5px; border-left:1px solid rgba(110,84,56,.4)">
-          <span style="color:#2f5d45; line-height:1">MYAH</span>
-          <span style="font-family:'Lato',sans-serif; font-weight:700; font-size:.5rem; letter-spacing:.2em; text-transform:uppercase; color:#8a6a4f; line-height:1">Make Yourself At Home</span>
-        </span>
-      </a>
-    </nav>
+  <form method="POST" action="/api/auth/login" class="au-form" data-login-form="1">
+    <label class="au-f"><input type="email" name="email" required autocomplete="email" placeholder="Email address" value={email} /><span>Email address</span></label>
+    <label class="au-f pw"><input type="password" name="password" required autocomplete="current-password" placeholder="Password" /><span>Password</span><button type="button" class="au-show" data-pw-toggle="1" aria-label="Show password">Show</button></label>
+    <button type="submit" class="au-btn" style="margin-top:6px">Log in</button>
+  </form>
 
-    <!-- Main -->
-    <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px">
-      <div data-auth-card="1" style="background:#fff; border:1px solid rgba(110,84,56,.2); border-radius:20px; padding:48px; width:100%; max-width:440px; box-shadow:0 4px 32px rgba(44,26,14,.08)">
-
-        <p style="font-size:.75rem; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#6e5438; margin:0 0 14px; display:flex; align-items:center; gap:12px">
-          MYAH
-          <span style="width:26px; height:1px; background:#6e5438; display:block"></span>
-        </p>
-        <h1 style="font-family:'Marcellus',serif; font-size:2.2rem; color:#2c1a0e; line-height:1.2; margin:0">Welcome back</h1>
-        <div style="width:48px; height:2px; background:#6e5438; margin:20px 0 24px"></div>
-        <p style="font-size:.98rem; color:#6b4e35; line-height:1.7; margin:0 0 28px">Log in to manage your page, enquiries and sits.</p>
-
-        {errTxt && (
-          <div style="background:#fff3f0; border:1px solid rgba(164,68,46,.3); border-radius:10px; padding:14px 16px; margin-bottom:22px; font-size:.9rem; color:#a4442e; line-height:1.5">
-            {errTxt}
-          </div>
-        )}
-
-        <form method="POST" action="/api/auth/login" data-login-form="1" data-go="1" style="display:flex; flex-direction:column; gap:22px">
-          <label style="display:flex; flex-direction:column; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; color:#5c3d20; text-transform:uppercase">
-            Email address
-            <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" style="border:1.5px solid rgba(44,26,14,.2); border-radius:10px; padding:13px 15px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:400; letter-spacing:0; text-transform:none; color:#2c1a0e; background:#faf6ee; transition:border-color .2s, box-shadow .2s" />
-          </label>
-
-          <label style="display:flex; flex-direction:column; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; color:#5c3d20; text-transform:uppercase">
-            Password
-            <span style="position:relative; display:block">
-              <input type="password" name="password" data-pw="1" required autocomplete="current-password" placeholder="Your password" style="width:100%; padding:13px 74px 13px 15px; border:1.5px solid rgba(44,26,14,.2); border-radius:10px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:400; letter-spacing:0; text-transform:none; color:#2c1a0e; background:#faf6ee; transition:border-color .2s, box-shadow .2s" />
-              <button type="button" data-pw-toggle="1" aria-label="Show password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#2f5d45; font-size:.74rem; font-weight:600; letter-spacing:.08em; padding:4px 8px; text-transform:uppercase; font-family:'Montserrat',sans-serif; transition:color .2s">Show</button>
-            </span>
-          </label>
-
-          <button type="submit" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; font-size:.76rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:#2f5d45; border:1.5px solid #2f5d45; border-radius:50px; padding:13px 32px; font-family:'Montserrat',sans-serif; white-space:nowrap; box-shadow:0 6px 20px rgba(110,84,56,.28); transition:background .2s, border-color .2s, transform .12s">Log in</button>
-        </form>
-
-        <p style="margin:26px 0 0; text-align:center; font-size:.92rem; color:#6b4e35">Don't have an account? <a href="/signup" style="color:#2f5d45; font-weight:700; border-bottom:1px solid rgba(110,84,56,.4)">Sign up</a></p>
-
-      </div>
-    </main>
-
-  </div>
-</div>
-
-<style is:global>
-  /* ── Hover / active states ─────────────────────────────────────── */
-  [data-login-form] button[type="submit"]:hover { background:#3e7a5b !important; border-color:#3e7a5b !important; transform:translateY(-2px); box-shadow:0 12px 28px rgba(110,84,56,.36); }
-  [data-login-form] button[type="submit"]:active { transform:translateY(0) scale(.98); }
-  [data-pw-toggle]:hover { color:#2c1a0e !important; }
-
-  /* ── Form focus / placeholder ──────────────────────────────────── */
-  [data-auth-card] input:focus { border-color:#2f5d45 !important; box-shadow:0 0 0 3px rgba(110,84,56,.15) !important; outline:none; }
-
-  /* ── Mobile 1000px ─────────────────────────────────────────────── */
-  @media (max-width:1000px) {
-    [data-auth-nav] { padding: 14px 24px !important; }
-    [data-auth-card] { padding: 34px 26px !important; }
-  }
-
-  /* ── Mobile 640px ──────────────────────────────────────────────── */
-  @media (max-width:640px) {
-    [data-auth-card] h1 { font-size:clamp(1.6rem, 6vw, 2.2rem) !important; }
-  }
-</style>
-
-<script>
-  const pwInput = document.querySelector('[data-pw]') as HTMLInputElement | null;
-  const pwToggle = document.querySelector('[data-pw-toggle]');
-  pwToggle?.addEventListener('click', () => {
-    if (!pwInput) return;
-    const showing = pwInput.type === 'text';
-    pwInput.type = showing ? 'password' : 'text';
-    if (pwToggle) pwToggle.textContent = showing ? 'Show' : 'Hide';
-  });
-
-  const loader = document.querySelector('[data-loader]') as HTMLElement | null;
-  document.querySelectorAll('form').forEach(f => {
-    f.addEventListener('submit', () => {
-      if (loader) { loader.style.opacity = '1'; loader.style.pointerEvents = 'all'; }
-    });
-  });
-  window.addEventListener('pageshow', e => {
-    if (e.persisted && loader) { loader.style.opacity = '0'; loader.style.pointerEvents = 'none'; }
-  });
-</script>
-</body>
-</html>
+  <p class="au-alt">Don't have an account? <a href="/signup">Sign up</a></p>
+  <div class="au-trust"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>Everyone ID checked</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Private details stay private</span></div>
+</AuthShell>
