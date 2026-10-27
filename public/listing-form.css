@@ -1,0 +1,27 @@
+/* Post a sit / Edit listing (round 3): Airbnb-style form. Big friendly
+   fields, a photo preview card, and (on Post a sit) one step at a time. */
+.lf-cover { position:relative; aspect-ratio:4/3; overflow:hidden; background:#e9e0d2; }
+.lf-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+.lf-cover .lf-host { position:absolute; left:14px; bottom:14px; width:46px; height:46px; border-radius:12px; border:2px solid #fff; object-fit:cover; box-shadow:0 4px 12px rgba(20,13,7,.3); }
+.lf-cover .lf-tag { position:absolute; top:12px; left:12px; padding:6px 12px; border-radius:50px; background:rgba(255,255,255,.95); font-size:.72rem; font-weight:600; color:#2c1a0e; }
+form[data-listing] input[type=text], form[data-listing] input[type=date], form[data-listing] textarea { border-radius:14px !important; padding:16px 18px !important; font-size:1.02rem !important; background:#fff !important; }
+form[data-listing] input:focus, form[data-listing] textarea:focus { border-color:#2f5d45 !important; box-shadow:0 0 0 4px rgba(47,93,69,.12) !important; }
+[data-preset] { transition:transform .15s; }
+[data-preset]:active { transform:scale(.96); }
+/* steps */
+.lf-steps { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 24px; }
+.lf-steps p { margin:0; font:700 .7rem 'Lato',sans-serif; letter-spacing:.18em; text-transform:uppercase; color:#6e5438; }
+.lf-steps h3 { margin:4px 0 0; font:400 1.6rem 'Marcellus',serif; color:#2c1a0e; }
+.lf-bar { height:4px; border-radius:4px; background:rgba(110,84,56,.15); overflow:hidden; margin:0 0 28px; }
+.lf-bar i { display:block; height:100%; width:33%; background:#2f5d45; border-radius:4px; transition:width .45s cubic-bezier(.2,.7,.2,1); }
+[data-step] { animation:lf-in .4s ease both; }
+[data-step][hidden] { display:none !important; }
+@keyframes lf-in { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:none; } }
+.lf-nav { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:8px; padding-top:22px; border-top:1px solid rgba(44,26,14,.08); }
+.lf-back { border:0; background:none; font:600 .86rem 'Montserrat',sans-serif; color:#2c1a0e; text-decoration:underline; cursor:pointer; padding:8px 4px; }
+.lf-back[disabled] { visibility:hidden; }
+.lf-next { border:0; border-radius:12px; background:#2c1a0e; color:#fff; font:600 .9rem 'Montserrat',sans-serif; padding:14px 26px; cursor:pointer; transition:background .2s, transform .12s; }
+.lf-next:hover { background:#2f5d45; }
+.lf-wiz [data-submit-row] { display:none !important; }
+.lf-wiz.last [data-submit-row] { display:flex !important; }
+.lf-wiz.last .lf-next { display:none; }
