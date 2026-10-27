@@ -138,6 +138,8 @@ try {
       ' profile_pic,' +
       ' location,' +
       ' account_type,' +
+      ' hero_images_json,' +
+      ' gallery_json,' +
       ' reviews_json)',
     )
     .eq(
@@ -227,6 +229,8 @@ const applicants = rows
       photo:
         p.profile_pic ||
         '',
+      // Cover photo for the card (round 3, Airbnb feel).
+      cover: String((Array.isArray(p.hero_images_json) && p.hero_images_json[0]?.src) || (Array.isArray(p.gallery_json) && p.gallery_json[0]?.src) || '').replace(/^public\//, '/'),
       slug: p.slug || '',
       meta: joint
         ? 'Joint sitters'
@@ -359,6 +363,19 @@ const listingId =
     .ap-btn:hover { background:#3e7a5b !important; border-color:#3e7a5b !important; transform:translateY(-2px) !important; box-shadow:0 12px 28px rgba(110,84,56,.36) !important; color:#fff !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <style is:global>
+    .ap-row { animation:ap-in .5s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes ap-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+    .ap-row:hover { box-shadow:0 18px 44px rgba(44,26,14,.1) !important; }
+    .ap-cover { position:relative; display:block; overflow:hidden; background:#e9e0d2; }
+    .ap-cover img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .6s ease; }
+    .ap-row:hover .ap-cover img { transform:scale(1.04); }
+    @media (max-width:900px) {
+      .ap-row { grid-template-columns:minmax(0,1fr) !important; }
+      .ap-cover { height:150px; }
+      [data-rowmeta] { border-left:0 !important; border-top:1px solid rgba(44,26,14,.08); }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -478,7 +495,7 @@ const listingId =
       const statusStyle = 'font-size:.64rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 11px;border-radius:50px;' +
         (st === 'shortlisted' || st === 'confirmed' ? 'background:#2f5d45;color:#fff;' : st === 'declined' ? 'background:rgba(44,26,14,.1);color:#6b4e35;' : 'background:rgba(110,84,56,.14);color:#2f5d45;');
       const tagStyle = 'font-size:.74rem;font-weight:600;color:#6b4e35;background:#faf6ee;border:1px solid rgba(110,84,56,.28);padding:5px 13px;border-radius:50px;';
-      const wrapStyle = 'display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);background:#fff;border-radius:18px;overflow:hidden;transition:border-color .3s ease, box-shadow .3s ease, opacity .3s ease;' +
+      const wrapStyle = 'display:grid;grid-template-columns:' + (a.cover ? '200px ' : '') + 'minmax(0,1.6fr) minmax(0,1fr);background:#fff;border-radius:18px;overflow:hidden;transition:border-color .3s ease, box-shadow .3s ease, opacity .3s ease;' +
         (st === 'shortlisted' || st === 'confirmed'
           ? 'border:1.5px solid #2f5d45;box-shadow:0 10px 30px rgba(110,84,56,.16);'
           : st === 'declined'
@@ -491,7 +508,8 @@ const listingId =
       const declineStyle = 'flex:1;font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border-radius:50px;padding:11px 10px;cursor:pointer;background:none;color:#6b4e35;border:1.5px solid rgba(44,26,14,.15);transition:border-color .2s ease, color .2s ease';
       const stars = '★★★★★'.slice(0, a.rating) + '☆☆☆☆☆'.slice(0, 5 - a.rating);
       const reviewLine = a.reviews + (a.reviews === 1 ? ' review' : ' reviews');
-      return '<article data-row="1" style="' + wrapStyle + '">' +
+      return '<article data-row="1" class="ap-row" style="' + wrapStyle + '">' +
+        (a.cover ? '<a class="ap-cover" href="' + (a.slug ? '/' + esc(a.slug) : '#') + '" data-profile-link="1" aria-hidden="true" tabindex="-1"><img src="' + esc(a.cover) + '" alt="" loading="lazy" /></a>' : '') +
         '<div style="padding:26px 28px;display:flex;gap:20px;align-items:flex-start;min-width:0">' +
           (a.slug ? '<a href="/' + esc(a.slug) + '" data-profile-link="1" title="View ' + esc(a.name) + '\u2019s profile" style="position:relative;flex-shrink:0;display:block;text-decoration:none">' : '<div style="position:relative;flex-shrink:0">') +
             '<img src="' + esc(a.photo || '/images/logo-mark.png') + '" alt="" style="' + photoStyle + '" />' +
