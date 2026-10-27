@@ -24,6 +24,7 @@ import {
   arr,
 } from
   '../../../lib/dashboard';
+import LivePage from '../../../components/LivePage.astro';
 import PageDesign from
   '../../../components/PageDesign.astro';
 import { homeOf, HOME_TYPES, DUTIES, RULES, CAR } from '../../../lib/home';
@@ -368,6 +369,7 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
     .eo-duty input:focus-visible + span { outline:2px solid rgba(47,93,69,.4); outline-offset:2px; }
     @media (max-width:760px) { .eo-g4 { grid-template-columns:repeat(2,minmax(0,1fr)); } .eo-g3, .eo-g2 { grid-template-columns:minmax(0,1fr); } }
   </style>
+  <link rel="stylesheet" href="/edit-photos.css" />
 </head>
 <body>
 <div data-edit="1" style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -614,9 +616,10 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
         </div>
 
         <aside data-aside="1" id="preview" style="position:sticky;top:28px;display:flex;flex-direction:column;gap:18px">
+          {me.slug && <LivePage href={'/' + (me.slug || '')} />}
           <div class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="padding:18px 22px;border-bottom:1px solid rgba(110,84,56,.2);display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">Page preview</p>
+              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">Preview as you type</p>
               <a href={pageUrl} class="eo-open" style="display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;text-decoration:none;transition:gap .2s, color .2s">Open &rarr;</a>
             </div>
 
@@ -753,6 +756,15 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
   const cpy = q('[data-copy-own-review]');
   cpy && cpy.addEventListener('click', () => { const i = q('[data-own-review-link]'); i.select(); navigator.clipboard && navigator.clipboard.writeText(i.value); cpy.textContent = 'Copied'; setTimeout(() => { cpy.textContent = 'Copy'; }, 1600); });
 
+  // See a photo big.
+  const viewer = document.createElement('div');
+  viewer.className = 'ep-viewer';
+  viewer.innerHTML = '<button type="button" aria-label="Close">&times;</button><img alt="" />';
+  document.body.appendChild(viewer);
+  viewer.addEventListener('click', (e) => { if (e.target === viewer || e.target.tagName === 'BUTTON') viewer.classList.remove('on'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') viewer.classList.remove('on'); });
+  document.addEventListener('click', (e) => { const v = e.target.closest && e.target.closest('[data-view]'); if (!v) return; viewer.querySelector('img').src = v.getAttribute('data-view'); viewer.classList.add('on'); });
+
   const JUMPS = [
     { href: '#page-style', label: 'Page design' },
     { href: '#details', label: 'Details' },
@@ -839,20 +851,18 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
           '<p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0">' + esc(g.title) + '</p>' +
           '<span style="font-size:.78rem;color:#6b4e35">' + list.length + (list.length === 1 ? ' photo' : ' photos') + '</span>' +
         '</div>' +
-        '<p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">' + esc(g.desc) + '</p>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:12px">' +
+        '<p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">' + esc(g.desc) + (list.length > 1 ? ' Tap a photo to see it big; use the arrows to change the order.' : '') + '</p>' +
+        '<div class="ep-tiles">' +
           list.map((img, i) => {
-            const badgeStyle = (g.key === 'hero' && i === 0)
-              ? 'position:absolute;left:6px;bottom:6px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(44,26,14,.62);padding:3px 9px;border-radius:50px'
-              : 'display:none';
-            const cap = g.key === 'gallery' ? '<input type="text" data-cap-photo="' + i + '" value="' + esc(img.cap || '') + '" maxlength="40" placeholder="Room or pet" aria-label="Name on photo ' + (i + 1) + '" style="width:118px;margin-top:6px;border:1.5px solid rgba(44,26,14,.18);border-radius:8px;padding:7px 9px;font-size:.78rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none" />' : '';
-            return '<div style="display:flex;flex-direction:column">' + '<div class="eo-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">' +
-              '<img src="' + esc(img.src) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block" />' +
-              '<span style="' + badgeStyle + '">Cover</span>' +
-              '<button type="button" data-remove-photo="' + g.key + ':' + i + '" title="Remove photo" class="eo-x" style="position:absolute;top:6px;right:6px;width:23px;height:23px;border-radius:50%;background:rgba(44,26,14,.6);color:#fff;border:none;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .2s ease">&times;</button>' +
+            const cap = g.key === 'gallery' ? '<input type="text" data-cap-photo="' + i + '" value="' + esc(img.cap || '') + '" maxlength="40" placeholder="Room or pet" aria-label="Name on photo ' + (i + 1) + '" class="ep-cap" />' : '';
+            return '<div class="ep-tile' + (i === 0 ? ' first' : '') + '"><div class="ep-thumb">' +
+              '<button type="button" class="ep-view" data-view="' + esc(img.src) + '" aria-label="See photo ' + (i + 1) + ' big"><img src="' + esc(img.src) + '" alt="" /></button>' +
+              (g.key === 'hero' ? '<span class="ep-cover">Cover</span>' : '') +
+              (list.length > 1 ? '<span class="ep-move"><button type="button" data-mv-photo="' + g.key + ':' + i + ':-1" aria-label="Move earlier">&#8249;</button><button type="button" data-mv-photo="' + g.key + ':' + i + ':1" aria-label="Move later">&#8250;</button></span>' : '') +
+              '<button type="button" data-remove-photo="' + g.key + ':' + i + '" title="Remove photo" aria-label="Remove photo" class="ep-thumb-x">&times;</button>' +
             '</div>' + cap + '</div>';
           }).join('') +
-          '<button type="button" data-add-photo="' + g.key + '" class="eo-add" style="width:118px;height:88px;border-radius:10px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease, border-color .25s ease">+ Add</button>' +
+          '<button type="button" data-add-photo="' + g.key + '" class="eo-add ep-add" style="border-radius:12px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center">+ Add</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -1072,8 +1082,15 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
   };
 
   document.addEventListener('click', e => {
-    const t = e.target.closest && e.target.closest('[data-add-photo],[data-remove-photo],[data-remove-pet],[data-toggle-pet],[data-add-pet],[data-amenity],[data-remove-note],[data-add-note],[data-reset-colours],[data-save]');
+    const t = e.target.closest && e.target.closest('[data-mv-photo],[data-add-photo],[data-remove-photo],[data-remove-pet],[data-toggle-pet],[data-add-pet],[data-amenity],[data-remove-note],[data-add-note],[data-reset-colours],[data-save]');
     if (!t) return;
+    if (t.hasAttribute('data-mv-photo')) {
+      const [key, i, d] = t.getAttribute('data-mv-photo').split(':').map((x, n) => (n ? Number(x) : x));
+      const j = i + d, list = s[key];
+      if (j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      dirty(); render(); return;
+    }
     if (t.hasAttribute('data-add-photo')) { pickFor = t.getAttribute('data-add-photo'); picker.click(); return; }
     if (t.hasAttribute('data-remove-photo')) {
       const [key, i] = t.getAttribute('data-remove-photo').split(':');

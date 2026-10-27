@@ -1,0 +1,24 @@
+/* Photo tiles on both edit pages (round 3): big enough to see, tap to view,
+   arrows (or drag) to change the order. */
+.ep-tiles { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; }
+.ep-tile { display:flex; flex-direction:column; gap:7px; min-width:0; transition:opacity .2s; }
+.ep-tile.dragging { opacity:.4; }
+.ep-thumb { position:relative; aspect-ratio:4/3; border-radius:12px; overflow:hidden; border:1px solid rgba(110,84,56,.25); background:#e9e0d2; box-shadow:0 4px 14px rgba(44,26,14,.06); }
+.ep-view { position:absolute; inset:0; border:0; padding:0; background:none; cursor:zoom-in; }
+.ep-view img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .4s ease; }
+.ep-thumb:hover .ep-view img { transform:scale(1.04); }
+.ep-thumb-x { position:absolute; top:7px; right:7px; z-index:2; width:28px; height:28px; border-radius:50%; background:rgba(44,26,14,.62); color:#fff; border:none; font-size:16px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+.ep-thumb-x:hover { background:#a4442e; }
+.ep-move { position:absolute; left:7px; bottom:7px; z-index:2; display:flex; gap:4px; }
+.ep-move button { width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#2c1a0e; font-size:1.1rem; line-height:1; cursor:pointer; box-shadow:0 2px 8px rgba(20,13,7,.2); display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
+.ep-move button:hover { background:#2f5d45; color:#fff; }
+.ep-cover { display:none; position:absolute; right:7px; bottom:9px; z-index:2; font-size:.58rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:#2f5d45; padding:4px 10px; border-radius:50px; }
+.ep-tile.first .ep-cover { display:block; }
+.ep-cap { width:100%; border:1.5px solid rgba(44,26,14,.18); border-radius:8px; padding:8px 10px; font-size:.8rem; font-family:'Montserrat',sans-serif; color:#2c1a0e; background:#faf6ee; outline:none; }
+.ep-tiles .ep-add { aspect-ratio:4/3; width:auto !important; height:auto !important; position:relative; }
+.ep-hint { font-size:.8rem; color:#6b4e35; margin:12px 0 0; line-height:1.6; }
+.ep-viewer { position:fixed; inset:0; z-index:10000; background:rgba(20,13,7,.9); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; pointer-events:none; transition:opacity .25s; }
+.ep-viewer.on { opacity:1; pointer-events:all; }
+.ep-viewer img { max-width:min(1000px,100%); max-height:86vh; border-radius:14px; object-fit:contain; }
+.ep-viewer button { position:absolute; top:18px; right:18px; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.4); background:rgba(255,255,255,.12); color:#fff; font-size:1.4rem; cursor:pointer; }
+@media (max-width:640px) { .ep-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }

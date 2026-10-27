@@ -121,12 +121,6 @@ img, video { max-width: 100%; }
   /* ── Big buttons: a touch smaller so labels fit ────────────────────────── */
   [style*="padding:16px 36px"] { padding: 14px 26px !important; }
 
-  /* Profile editors: photo tiles fill the row, three across */
-  .ep-thumb, .ep-add, .eo-thumb, .eo-add {
-    width: calc((100% - 24px) / 3) !important;
-    height: auto !important;
-    aspect-ratio: 4 / 3;
-  }
 
   [data-amenities] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; gap: 8px !important; }
 
