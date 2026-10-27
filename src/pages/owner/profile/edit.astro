@@ -153,6 +153,8 @@ const premium =
   chosenLayout(me) ===
     'premium' &&
   premiumOk;
+// Solo or joint / couple account (owner, round 3).
+const joint = me.account_type === 'joint';
 const initial = {
   premium,
   slug: me.slug || '',
@@ -407,6 +409,22 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">02</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Details</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 28px;max-width:460px">Who you are, where you are, and a few words about the place a sitter would be staying in.</p>
+
+            <div style="margin-bottom:26px">
+              <span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:12px">Profile type</span>
+              <div data-keep-two="1" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:460px">
+                <button data-otype="solo" class={joint ? 'tc-card' : 'tc-card on'} aria-pressed={joint ? 'false' : 'true'} type="button">
+                <span class="tc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+                <span class="tc-text"><span class="tc-title">Solo owner</span><span class="tc-sub">Just me</span></span>
+                <span class="tc-tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              </button>
+                <button data-otype="joint" class={joint ? 'tc-card on' : 'tc-card'} aria-pressed={joint ? 'true' : 'false'} type="button">
+                <span class="tc-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9.5" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.85"></path><path d="M16 3.1a4 4 0 0 1 0 7.75"></path></svg></span>
+                <span class="tc-text"><span class="tc-title">Joint / couple</span><span class="tc-sub">Two of us</span></span>
+                <span class="tc-tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              </button>
+              </div>
+              </div>
 
             <div data-field-row="1" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px">
               <div>
@@ -727,6 +745,10 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
   const qa = sel => Array.from(document.querySelectorAll(sel));
   const esc = v => { const d = document.createElement('div'); d.textContent = v == null ? '' : String(v); return d.innerHTML; };
   const dirty = () => { s.saved = false; };
+  qa('[data-otype]').forEach((b) => b.addEventListener('click', () => {
+    qa('[data-otype]').forEach((c) => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on)); });
+    dirty(); render();
+  }));
 
   const loader = q('[data-loader]');
   let hideT;
@@ -1123,6 +1145,7 @@ const secHead = (n: string, t: string) => `<div style="display:flex;align-items:
     const imgs = key => s[key].map(i => (typeof i.new === 'number' ? { new: i.new, cap: i.cap || '' } : { src: i.src, cap: i.cap || '' }));
     const payload = {
       name: s.name, location: s.location, tagline: s.tagline, bio: s.bio,
+      account_type: (q('[data-otype].on') || {}).getAttribute?.('data-otype') || 'solo',
       contact_email: s.email, whatsapp_number: s.whatsapp, looking_for: s.lookingFor,
       amenities: s.amenities, theme: s.theme, headings: s.headings,
       handover: s.handover, house_notes: s.houseNotes, home: readHome(),

@@ -20,6 +20,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     const slug     = (form.get('slug') as string | null)?.trim().toLowerCase() ?? '';
     const location = (form.get('location') as string | null)?.trim() || null;
     const bio      = (form.get('bio') as string | null)?.trim() || null;
+    const accountType = form.get('account_type') === 'joint' ? 'joint' : 'solo';
 
     if (!name || !slug) return redirect('/owner/profile/create?error=missing');
 
@@ -61,7 +62,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
       profile_pic:       profilePicUrl,
       bio,
       profile_type:      'owner',
-      account_type:      'solo',
+      account_type:      accountType,
       hero_images_json:  [],
       about_images_json: [],
       gallery_json:      [],

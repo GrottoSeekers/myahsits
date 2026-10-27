@@ -1,14 +1,13 @@
 // The company behind MYAH, shown on the legal pages and in footers.
 // UK law (Company Trading Disclosures Regulations 2015) needs the name,
 // number, place of registration and registered office address on the site.
-// OFFICE is left empty on purpose: the registered office is currently the
-// founders' home, which must not go on the site. Once it moves to a registered
-// office service address, put that address here (the law needs it shown).
+// Office: the address the owner gave on 27 Oct 2026 ("use this for now").
+// Swap it for a registered office service address when there is one.
 export const COMPANY = {
   name: 'Myah Sits Ltd',
   number: '17518835',
   registeredIn: 'England and Wales',
-  office: '',
+  office: '109 The Avenue, Leigh, WN7 1HE',
   email: 'info@myahsits.com',
 };
 

@@ -25,12 +25,14 @@ const R = 46, C = 2 * Math.PI * R;
   <div class="dh-photo">
     {p.photo ? <img class="dh-bg" src={p.photo.src} alt="" style={`object-position:${p.photo.pos || 'center 30%'}`} /> : <img class="dh-bg" src="/images/slideshow-springer-beach.jpeg" alt="" />}
     <a class="dh-design" href={p.designHref}><small>Page design</small><b>{p.design === 'premium' ? 'Premium' : 'Basic'}</b></a>
-    <a class="dh-ring" href={p.primary.href} aria-label={`${p.pctLabel}: ${p.pct}%`}>
+    <a class={p.pct >= 100 ? 'dh-ring done' : 'dh-ring'} href={p.primary.href} aria-label={`${p.pctLabel}: ${p.pct}%`} title={`${p.pctLabel}: ${p.pct}%`}>
       <svg viewBox="0 0 110 110" aria-hidden="true">
         <circle cx="55" cy="55" r={R} class="track" />
         <circle cx="55" cy="55" r={R} class="bar" style={`stroke-dasharray:${C.toFixed(1)};--off:${(C * (1 - p.pct / 100)).toFixed(1)};--full:${C.toFixed(1)}`} />
       </svg>
-      <span><b data-count={p.pct + '%'}>{p.pct}%</b><small>{p.pctLabel}</small></span>
+      {p.pct >= 100
+        ? <span><svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" /></svg></span>
+        : <span><b data-count={p.pct + '%'}>{p.pct}%</b></span>}
     </a>
   </div>
   <div class="dh-main">

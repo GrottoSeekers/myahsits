@@ -99,7 +99,8 @@ if (
     const v = rawDays[k];
     if (
       v === 'free' ||
-      v === 'maybe'
+      v === 'maybe' ||
+      v === 'no'
     ) {
       days[k] = v;
     }
@@ -219,29 +220,6 @@ try {
     }));
 } catch {}
 
-// "What owners see".
-const cardPic =
-  me.profile_pic ||
-  '/images/couple-bw-1.jpg';
-const cardName =
-  me.name || '';
-const cardBits: string[] =
-  [];
-if (sitCount) {
-  cardBits.push(
-    sitCount +
-      (sitCount === 1
-        ? ' sit'
-        : ' sits'),
-  );
-}
-if (me.location) {
-  cardBits.push(
-    me.location,
-  );
-}
-const cardLine =
-  cardBits.join(' · ');
 ---
 
 <!doctype html>
@@ -285,7 +263,8 @@ const cardLine =
     .ic-seg button { display:inline-flex; align-items:center; gap:7px; border:0; background:none; border-radius:9px; padding:8px 14px; font:600 .78rem 'Montserrat',sans-serif; color:#6b4e35; cursor:pointer; transition:background .2s, color .2s, box-shadow .2s; }
     .ic-seg button[aria-pressed="true"] { background:#fff; color:#2c1a0e; box-shadow:0 2px 8px rgba(44,26,14,.12); }
     .ic-sw { width:10px; height:10px; border-radius:50%; display:block; }
-    .ic-sw-free { background:#2f5d45; } .ic-sw-maybe { background:#c4ab8a; } .ic-sw-clear { background:#fff; border:1px solid rgba(44,26,14,.25); }
+    .ic-sw-free { background:#2f5d45; } .ic-sw-maybe { background:#d99a2b; } .ic-sw-no { background:#c0533f; } .ic-sw-booked { background:#2c1a0e; }
+    .ic-key { display:inline-flex; align-items:center; gap:7px; font:600 .78rem 'Montserrat',sans-serif; color:#6b4e35; padding:8px 4px; }
     .ic-month { min-width:0; }
     .ic-title { margin:0 0 12px; font:400 1.5rem 'Marcellus',serif; color:#2c1a0e; }
     .ic-title b { font-weight:400; color:#2f5d45; }
@@ -299,25 +278,24 @@ const cardLine =
     .ic-d:active span { transform:scale(.9); }
     .ic-past span { color:#c2b29d; }
     .ic-today span { color:#2f5d45; font-weight:700; box-shadow:inset 0 0 0 1.5px #2f5d45; }
-    .ic-free::before, .ic-maybe::before, .ic-booked::before { content:""; position:absolute; top:4px; bottom:4px; left:50%; right:50%; }
-    .ic-free.ic-l::before, .ic-maybe.ic-l::before, .ic-booked.ic-l::before { left:0; }
-    .ic-free.ic-r::before, .ic-maybe.ic-r::before, .ic-booked.ic-r::before { right:0; }
+    .ic-free::before, .ic-maybe::before, .ic-no::before, .ic-booked::before { content:""; position:absolute; top:4px; bottom:4px; left:50%; right:50%; }
+    .ic-free.ic-l::before, .ic-maybe.ic-l::before, .ic-no.ic-l::before, .ic-booked.ic-l::before { left:0; }
+    .ic-free.ic-r::before, .ic-maybe.ic-r::before, .ic-no.ic-r::before, .ic-booked.ic-r::before { right:0; }
     .ic-free::before { background:#dfeae2; }
-    .ic-maybe::before { background:#efe5d6; }
+    .ic-maybe::before { background:#f7e6c4; }
+    .ic-no::before { background:#f4d9d3; }
     .ic-booked::before { background:#e3dbd2; }
     .ic-free span { background:#2f5d45 !important; color:#fff; font-weight:600; }
     .ic-free.ic-l.ic-r span { background:transparent !important; color:#2f5d45; }
-    .ic-maybe span { background:#fff !important; color:#6e5438; box-shadow:inset 0 0 0 1.5px #c4ab8a; }
-    .ic-maybe.ic-l.ic-r span { background:transparent !important; box-shadow:none; }
+    .ic-maybe span { background:#d99a2b !important; color:#fff; font-weight:600; }
+    .ic-maybe.ic-l.ic-r span { background:transparent !important; color:#8a5a0c; }
+    .ic-no span { background:#c0533f !important; color:#fff; font-weight:600; }
+    .ic-no.ic-l.ic-r span { background:transparent !important; color:#9b3a28; }
     .ic-booked span { background:#2c1a0e !important; color:#fff; }
     .ic-booked.ic-l.ic-r span { background:transparent !important; color:#2c1a0e; }
     .ic-booked { cursor:not-allowed; }
     .ic-blank { pointer-events:none; }
     [data-months] { gap:40px !important; }
-    .av-fold > summary { list-style:none; display:flex; justify-content:space-between; align-items:flex-start; cursor:pointer; }
-    .av-fold > summary::-webkit-details-marker { display:none; }
-    .av-fold-i::after { content:"+"; font-size:1.3rem; color:#2f5d45; }
-    .av-fold[open] .av-fold-i::after { content:"–"; }
     @media (max-width:700px) {
       [data-pad] { padding:20px 16px 120px !important; }
       [data-pad] h1 { font-size:1.9rem !important; margin-bottom:10px !important; }
@@ -327,9 +305,7 @@ const cardLine =
       .ic-d { height:48px; }
       .ic-d span { width:40px; height:40px; font-size:1.02rem; }
       .ic-title { font-size:1.35rem; }
-      [data-legend] { gap:12px !important; margin-top:16px !important; padding-top:14px !important; }
-      [data-range] { min-width:0 !important; }
-      [data-aside] > div:last-child { display:none !important; }
+      .ic-seg button { padding:8px 11px; }
     }
   </style>
 </head>
@@ -352,7 +328,7 @@ const cardLine =
       <div style="border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:30px;margin-bottom:26px">
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 16px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>MYAH sitter</p>
         <h1 style="font-family:'Marcellus',serif;font-size:2.5rem;color:#2c1a0e;line-height:1.15;margin:0 0 18px">When you&rsquo;re <em style="color:#2f5d45;">free</em></h1>
-        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:620px;margin:0">This is your availability, and owners can see it. Mark the days you could sit and your profile shows them at a glance &mdash; you&rsquo;ll turn up in their date searches, and they won&rsquo;t need to ask.</p>
+        <p style="color:#6b4e35;font-size:1rem;line-height:1.75;max-width:620px;margin:0">Pick a colour, then tap or drag across days. Owners see it on your page.</p>
       </div>
 
       <div data-two-col="1" style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:28px;align-items:start">
@@ -361,67 +337,27 @@ const cardLine =
 
           <div data-card="1" class="av-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px 34px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:24px">
-              <div data-brushes style="display:flex;gap:9px;flex-wrap:wrap"></div>
-              <div style="display:flex;gap:9px;align-items:center">
+              <div data-brushes style="display:flex;gap:9px;flex-wrap:wrap;align-items:center"></div>
+              <div style="display:flex;gap:9px;align-items:center;margin-left:auto">
                 <button type="button" data-prev aria-label="Previous months">&#8249;</button>
-                <span data-range style="font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;min-width:120px;text-align:center"></span>
+                <span data-range class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></span>
                 <button type="button" data-next aria-label="Next months">&#8250;</button>
               </div>
             </div>
 
             <div data-months="1" style="display:grid;grid-template-columns:1fr 1fr;gap:30px"></div>
-
-            <div data-legend style="display:flex;gap:20px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.08)"></div>
           </div>
 
-          <details data-card="1" class="av-card av-fold" open data-fold style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px 34px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <summary><h2 style="font-family:'Marcellus',serif;font-size:1.25rem;color:#2c1a0e;margin:0 0 8px">The sits you&rsquo;ll take</h2><span class="av-fold-i" aria-hidden="true"></span></summary>
-            <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
-            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:480px">These narrow what owners can ask you for, and what we put in your alerts.</p>
-
-            <div style="margin-bottom:26px">
-              <span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:12px">Length of sit</span>
-              <div data-lengths style="display:flex;gap:10px;flex-wrap:wrap"></div>
-            </div>
-
-            <div style="margin-bottom:26px">
-              <span style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:12px">Pets you&rsquo;re happy with</span>
-              <div data-pets style="display:flex;gap:10px;flex-wrap:wrap"></div>
-            </div>
-
-            <div>
-              <label for="notice" style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:12px">Notice you need</label>
-              <div data-notices id="notice" style="display:flex;gap:10px;flex-wrap:wrap"></div>
-            </div>
-          </details>
         </div>
 
         <aside data-aside="1" style="position:sticky;top:28px;display:flex;flex-direction:column;gap:20px">
           <div class="av-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px 26px 28px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 18px">Your next free stretches</p>
+            <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 18px">Your available dates</p>
             <div data-stretches style="display:flex;flex-direction:column;gap:12px"></div>
-            <p data-stretch-empty style="font-size:.88rem;color:#6b4e35;line-height:1.65;margin:0;">Nothing marked yet &mdash; drag across the calendar to block out when you&rsquo;re free.</p>
+            <p data-stretch-empty style="font-size:.88rem;color:#6b4e35;line-height:1.65;margin:0;">None yet.</p>
+            <a href="/listings" class="av-match" style="display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-size:.76rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:#2f5d45;text-decoration:none;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px;transition:gap .2s, color .2s"><span data-match-count></span> &rarr;</a>
           </div>
 
-          <div style="background:#faf6ee;border:1px solid rgba(110,84,56,.28);border-radius:18px;padding:24px 26px">
-            <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 14px">What owners see</p>
-            <div style="background:#fff;border:1px solid rgba(110,84,56,.25);border-radius:14px;padding:18px 20px">
-              <div style="display:flex;gap:13px;align-items:center;margin-bottom:14px">
-                <img src={cardPic} alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid rgba(110,84,56,.35);flex-shrink:0" />
-                <div style="min-width:0">
-                  <p style="font-family:'Marcellus',serif;font-size:1.02rem;color:#2c1a0e;margin:0 0 2px">{cardName}</p>
-                  <p style="font-size:.78rem;color:#6b4e35;margin:0">{cardLine}</p>
-                </div>
-              </div>
-              <span data-card-pill></span>
-            </div>
-            <p data-match-line style="font-size:.84rem;color:#6b4e35;line-height:1.65;margin:14px 0 0"></p>
-          </div>
-
-          <div style="background:#fff;border:1px solid rgba(44,26,14,.1);border-radius:18px;padding:22px 24px">
-            <p style="font-size:.86rem;color:#6b4e35;line-height:1.7;margin:0 0 12px">Sits matching these dates</p>
-            <a href="/listings" class="av-match" style="display:inline-flex;align-items:center;gap:8px;font-size:.76rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:#2f5d45;text-decoration:none;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px;transition:gap .2s, color .2s"><span data-match-count></span> &rarr;</a>
-          </div>
         </aside>
       </div>
     </div>
@@ -435,9 +371,6 @@ const cardLine =
   </div>
 </div>
 
-<script is:inline>
-  if (matchMedia('(max-width:700px)').matches) document.querySelectorAll('[data-fold]').forEach(function (d) { d.open = false; });
-</script>
 <script is:inline define:vars={{ days, prefs, booked, openSits }}>
 (() => {
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -462,10 +395,14 @@ const cardLine =
   };
   const P = { lengths: prefs.lengths.slice(), pets: prefs.pets.slice(), notice: prefs.notice };
 
+  // Tapping a day already in the chosen colour clears it (no separate "Clear").
+  // A drag keeps whatever the first day did: paint, or clear.
+  let erase = false;
+  const startPaint = k => { erase = !BOOKED[k] && state.days[k] === state.brush; paint(k); };
   const paint = k => {
     if (BOOKED[k]) return;
     const prev = state.days[k];
-    if (state.brush === 'clear') delete state.days[k]; else state.days[k] = state.brush;
+    if (erase) { if (prev === state.brush) delete state.days[k]; } else state.days[k] = state.brush;
     if (prev !== state.days[k]) { state.saved = false; render(); }
   };
 
@@ -498,34 +435,22 @@ const cardLine =
     return openSits.filter(l => runs.some(r => l.from >= r.from && l.to <= r.to)).length;
   };
 
-  const chip = on => 'font-family:\'Montserrat\',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.04em;padding:11px 20px;border-radius:50px;cursor:pointer;transition:background .25s ease, color .25s ease, border-color .25s ease;' +
-    (on ? 'background:#2f5d45;color:#fff;border:1.5px solid #2f5d45;' : 'background:#faf6ee;color:#5c3d20;border:1.5px solid rgba(110,84,56,.32);');
-
   const brushDefs = [
-    { key: 'free', label: 'Free', colour: '#2f5d45' },
-    { key: 'maybe', label: 'Maybe', colour: 'rgba(110,84,56,.3)' },
-    { key: 'clear', label: 'Clear', colour: '#faf6ee' }
+    { key: 'free', label: 'Available' },
+    { key: 'maybe', label: 'Maybe' },
+    { key: 'no', label: 'Unavailable' }
   ];
   const navBtnStyle = 'width:38px;height:38px;border-radius:50%;background:#f3ece0;border:0;color:#2f5d45;font-size:1.2rem;cursor:pointer;transition:background .2s ease';
   q('[data-prev]').setAttribute('style', navBtnStyle);
   q('[data-next]').setAttribute('style', navBtnStyle);
 
-  const legend = [
-    { label: 'Free', colour: '#2f5d45' },
-    { label: 'Maybe', colour: 'rgba(110,84,56,.22)' },
-    { label: 'Not available', colour: '#faf6ee' },
-    { label: 'Booked sit', colour: '#2c1a0e' }
-  ];
-  q('[data-legend]').innerHTML = legend.map(l =>
-    '<span style="display:flex;align-items:center;gap:9px;font-size:.82rem;color:#6b4e35">' +
-      '<span style="width:12px;height:12px;border-radius:50%;display:block;flex-shrink:0;background:' + l.colour + ';border:1px solid rgba(44,26,14,.12);"></span>' + esc(l.label) +
-    '</span>').join('');
 
   const render = () => {
     const s = state;
 
     q('[data-brushes]').innerHTML = '<span class="ic-seg" role="group" aria-label="Mark days as">' + brushDefs.map(b =>
-      '<button type="button" data-brush="' + b.key + '" aria-pressed="' + (s.brush === b.key) + '"><i class="ic-sw ic-sw-' + b.key + '"></i>' + esc(b.label) + '</button>').join('') + '</span>';
+      '<button type="button" data-brush="' + b.key + '" aria-pressed="' + (s.brush === b.key) + '"><i class="ic-sw ic-sw-' + b.key + '"></i>' + esc(b.label) + '</button>').join('') + '</span>' +
+      '<span class="ic-key"><i class="ic-sw ic-sw-booked"></i>Booked sit</span>';
 
     // iPhone-style months (round 3): plain numbers, round days, free days
     // joined into one band, today ringed. Phones show one month at a time.
@@ -546,7 +471,7 @@ const cardLine =
       const L = v && col > 0 && stateOf(shift(c.k, -1)) === v && c.day > 1;
       const R = v && col < 6 && stateOf(shift(c.k, 1)) === v && !c.last;
       const cls = ['ic-d', v ? 'ic-' + v : '', L ? 'ic-l' : '', R ? 'ic-r' : '', c.k === todayK ? 'ic-today' : '', c.k < todayK ? 'ic-past' : ''].filter(Boolean).join(' ');
-      return '<button type="button" data-day="' + c.k + '" class="' + cls + '" aria-pressed="' + (v === 'free') + '" aria-label="' + c.day + ' ' + (v || 'not marked') + '"><span>' + c.day + '</span></button>';
+      return '<button type="button" data-day="' + c.k + '" class="' + cls + '" aria-pressed="' + (v === 'free') + '" aria-label="' + c.day + ' ' + ({ free: 'available', maybe: 'maybe', no: 'unavailable', booked: 'booked sit' }[v] || 'not marked') + '"><span>' + c.day + '</span></button>';
     };
     q('[data-months]').innerHTML = (one ? [m1] : [m1, m2]).map(m => {
       m.cells.forEach((c, i) => { if (!c.blank && i === m.cells.length - 1) c.last = true; });
@@ -557,11 +482,6 @@ const cardLine =
       '</div>';
     }).join('');
 
-    const chips = (list, field, multi) => list.map(v =>
-      '<button type="button" data-pref="' + field + '" data-value="' + esc(v) + '" data-multi="' + (multi ? 1 : 0) + '" style="' + chip(multi ? P[field].includes(v) : P[field] === v) + '">' + esc(v) + '</button>').join('');
-    q('[data-lengths]').innerHTML = chips(['A few days', '1–2 weeks', '2–4 weeks', 'A month or more'], 'lengths', true);
-    q('[data-pets]').innerHTML = chips(['Dogs', 'Cats', 'Birds', 'Rabbits', 'Horses', 'Livestock'], 'pets', true);
-    q('[data-notices]').innerHTML = chips(['Any time', '1 week', '2 weeks', 'A month'], 'notice', false);
 
     const stretchList = stretches().slice(0, 3);
     const longest = stretchList[0] ? stretchList[0].length : 0;
@@ -580,19 +500,12 @@ const cardLine =
     }).join('');
     q('[data-stretch-empty]').setAttribute('style', 'font-size:.88rem;color:#6b4e35;line-height:1.65;margin:0;' + (stretchList.length ? 'display:none;' : ''));
 
-    const pill = q('[data-card-pill]');
-    pill.textContent = freeCount ? 'Available ' + (longest >= 14 ? 'for long sits' : 'for short sits') + ' · ' + freeCount + ' days marked' : 'No dates set';
-    pill.setAttribute('style', 'display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:6px 14px;border-radius:50px;' +
-      (freeCount ? 'background:rgba(110,84,56,.14);color:#2f5d45;' : 'background:rgba(44,26,14,.07);color:#6b4e35;'));
-    q('[data-match-line]').textContent = freeCount
-      ? 'Owners searching those dates see this badge on your card, and you appear in their filtered results.'
-      : 'Without dates your card shows nothing here, and date filters skip you entirely.';
     const fits = fitCount();
     q('[data-match-count]').textContent = freeCount ? fits + ' open sit' + (fits === 1 ? '' : 's') + ' fit your dates' : 'Browse all open sits';
 
     q('[data-save-bar]').setAttribute('style', 'position:fixed;left:0;right:0;bottom:0;z-index:40;padding:16px 48px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid rgba(110,84,56,.28);box-shadow:0 -6px 24px rgba(44,26,14,.06);transition:transform .3s ease, opacity .3s ease;' +
       (s.saved ? 'transform:translateY(100%);opacity:0;pointer-events:none;' : 'transform:translateY(0);opacity:1;'));
-    q('[data-save-text]').textContent = freeCount + ' days marked free — not saved yet.';
+    q('[data-save-text]').textContent = 'Not saved yet.';
     const saveBtn = q('[data-save]');
     saveBtn.textContent = s.saving ? 'Saving…' : s.saved ? 'Saved' : 'Save availability';
     saveBtn.disabled = s.saving;
@@ -603,7 +516,7 @@ const cardLine =
   const months = q('[data-months]');
   // Touch: tap a day, or slide sideways across days to paint them.
   let touchPaint = false;
-  months.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { const b = e.target.closest('[data-day]'); if (b) { touchPaint = true; paint(b.getAttribute('data-day')); } } });
+  months.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { const b = e.target.closest('[data-day]'); if (b) { touchPaint = true; startPaint(b.getAttribute('data-day')); } } });
   months.addEventListener('pointermove', e => {
     if (!touchPaint || e.pointerType === 'mouse') return;
     const el = document.elementFromPoint(e.clientX, e.clientY);
@@ -623,7 +536,7 @@ const cardLine =
     const b = e.target.closest('[data-day]');
     if (!b || e.button !== 0) return;
     e.preventDefault();
-    paint(b.getAttribute('data-day'));
+    startPaint(b.getAttribute('data-day'));
   });
   months.addEventListener('mouseover', e => {
     const b = e.target.closest('[data-day]');
@@ -632,7 +545,7 @@ const cardLine =
   months.addEventListener('click', e => {
     // Keyboard activation (mouse clicks are handled on mousedown).
     const b = e.target.closest('[data-day]');
-    if (b && e.detail === 0 && e.pointerType !== 'touch') paint(b.getAttribute('data-day'));
+    if (b && e.detail === 0 && e.pointerType !== 'touch') startPaint(b.getAttribute('data-day'));
   });
 
   q('[data-prev]').addEventListener('click', () => { state.offset -= 1; render(); });
@@ -641,15 +554,6 @@ const cardLine =
   document.addEventListener('click', e => {
     const br = e.target.closest('[data-brush]');
     if (br) { state.brush = br.getAttribute('data-brush'); render(); return; }
-    const pf = e.target.closest('[data-pref]');
-    if (pf) {
-      const field = pf.getAttribute('data-pref');
-      const value = pf.getAttribute('data-value');
-      if (pf.getAttribute('data-multi') === '1') {
-        P[field] = P[field].includes(value) ? P[field].filter(x => x !== value) : P[field].concat(value);
-      } else P[field] = value;
-      state.saved = false; render();
-    }
   });
 
   q('[data-save]').addEventListener('click', () => {

@@ -27,15 +27,19 @@
 .dh-pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
 .dh-pills a { font-size:.72rem; font-weight:600; letter-spacing:.04em; color:#5c3d20; text-decoration:none; padding:7px 13px; border-radius:50px; border:1px solid rgba(110,84,56,.22); background:#fff; white-space:nowrap; transition:background .2s, border-color .2s, color .2s; }
 .dh-pills a:hover { background:#2f5d45; border-color:#2f5d45; color:#fff; }
-.dh-ring { position:absolute; right:16px; bottom:16px; z-index:1; width:118px; height:118px; display:block; text-decoration:none; color:#2c1a0e; border-radius:50%; background:rgba(255,255,255,.94); box-shadow:0 10px 30px rgba(20,13,7,.25); animation:dh-rise .9s .2s both; }
+.dh-ring { position:absolute; right:18px; bottom:18px; z-index:1; width:84px; height:84px; display:block; text-decoration:none; border-radius:50%; background:rgba(28,18,10,.32); backdrop-filter:blur(10px) saturate(1.3); -webkit-backdrop-filter:blur(10px) saturate(1.3); box-shadow:0 12px 30px rgba(20,13,7,.28), inset 0 0 0 1px rgba(255,255,255,.22); animation:dh-rise .9s .2s both; transition:transform .3s cubic-bezier(.2,.7,.2,1); }
+.dh-ring:hover { transform:scale(1.06); }
 .dh-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
-.dh-ring circle { fill:none; stroke-width:7; }
-.dh-ring .track { stroke:rgba(110,84,56,.14); }
-.dh-ring .bar { stroke:#2f5d45; stroke-linecap:round; stroke-dashoffset:var(--full); animation:dh-fill 1.6s .4s cubic-bezier(.2,.7,.2,1) forwards; }
+.dh-ring circle { fill:none; stroke-width:4; }
+.dh-ring .track { stroke:rgba(255,255,255,.22); }
+.dh-ring .bar { stroke:#fff; stroke-linecap:round; stroke-dashoffset:var(--full); animation:dh-fill 1.6s .4s cubic-bezier(.2,.7,.2,1) forwards; }
 @keyframes dh-fill { to { stroke-dashoffset:var(--off); } }
-.dh-ring span { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-.dh-ring b { font:400 1.7rem 'Marcellus',serif; line-height:1; color:#2f5d45; }
-.dh-ring small { font:700 .48rem 'Lato',sans-serif; letter-spacing:.14em; text-transform:uppercase; color:#6e5438; margin-top:4px; max-width:74px; }
+.dh-ring span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+.dh-ring b { font:400 1.35rem 'Marcellus',serif; line-height:1; color:#fff; letter-spacing:.01em; }
+.dh-ring.done .bar { stroke:#cfe3d6; }
+.dh-ring .tick { width:46%; height:46%; transform:none; padding:9px; box-sizing:content-box; border-radius:50%; background:#2f5d45; fill:none; stroke:#fff; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; box-shadow:0 4px 14px rgba(47,93,69,.5); }
+.dh-ring .tick path { stroke-dasharray:22; stroke-dashoffset:22; animation:dh-tick .6s 1.4s ease-out forwards; }
+@keyframes dh-tick { to { stroke-dashoffset:0; } }
 .dh-design { position:absolute; left:14px; top:14px; z-index:1; display:flex; flex-direction:column; gap:1px; padding:7px 13px; border-radius:12px; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); text-decoration:none; color:#2c1a0e; box-shadow:0 6px 18px rgba(20,13,7,.18); }
 .dh-design small { font:700 .48rem 'Lato',sans-serif; letter-spacing:.18em; text-transform:uppercase; color:#6e5438; }
 .dh-design b { font:400 .95rem 'Marcellus',serif; }
@@ -92,9 +96,9 @@ a.dg-card:hover, .dg-card:hover { transform:translateY(-3px); box-shadow:0 16px 
   .dh-acts .dh-btn { flex:1; min-height:42px; padding:0 10px; font-size:.62rem; letter-spacing:.08em; }
   .dh-pills { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; margin:12px -18px 0; padding:0 18px 2px; }
   .dh-pills::-webkit-scrollbar { display:none; }
-  .dh-ring { width:78px; height:78px; right:10px; bottom:10px; }
-  .dh-ring b { font-size:1.2rem; }
-  .dh-ring small { font-size:.36rem; letter-spacing:.1em; max-width:52px; margin-top:2px; }
+  .dh-ring { width:60px; height:60px; right:10px; bottom:10px; }
+  .dh-ring b { font-size:1rem; }
+  .dh-ring .tick { padding:6px; }
   .dh-design { left:10px; top:10px; padding:5px 10px; }
   /* stat cards: one swipeable row instead of a tall grid */
   .dg { display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 8px; scroll-snap-type:x mandatory; scroll-padding:0 16px; }

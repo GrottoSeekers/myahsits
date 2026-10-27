@@ -75,6 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
     const toRemove: string[] = [];
     const updates: Record<string, any> = {
       name,
+      account_type: data.account_type === 'joint' ? 'joint' : 'solo',
       location: str(data.location, 160) || null,
       tagline: str(data.tagline, 200) || null,
       bio: str(data.bio, 5000) || null,
