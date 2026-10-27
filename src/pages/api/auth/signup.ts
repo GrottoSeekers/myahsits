@@ -4,8 +4,10 @@ import type { APIRoute } from 'astro';
 import bcrypt from 'bcryptjs';
 import { supabase } from '../../../lib/supabase';
 import { signSession, sessionCookie } from '../../../lib/auth';
+import { verifyOn } from '../../../lib/verify-email';
+import { sendVerifyLink } from '../../../lib/email';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, url }) => {
   try {
     const form = await request.formData();
     const email = (form.get('email') as string ?? '').trim().toLowerCase();
@@ -41,11 +43,19 @@ export const POST: APIRoute = async ({ request }) => {
     const { data: newUser, error } = await supabase
       .from('users')
       .insert({ email, password: hash, role })
-      .select('id, email, role')
+      .select('*')
       .single();
 
     if (error || !newUser) {
       return new Response(null, { status: 302, headers: { Location: `/signup?error=db&detail=${encodeURIComponent(error?.message ?? 'Insert failed')}` } });
+    }
+
+    // Confirm the email first: we send a link that brings them back to log in.
+    if (verifyOn(newUser)) {
+      const sent = await sendVerifyLink(newUser.id, newUser.email, url.origin);
+      if (sent.sent) {
+        return new Response(null, { status: 302, headers: { Location: '/signup?sent=1&email=' + encodeURIComponent(newUser.email) } });
+      }
     }
 
     const token = await signSession(newUser.id, newUser.email, newUser.role);

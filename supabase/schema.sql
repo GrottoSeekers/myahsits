@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   email      TEXT        UNIQUE NOT NULL,
   password   TEXT        NOT NULL,          -- bcrypt hash only
   role       TEXT        NOT NULL DEFAULT 'sitter',  -- 'sitter' or 'owner'
+  email_verified_at TIMESTAMPTZ,            -- set when they click the link in the confirm email
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

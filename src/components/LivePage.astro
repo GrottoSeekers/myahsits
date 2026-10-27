@@ -1,0 +1,55 @@
+---
+// "Your page, live" on both edit pages (owner, round 3: make sure it links up
+// to show what the page really looks like). The member's real public page in
+// a phone or computer frame; it shows the saved version and reloads after
+// every save.
+interface Props { href: string }
+const { href } = Astro.props;
+const src = href + (href.includes('?') ? '&' : '?') + 'frame=1';
+---
+<div class="lp" data-lp>
+  <div class="lp-head">
+    <p>Your page, live</p>
+    <div class="lp-sw" role="group" aria-label="Show on">
+      <button type="button" aria-pressed="true" data-lp-as="phone">Phone</button>
+      <button type="button" aria-pressed="false" data-lp-as="laptop">Computer</button>
+    </div>
+  </div>
+  <div class="lp-stage">
+    <div class="lp-frame" data-lp-frame="phone"><iframe src={src} title="Your page on a phone" loading="lazy" tabindex="-1"></iframe></div>
+  </div>
+  <div class="lp-foot">
+    <span>Shows your saved page. Save to see changes here.</span>
+    <a href={href} target="_blank" rel="noopener">Open &#8599;</a>
+  </div>
+</div>
+<style is:global>
+  .lp { background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; overflow:hidden; }
+  .lp-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-bottom:1px solid rgba(110,84,56,.16); }
+  .lp-head p { margin:0; font-size:.7rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#6e5438; }
+  .lp-sw { display:flex; padding:3px; background:#f3ece0; border-radius:50px; }
+  .lp-sw button { border:0; background:none; font:600 .64rem 'Montserrat',sans-serif; letter-spacing:.06em; text-transform:uppercase; color:#6b4e35; padding:6px 11px; border-radius:50px; cursor:pointer; }
+  .lp-sw button[aria-pressed="true"] { background:#2f5d45; color:#fff; }
+  .lp-stage { position:relative; padding:16px; background:radial-gradient(120% 90% at 20% 0%,#f3ece0 0%,#e9e0d2 100%); display:flex; justify-content:center; }
+  .lp-frame { position:relative; overflow:hidden; background:#faf6ee; }
+  .lp-frame iframe { position:absolute; top:0; left:0; border:0; transform-origin:0 0; }
+  .lp-frame[data-lp-frame="phone"] { width:236px; height:470px; border-radius:28px; border:8px solid #2c1a0e; box-shadow:0 18px 40px rgba(20,13,7,.25); }
+  .lp-frame[data-lp-frame="phone"] iframe { width:390px; height:780px; transform:scale(.564); }
+  .lp-frame[data-lp-frame="laptop"] { width:100%; aspect-ratio:16/10; border-radius:10px; border:6px solid #2c1a0e; box-shadow:0 18px 40px rgba(20,13,7,.2); }
+  .lp-frame[data-lp-frame="laptop"] iframe { width:1280px; height:800px; transform:scale(var(--k,.26)); }
+  .lp-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; font-size:.74rem; color:#6b4e35; }
+  .lp-foot a { font-weight:600; letter-spacing:.1em; text-transform:uppercase; font-size:.68rem; color:#2f5d45; text-decoration:none; white-space:nowrap; }
+</style>
+<script is:inline>
+(() => {
+  document.querySelectorAll('[data-lp]').forEach((box) => {
+    const fr = box.querySelector('.lp-frame');
+    const fit = () => { if (fr.dataset.lpFrame === 'laptop') fr.style.setProperty('--k', String((fr.clientWidth) / 1280)); };
+    box.querySelectorAll('[data-lp-as]').forEach((b) => b.addEventListener('click', () => {
+      box.querySelectorAll('[data-lp-as]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      fr.dataset.lpFrame = b.dataset.lpAs; fit();
+    }));
+    window.addEventListener('resize', fit);
+  });
+})();
+</script>

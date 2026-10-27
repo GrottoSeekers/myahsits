@@ -15,6 +15,7 @@ import {
   supabase,
 } from
   '../../lib/supabase';
+import LivePage from '../../components/LivePage.astro';
 import PageDesign from
   '../../components/PageDesign.astro';
 import {
@@ -350,6 +351,8 @@ const REV_FIRST = 6;
     .ep-queue:empty { display:none; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+
+  <link rel="stylesheet" href="/edit-photos.css" />
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -482,28 +485,30 @@ const REV_FIRST = 6;
                 {g.cat === 'hero' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">{premium ? 'One still photo fills the screen when your page opens: the Cover photo. Any others join your About photos. A photo of you, with faces near the middle, works best.' : 'The big photos at the top of your page. They play as a slideshow, so wide photos look best.'}</p>}
                 {g.cat === 'about' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">{premium ? 'Shown one at a time in a rounded frame beside your bio, with a soft zoom from one to the next. Upright photos of you with pets work well.' : 'A small slideshow beside your About text. Photos of you with pets work well.'}</p>}
                 {g.cat === 'gallery' && <p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">{premium ? 'The grid in your Photos tab; the first photo shows large. ' : 'Your photo grid. Show the pets you’ve cared for and the places you’ve stayed. '}Type the pet&rsquo;s name under a photo to show it in white on the photo.</p>}
-                <div style="display:flex;flex-wrap:wrap;gap:12px">
+                <div class="ep-tiles" data-tiles={g.cat}>
                   {g.images.map((img, i) => (
-                    <div style="display:flex;flex-direction:column;gap:6px;width:118px">
-                      <div class="ep-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">
-                        <img src={img.src} alt="" style="width:100%;height:100%;object-fit:cover;display:block" />
-                        <span style={g.cat === 'hero' && i === 0 ? 'position:absolute;left:6px;bottom:6px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(44,26,14,.62);padding:3px 9px;border-radius:50px' : 'display:none'}>Cover</span>
+                    <div class="ep-tile" data-idx={String(i)} draggable="true">
+                      <div class="ep-thumb">
+                        <button type="button" class="ep-view" data-view={img.src} aria-label={`See photo ${i + 1} big`}><img src={img.src} alt="" loading="lazy" /></button>
+                        <span class="ep-move"><button type="button" data-mv="-1" aria-label="Move earlier">&#8249;</button><button type="button" data-mv="1" aria-label="Move later">&#8250;</button></span>
+                        {g.cat === 'hero' && <span class="ep-cover">Cover</span>}
                         <form action="/api/profile/images" method="POST" style="display:contents">
                           <input type="hidden" name="_action" value="delete" />
                           <input type="hidden" name="category" value={g.cat} />
                           <input type="hidden" name="index" value={String(i)} />
-                          <button type="submit" title="Remove photo" class="ep-thumb-x" style="position:absolute;top:6px;right:6px;width:23px;height:23px;border-radius:50%;background:rgba(44,26,14,.6);color:#fff;border:none;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .2s ease">&times;</button>
+                          <button type="submit" title="Remove photo" aria-label="Remove photo" class="ep-thumb-x">&times;</button>
                         </form>
                       </div>
-                      {g.cat === 'gallery' && <input type="text" data-cap={String(i)} value={img.cap || ''} maxlength="40" placeholder="Pet's name" aria-label={`Name on photo ${i + 1}`} style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:8px;padding:7px 9px;font-size:.78rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none" />}
+                      {g.cat === 'gallery' && <input type="text" data-cap={String(i)} value={img.cap || ''} maxlength="40" placeholder="Pet's name" aria-label={`Name on photo ${i + 1}`} class="ep-cap" />}
                     </div>
                   ))}
-                  <label class="ep-add" style="width:118px;height:88px;border-radius:10px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:'Montserrat',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease, border-color .25s ease;position:relative">
+                  <label class="ep-add" style="border-radius:10px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:'Montserrat',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease, border-color .25s ease;position:relative">
                     + Add
                     <input type="file" data-upload-cat={g.cat} accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;width:100%;height:100%" />
                   </label>
                 </div>
                 <div class="ep-queue" data-queue-for={g.cat}></div>
+                {g.images.length > 1 && <p class="ep-hint">Tap a photo to see it big. Use the arrows (or drag on a computer) to change the order{g.cat === 'hero' ? '; the first one is your cover' : ''}, then save.</p>}
               </div>
             ))}
             <div class="ep-sec-save" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)">
@@ -633,9 +638,10 @@ const REV_FIRST = 6;
         </div>
 
         <aside data-aside="1" id="preview" style="position:sticky;top:28px;display:flex;flex-direction:column;gap:18px">
+          <LivePage href={publicHref} />
           <div class="ep-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="padding:18px 22px;border-bottom:1px solid rgba(110,84,56,.2);display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">Page preview</p>
+              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">Preview as you type</p>
               <a href={publicHref} target="_blank" class="ep-open" style="display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;text-decoration:none;transition:gap .2s, color .2s">Open &rarr;</a>
             </div>
 
@@ -946,6 +952,49 @@ const REV_FIRST = 6;
     dirty();
   });
 
+  // Photos: see them big, and move them around (arrows, or drag on a computer).
+  const moved = new Set();
+  qa('[data-tiles]').forEach((box) => {
+    const cat = box.getAttribute('data-tiles');
+    const tiles = () => qa('[data-tiles="' + cat + '"] > .ep-tile');
+    const mark = () => { moved.add(cat); dirty(); tiles().forEach((t, i) => t.classList.toggle('first', i === 0)); };
+    box.addEventListener('click', (e) => {
+      const mv = e.target.closest('[data-mv]');
+      if (!mv) return;
+      const t = mv.closest('.ep-tile'), d = Number(mv.getAttribute('data-mv'));
+      const sib = d < 0 ? t.previousElementSibling : t.nextElementSibling;
+      if (!sib || !sib.classList.contains('ep-tile')) return;
+      d < 0 ? box.insertBefore(t, sib) : box.insertBefore(sib, t);
+      t.animate([{ transform: 'scale(.94)' }, { transform: 'none' }], { duration: 220 });
+      mark();
+    });
+    let drag = null;
+    box.addEventListener('dragstart', (e) => { drag = e.target.closest('.ep-tile'); if (drag) { drag.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; } });
+    box.addEventListener('dragend', () => { if (drag) drag.classList.remove('dragging'); drag = null; });
+    box.addEventListener('dragover', (e) => {
+      if (!drag) return; e.preventDefault();
+      const over = e.target.closest('.ep-tile');
+      if (!over || over === drag) return;
+      const r = over.getBoundingClientRect();
+      box.insertBefore(drag, e.clientX > r.left + r.width / 2 ? over.nextElementSibling : over);
+      mark();
+    });
+    tiles().forEach((t, i) => t.classList.toggle('first', i === 0));
+  });
+  const viewer = document.createElement('div');
+  viewer.className = 'ep-viewer';
+  viewer.innerHTML = '<button type="button" aria-label="Close">&times;</button><img alt="" />';
+  document.body.appendChild(viewer);
+  const closeV = () => viewer.classList.remove('on');
+  viewer.addEventListener('click', (e) => { if (e.target === viewer || e.target.tagName === 'BUTTON') closeV(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeV(); });
+  document.addEventListener('click', (e) => {
+    const v = e.target.closest && e.target.closest('[data-view]');
+    if (!v) return;
+    viewer.querySelector('img').src = v.getAttribute('data-view');
+    viewer.classList.add('on');
+  });
+
   const queues = new Map();
   qa('input[data-upload-cat]').forEach(input => {
     input.addEventListener('change', () => {
@@ -989,6 +1038,16 @@ const REV_FIRST = 6;
       let r = await fetch('/api/profile/update', { method: 'POST', body: fd });
       if (r.url.includes('error=')) errors.push('Failed to save details.');
 
+      for (const cat of moved) {
+        label('Saving photo order…');
+        const ofd = new FormData();
+        ofd.set('_action', 'reorder');
+        ofd.set('category', cat);
+        ofd.set('order', JSON.stringify(qa('[data-tiles="' + cat + '"] > .ep-tile').map((t) => Number(t.getAttribute('data-idx')))));
+        r = await fetch('/api/profile/images', { method: 'POST', body: ofd });
+        if (r.url.includes('error=')) errors.push('Failed to save the photo order.');
+      }
+
       for (const [cat, files] of queues.entries()) {
         if (!files.length) continue;
         label('Uploading ' + cat + ' photos…');
@@ -1003,7 +1062,7 @@ const REV_FIRST = 6;
       }
 
       const caps = qa('[data-cap]');
-      if (caps.some(el => el.value !== el.defaultValue)) {
+      if (moved.has('gallery') || caps.some(el => el.value !== el.defaultValue)) {
         label('Saving photo names…');
         const cfd = new FormData();
         cfd.set('_action', 'captions');

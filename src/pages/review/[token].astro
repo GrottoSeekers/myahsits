@@ -23,12 +23,13 @@ let photo = '';
 let slug = '';
 let valid = false;
 let used = false;
+let ownerId = '';
 if (token) {
   const pr =
     await supabase
     .from('profiles')
     .select(
-      'name, slug,' +
+      'name, slug, user_id,' +
       ' profile_pic,' +
       ' review_requests_json',
     )
@@ -56,6 +57,7 @@ if (token) {
     photo =
       p.profile_pic || '';
     slug = p.slug || '';
+    ownerId = p.user_id || '';
     valid =
       match.status ===
       'pending';
@@ -63,6 +65,31 @@ if (token) {
     break;
   }
 }
+
+// Home owners get reviews from sitters too (owner, round 3): same link,
+// questions about the home and the welcome instead of the sitting.
+let isOwner = false;
+if (ownerId) {
+  try {
+    const u = await supabase.from('users').select('role').eq('id', ownerId).maybeSingle();
+    isOwner = u.data?.role === 'owner';
+  } catch {}
+}
+const cats = isOwner
+  ? [
+    ['accuracy', 'Home as described', 'The home, area and amenities matched the page'],
+    ['pets', 'Pets as described', 'Routines, needs and personalities were as told'],
+    ['communication', 'Communication', 'Clear instructions and quick replies'],
+    ['welcome', 'Welcome & handover', 'A tidy home, a good handover and a warm welcome'],
+    ['again', 'Would sit again', 'How happy you would be to come back'],
+  ]
+  : [
+    ['cleanliness', 'Cleanliness', 'How you found the home on your return'],
+    ['communication', 'Communication', 'Updates, replies and clarity'],
+    ['pet_care', 'Care of pets', 'Routines, walks and affection'],
+    ['reliability', 'Reliability', 'Turning up and doing what was agreed'],
+    ['extra_mile', 'Going the extra mile', 'The things nobody asked for'],
+  ];
 
 const view =
   success && (valid || used)
@@ -205,41 +232,15 @@ const title =
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px">
-            <div data-cat="cleanliness" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid rgba(44,26,14,.08);flex-wrap:wrap">
+            {cats.map(([key, label, hint]) => (
+            <div data-cat={key} style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid rgba(44,26,14,.08);flex-wrap:wrap">
               <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
-                <span data-cat-label="1" style="font-size:.9rem;font-weight:600;color:#2c1a0e">Cleanliness</span>
-                <span style="font-size:.78rem;color:#6b4e35">How you found the home on your return</span>
+                <span data-cat-label="1" style="font-size:.9rem;font-weight:600;color:#2c1a0e">{label}</span>
+                <span style="font-size:.78rem;color:#6b4e35">{hint}</span>
               </span>
               <span data-stars="1" style="display:flex;align-items:center;gap:5px;flex-shrink:0"></span>
             </div>
-            <div data-cat="communication" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid rgba(44,26,14,.08);flex-wrap:wrap">
-              <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
-                <span data-cat-label="1" style="font-size:.9rem;font-weight:600;color:#2c1a0e">Communication</span>
-                <span style="font-size:.78rem;color:#6b4e35">Updates, replies and clarity</span>
-              </span>
-              <span data-stars="1" style="display:flex;align-items:center;gap:5px;flex-shrink:0"></span>
-            </div>
-            <div data-cat="pet_care" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid rgba(44,26,14,.08);flex-wrap:wrap">
-              <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
-                <span data-cat-label="1" style="font-size:.9rem;font-weight:600;color:#2c1a0e">Care of pets</span>
-                <span style="font-size:.78rem;color:#6b4e35">Routines, walks and affection</span>
-              </span>
-              <span data-stars="1" style="display:flex;align-items:center;gap:5px;flex-shrink:0"></span>
-            </div>
-            <div data-cat="reliability" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid rgba(44,26,14,.08);flex-wrap:wrap">
-              <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
-                <span data-cat-label="1" style="font-size:.9rem;font-weight:600;color:#2c1a0e">Reliability</span>
-                <span style="font-size:.78rem;color:#6b4e35">Turning up and doing what was agreed</span>
-              </span>
-              <span data-stars="1" style="display:flex;align-items:center;gap:5px;flex-shrink:0"></span>
-            </div>
-            <div data-cat="extra_mile" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 0;border-top:1px solid rgba(44,26,14,.08);flex-wrap:wrap">
-              <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
-                <span data-cat-label="1" style="font-size:.9rem;font-weight:600;color:#2c1a0e">Going the extra mile</span>
-                <span style="font-size:.78rem;color:#6b4e35">The things nobody asked for</span>
-              </span>
-              <span data-stars="1" style="display:flex;align-items:center;gap:5px;flex-shrink:0"></span>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -253,9 +254,9 @@ const title =
           </div>
           <div>
             <label for="rtext" style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:10px">Your review <span style="color:#2f5d45">*</span></label>
-            <textarea data-text="1" id="rtext" name="text" rows="5" required="required" placeholder="What was your experience like? How did they look after your pets and home?" style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;resize:vertical;line-height:1.7;transition:border-color .25s ease, box-shadow .25s ease"></textarea>
+            <textarea data-text="1" id="rtext" name="text" rows="5" required="required" placeholder={isOwner ? "What was your sit like? Tell other sitters about the home, the pets and the welcome." : "What was your experience like? How did they look after your pets and home?"} style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;resize:vertical;line-height:1.7;transition:border-color .25s ease, box-shadow .25s ease"></textarea>
             <div style="display:flex;justify-content:space-between;gap:16px;margin-top:8px">
-              <p style="font-size:.82rem;color:#6b4e35;margin:0;line-height:1.6">Be as detailed as you like — pet owners love reading real experiences.</p>
+              <p style="font-size:.82rem;color:#6b4e35;margin:0;line-height:1.6">{isOwner ? "Be as detailed as you like — sitters love reading real experiences." : "Be as detailed as you like — pet owners love reading real experiences."}</p>
               <p data-count="1" style="font-size:.78rem;color:#6b4e35;margin:0;white-space:nowrap;font-weight:600"></p>
             </div>
           </div>
@@ -283,7 +284,7 @@ const title =
         </span>
         <h1 style="font-family:'Marcellus',serif;font-size:2rem;color:#2c1a0e;margin:0 0 14px">Link not valid</h1>
         <div style="width:48px;height:2px;background:#6e5438;margin:0 auto 22px"></div>
-        <p style="font-size:.97rem;color:#6b4e35;line-height:1.8;margin:0 0 30px">This review link has already been used or is no longer valid. If you think this is a mistake, ask your sitter to send you a new link.</p>
+        <p style="font-size:.97rem;color:#6b4e35;line-height:1.8;margin:0 0 30px">This review link has already been used or is no longer valid. If you think this is a mistake, ask for a new link.</p>
         <a href="/" class="rv-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:16px 36px;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .25s ease, border-color .25s ease, transform .15s ease, box-shadow .25s ease">Visit MYAH</a>
       </div>
     )}

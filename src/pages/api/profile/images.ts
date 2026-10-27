@@ -90,6 +90,20 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Names shown in white on the photos: caps = JSON list, one per photo.
+    // New order after moving photos around on the edit page: order = old indexes.
+    if (action === 'reorder') {
+      let order: unknown = [];
+      try { order = JSON.parse(String(form.get('order') || '[]')); } catch {}
+      const ok = Array.isArray(order) && order.length === images.length
+        && new Set(order).size === images.length
+        && order.every((i) => Number.isInteger(i) && i >= 0 && i < images.length);
+      if (!ok) return new Response(null, { status: 302, headers: { Location: `/profile/edit?error=server#${anchor}` } });
+      const next = (order as number[]).map((i) => images[i]);
+      const { error } = await supabase.from('profiles').update({ [column]: next }).eq('id', profile.id);
+      if (error) return new Response(null, { status: 302, headers: { Location: `/profile/edit?error=server#${anchor}` } });
+      return new Response(null, { status: 302, headers: { Location: `/profile/edit?saved=${category}#${anchor}` } });
+    }
+
     if (action === 'captions') {
       let caps: unknown = [];
       try { caps = JSON.parse(String(form.get('caps') || '[]')); } catch {}

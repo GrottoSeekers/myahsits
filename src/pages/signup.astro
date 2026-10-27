@@ -1,222 +1,70 @@
 ---
-export const prerender =
-  false;
-import {
-  getSession,
-} from '../lib/auth';
-const sess =
-  await getSession(
-    Astro.request,
-  );
-if (sess)
-  return Astro.redirect(
-    '/dashboard',
-  );
+export const prerender = false;
+import { getSession } from '../lib/auth';
+import AuthShell from '../components/AuthShell.astro';
 
-const sp =
-  Astro.url.searchParams;
+const sess = await getSession(Astro.request);
+if (sess) return Astro.redirect('/dashboard');
+
+const sp = Astro.url.searchParams;
 const e = sp.get('error');
-const detail =
-  sp.get('detail');
-const emissing =
-  'Please fill in ' +
-  'all fields.';
-const eshort =
-  'Password must be' +
-  ' at least 8' +
-  ' characters.';
-const emismatch =
-  'Passwords do not' +
-  ' match.';
-const eexists =
-  'An account with that' +
-  ' email already exists.';
-const eserver =
-  'Something went wrong.' +
-  ' Please try again.';
-const edb =
-  'Database error: ' +
-  (detail ?? 'unknown');
-const errTxt = !e
-  ? null
-  : e === 'missing'
-    ? emissing
-    : e === 'short'
-      ? eshort
-      : e === 'mismatch'
-        ? emismatch
-        : e === 'exists'
-          ? eexists
-          : e === 'db'
-            ? edb
-            : eserver;
+const detail = sp.get('detail');
+const sent = sp.has('sent');
+const sentTo = sp.get('email') || 'your email';
+const errTxt = !e ? null
+  : e === 'missing' ? 'Please fill in all fields.'
+  : e === 'short' ? 'Password must be at least 8 characters.'
+  : e === 'mismatch' ? 'Passwords do not match.'
+  : e === 'exists' ? 'An account with that email already exists.'
+  : e === 'db' ? 'Database error: ' + (detail ?? 'unknown')
+  : 'Something went wrong. Please try again.';
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="/images/favicon.png" />
-  <link rel="apple-touch-icon" href="/images/app-tile.png" />
-  <meta property="og:image" content="/images/logo-tile.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
-  <title>Sign up — MYAH</title>
-  <link rel="canonical" href={'https://www.myahsits.com' + Astro.url.pathname} />
-  <meta property="og:url" content={'https://www.myahsits.com' + Astro.url.pathname} />
-  <meta property="og:site_name" content="MYAH" />
-  <style>
-    body { margin:0; background:#faf6ee; color:#2c1a0e; font-family:"Montserrat",sans-serif; min-height:100vh; }
-    * { box-sizing:border-box; }
-    a { color:#2f5d45; }
-    a:hover { color:#2c1a0e; }
-    input::placeholder { color:rgba(44,26,14,.35); }
-    @keyframes gs-ring { to { transform:rotate(360deg); } }
-    @keyframes gs-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
-    @media (max-width:700px) {
-      [data-auth-nav] { padding: 14px 24px !important; }
-      [data-auth-card] { padding: 34px 26px !important; }
-    }
-  </style>
-  <link rel="stylesheet" href="/mobile.css" />
-</head>
-<body>
-<div>
-  <div style="min-height:100vh; display:flex; flex-direction:column; background:#faf6ee">
+<AuthShell title="Sign up" pics={['/images/slideshow-dogs-lake.jpeg', '/images/slideshow-living-room.jpeg', '/images/slideshow-spaniel-walk.jpeg']} quote={{ text: 'The house was impeccable on our return and the animals were well looked after.', who: 'Janet · home owner, Hawkesbury' }}>
+  {sent ? (
+    <>
+      <p class="au-eye">One more step</p>
+      <h1>Check your <em>inbox</em></h1>
+      <p class="au-lead">We've sent a link to <b style="color:var(--ink)">{sentTo}</b>. Tap it to confirm your email and you'll come back to log in and set up your page.</p>
+      <div class="au-note ok"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Can't see it? Check your junk folder. The link works for 3 days.</span></div>
+      <a class="au-btn" href="/login">Go to log in</a>
+      <p class="au-alt">Wrong email? <a href="/signup">Start again</a></p>
+    </>
+  ) : (
+    <>
+      <p class="au-eye">Join MYAH</p>
+      <h1>Create your <em>account</em></h1>
+      <p class="au-lead">Join MYAH — whether you're offering house &amp; pet sitting services or looking for a trusted sitter.</p>
 
-    <!-- Loading overlay -->
-    <div data-loader="1" aria-hidden="true" style="position:fixed; inset:0; z-index:9999; background:rgba(250,246,238,.92); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s ease">
-      <div style="position:relative; width:132px; height:132px; display:flex; align-items:center; justify-content:center">
-        <div style="position:absolute; inset:0; border-radius:50%; border:3px solid rgba(110,84,56,.18)"></div>
-        <div style="position:absolute; inset:0; border-radius:50%; border:3px solid transparent; border-top-color:#2f5d45; border-right-color:rgba(110,84,56,.45); animation:gs-ring 1s linear infinite"></div>
-        <img src="/images/logo-mark.png" alt="" style="width:74px; height:74px; object-fit:contain; animation:gs-pulse 1.8s ease-in-out infinite" />
-      </div>
-    </div>
+      {errTxt && <div class="au-note err" role="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>{errTxt}</span></div>}
 
-    <!-- Header -->
-    <nav data-auth-nav="1" style="padding:16px 48px; border-bottom:1px solid rgba(110,84,56,.2); background:#faf6ee">
-      <a href="/" style="display:inline-flex; align-items:center; gap:14px; text-decoration:none; line-height:1; margin-left:-4px; font-family:'Montserrat',sans-serif; font-weight:500; font-size:1.4rem; letter-spacing:.28em">
-        <img src="/images/logo-mark.png" alt="" style="height:46px; width:46px; display:block; object-fit:contain" />
-        <span style="display:flex; flex-direction:column; gap:5px; padding-left:14px; border-left:1px solid rgba(110,84,56,.4)">
-          <span style="color:#2f5d45; line-height:1">MYAH</span>
-          <span style="font-family:'Lato',sans-serif; font-weight:700; font-size:.5rem; letter-spacing:.2em; text-transform:uppercase; color:#8a6a4f; line-height:1">Make Yourself At Home</span>
-        </span>
-      </a>
-    </nav>
+      <form method="POST" action="/api/auth/signup" class="au-form" data-signup-form="1">
+        <fieldset class="su-roles">
+          <legend>I am a…</legend>
+          <label><input type="radio" name="role" value="sitter" checked /><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span><b>Pet Sitter</b><small>I look after pets &amp; homes</small></label>
+          <label><input type="radio" name="role" value="owner" /><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span><b>Pet Owner</b><small>I need a trusted sitter</small></label>
+        </fieldset>
+        <label class="au-f"><input type="email" name="email" required autocomplete="email" placeholder="Email address" /><span>Email address</span></label>
+        <label class="au-f pw"><input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="Password" /><span>Password (at least 8 characters)</span><button type="button" class="au-show" data-pw-toggle="1" aria-label="Show password">Show</button></label>
+        <label class="au-f pw"><input type="password" name="confirm" required minlength="8" autocomplete="new-password" placeholder="Confirm password" /><span>Confirm password</span><button type="button" class="au-show" data-pw-toggle="1" aria-label="Show password">Show</button></label>
+        <button type="submit" class="au-btn" style="margin-top:6px">Create account</button>
+      </form>
 
-    <!-- Main -->
-    <main style="flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px">
-      <div data-auth-card="1" style="background:#fff; border:1px solid rgba(110,84,56,.2); border-radius:20px; padding:48px; width:100%; max-width:460px; box-shadow:0 4px 32px rgba(44,26,14,.08)">
-
-        <p style="font-size:.75rem; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:#6e5438; margin:0 0 14px; display:flex; align-items:center; gap:12px">
-          MYAH
-          <span style="width:26px; height:1px; background:#6e5438; display:block"></span>
-        </p>
-        <h1 style="font-family:'Marcellus',serif; font-size:2.2rem; color:#2c1a0e; line-height:1.2; margin:0">Create your account</h1>
-        <div style="width:48px; height:2px; background:#6e5438; margin:20px 0 24px"></div>
-        <p style="font-size:.98rem; color:#6b4e35; line-height:1.7; margin:0 0 28px">Join MYAH — whether you're offering house &amp; pet sitting services or looking for a trusted sitter.</p>
-
-        {errTxt && (
-          <div style="background:#fff3f0; border:1px solid rgba(164,68,46,.3); border-radius:10px; padding:14px 16px; margin-bottom:22px; font-size:.9rem; color:#a4442e; line-height:1.5">
-            {errTxt}
-          </div>
-        )}
-
-        <form method="POST" action="/api/auth/signup" data-signup-form="1" style="display:flex; flex-direction:column; gap:22px">
-          <div>
-            <p style="font-size:.78rem; font-weight:600; letter-spacing:.1em; color:#5c3d20; text-transform:uppercase; margin:0 0 12px">I am a…</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-              <div data-role="sitter" data-role-card="1" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:22px 12px; border:2px solid #2f5d45; background:rgba(110,84,56,.07); border-radius:14px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s">
-                <input type="radio" name="role" value="sitter" checked style="display:none" />
-                <span style="width:42px; height:42px; border-radius:12px; background:#faf6ee; border:1px solid rgba(110,84,56,.28); color:#6e5438; display:flex; align-items:center; justify-content:center; margin-bottom:2px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
-                <span style="font-family:'Marcellus',serif; font-size:1.05rem; color:#2c1a0e">Pet Sitter</span>
-                <span style="font-size:.76rem; color:#6b4e35; line-height:1.4">I look after pets &amp; homes</span>
-              </div>
-              <div data-role="owner" data-role-card="1" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:22px 12px; border:2px solid rgba(44,26,14,.12); background:#fff; border-radius:14px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s">
-                <input type="radio" name="role" value="owner" style="display:none" />
-                <span style="width:42px; height:42px; border-radius:12px; background:#faf6ee; border:1px solid rgba(110,84,56,.28); color:#6e5438; display:flex; align-items:center; justify-content:center; margin-bottom:2px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-                <span style="font-family:'Marcellus',serif; font-size:1.05rem; color:#2c1a0e">Pet Owner</span>
-                <span style="font-size:.76rem; color:#6b4e35; line-height:1.4">I need a trusted sitter</span>
-              </div>
-            </div>
-          </div>
-
-          <label style="display:flex; flex-direction:column; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; color:#5c3d20; text-transform:uppercase">
-            Email address
-            <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" style="border:1.5px solid rgba(44,26,14,.2); border-radius:10px; padding:13px 15px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:400; letter-spacing:0; text-transform:none; color:#2c1a0e; background:#faf6ee; outline:none; transition:border-color .2s, box-shadow .2s" />
-          </label>
-
-          <label style="display:flex; flex-direction:column; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; color:#5c3d20; text-transform:uppercase">
-            Password
-            <span style="position:relative; display:block">
-              <input type="password" name="password" data-pw="1" required autocomplete="new-password" minlength="8" placeholder="At least 8 characters" style="width:100%; padding:13px 74px 13px 15px; border:1.5px solid rgba(44,26,14,.2); border-radius:10px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:400; letter-spacing:0; text-transform:none; color:#2c1a0e; background:#faf6ee; outline:none; transition:border-color .2s, box-shadow .2s" />
-              <button type="button" data-pw-toggle="1" aria-label="Show password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#2f5d45; font-size:.74rem; font-weight:600; letter-spacing:.08em; padding:4px 8px; text-transform:uppercase; font-family:'Montserrat',sans-serif; transition:color .2s">Show</button>
-            </span>
-          </label>
-
-          <label style="display:flex; flex-direction:column; gap:8px; font-size:.78rem; font-weight:600; letter-spacing:.1em; color:#5c3d20; text-transform:uppercase">
-            Confirm password
-            <span style="position:relative; display:block">
-              <input type="password" name="confirm" data-pw="1" required autocomplete="new-password" minlength="8" placeholder="Repeat your password" style="width:100%; padding:13px 74px 13px 15px; border:1.5px solid rgba(44,26,14,.2); border-radius:10px; font-size:1rem; font-family:'Montserrat',sans-serif; font-weight:400; letter-spacing:0; text-transform:none; color:#2c1a0e; background:#faf6ee; outline:none; transition:border-color .2s, box-shadow .2s" />
-              <button type="button" data-pw-toggle="1" aria-label="Show password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#2f5d45; font-size:.74rem; font-weight:600; letter-spacing:.08em; padding:4px 8px; text-transform:uppercase; font-family:'Montserrat',sans-serif; transition:color .2s">Show</button>
-            </span>
-          </label>
-
-          <button type="submit" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:4px; font-size:.76rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:#fff; background:#2f5d45; border:1.5px solid #2f5d45; border-radius:50px; padding:13px 32px; cursor:pointer; font-family:'Montserrat',sans-serif; white-space:nowrap; box-shadow:0 6px 20px rgba(110,84,56,.28); transition:background .2s, border-color .2s, transform .12s">Create account</button>
-        </form>
-
-        <p style="margin:26px 0 0; text-align:center; font-size:.92rem; color:#6b4e35">Already have an account? <a href="/login" style="color:#2f5d45; font-weight:700; text-decoration:none; border-bottom:1px solid rgba(110,84,56,.4); padding-bottom:1px">Log in</a></p>
-
-      </div>
-    </main>
-
-  </div>
-</div>
+      <p class="au-alt">Already have an account? <a href="/login">Log in</a></p>
+      <div class="au-trust"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>Everyone ID checked</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Private details stay private</span></div>
+    </>
+  )}
+</AuthShell>
 
 <style is:global>
-  /* ── Hover / active states ─────────────────────────────────────── */
-  [data-signup-form] button[type="submit"]:hover { background:#3e7a5b !important; border-color:#3e7a5b !important; transform:translateY(-2px); box-shadow:0 12px 28px rgba(110,84,56,.36); }
-  [data-signup-form] button[type="submit"]:active { transform:translateY(0) scale(.98); }
-  [data-pw-toggle]:hover { color:#2c1a0e !important; }
-
-  /* ── Form focus ────────────────────────────────────────────────── */
-  [data-auth-card] input:focus { border-color:#2f5d45 !important; box-shadow:0 0 0 3px rgba(110,84,56,.15) !important; outline:none; }
+  .su-roles { border:0; margin:0 0 4px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .su-roles legend { font-family:'Lato',sans-serif; font-size:.7rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); margin:0 0 10px; padding:0; }
+  .su-roles label { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; padding:18px 10px 16px; border:1.5px solid rgba(44,26,14,.14); border-radius:16px; background:#fff; text-align:center; cursor:pointer; transition:border-color .2s, background .2s, box-shadow .2s, transform .2s; }
+  .su-roles label:hover { border-color:rgba(47,93,69,.5); transform:translateY(-2px); }
+  .su-roles input { position:absolute; opacity:0; pointer-events:none; }
+  .su-roles .ic { width:44px; height:44px; border-radius:50%; background:var(--cream); color:var(--brown); display:flex; align-items:center; justify-content:center; margin-bottom:6px; transition:background .2s, color .2s; }
+  .su-roles b { font-family:'Marcellus',serif; font-weight:400; font-size:1.05rem; color:var(--ink); }
+  .su-roles small { font-size:.74rem; color:var(--soft); line-height:1.4; }
+  .su-roles label:has(input:checked) { border-color:var(--green); background:#f4f8f5; box-shadow:0 0 0 1px var(--green); }
+  .su-roles label:has(input:checked) .ic { background:var(--green); color:#fff; }
+  .su-roles label:has(input:focus-visible) { outline:2px solid rgba(47,93,69,.4); outline-offset:2px; }
 </style>
-
-<script>
-  document.querySelectorAll('[data-pw-toggle]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const input = btn.parentElement?.querySelector('[data-pw]') as HTMLInputElement | null;
-      if (!input) return;
-      const showing = input.type === 'text';
-      input.type = showing ? 'password' : 'text';
-      btn.textContent = showing ? 'Show' : 'Hide';
-    });
-  });
-
-  const cards = document.querySelectorAll('[data-role-card]');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const radio = card.querySelector('input[type=radio]') as HTMLInputElement | null;
-      if (radio) radio.checked = true;
-      cards.forEach(c => {
-        const on = c === card;
-        (c as HTMLElement).style.borderColor = on ? '#2f5d45' : 'rgba(44,26,14,.12)';
-        (c as HTMLElement).style.background = on ? 'rgba(110,84,56,.07)' : '#fff';
-      });
-    });
-  });
-
-  const loader = document.querySelector('[data-loader]') as HTMLElement | null;
-  document.querySelectorAll('form').forEach(f => {
-    f.addEventListener('submit', () => {
-      if (loader) { loader.style.opacity = '1'; loader.style.pointerEvents = 'all'; }
-    });
-  });
-  window.addEventListener('pageshow', e => {
-    if (e.persisted && loader) { loader.style.opacity = '0'; loader.style.pointerEvents = 'none'; }
-  });
-</script>
-</body>
-</html>

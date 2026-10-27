@@ -141,3 +141,14 @@ SELECT u.email,
        to_regclass('public.launch_interest') IS NOT NULL AS launch_list_table
 FROM profiles p JOIN users u ON u.id = p.user_id
 WHERE p.slug = 'callumandniamh';
+
+-- ───────────────────────────────────────────────────────────────────
+-- From supabase/email-verification.sql (27 Oct 2026)
+-- ───────────────────────────────────────────────────────────────────
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'email_verified_at') THEN
+    ALTER TABLE users ADD COLUMN email_verified_at TIMESTAMPTZ;
+    UPDATE users SET email_verified_at = COALESCE(created_at, now());
+  END IF;
+END $$;

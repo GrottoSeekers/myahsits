@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { signSession, sessionCookie } from '../../../lib/auth';
 import { accountFor, landingFor } from '../../../lib/account';
 import { LAUNCHED } from '../../../lib/launch';
+import { verifyOn } from '../../../lib/verify-email';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -22,7 +23,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const { data: user } = await supabase
       .from('users')
-      .select('id, email, password, role')
+      .select('*')
       .eq('email', email)
       .single();
 
@@ -30,6 +31,11 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!user || !validPassword) {
       return new Response(null, { status: 302, headers: { Location: next ? next + '?error=invalid' : '/login?error=invalid' } });
+    }
+
+    // Not confirmed their email yet: say so, with a button to send the link again.
+    if (verifyOn(user) && !user.email_verified_at) {
+      return new Response(null, { status: 302, headers: { Location: '/login?error=unverified&email=' + encodeURIComponent(user.email) } });
     }
 
     // Straight to their own side: their dashboard, or their create-profile page.

@@ -125,3 +125,35 @@ export async function emailLaunch(list: string[]): Promise<{ sent: string[]; err
   }
   return { sent };
 }
+
+/** "Confirm your email" — sent when someone creates an account. */
+export async function emailVerify(to: string, link: string) {
+  const key = import.meta.env.RESEND_API_KEY;
+  if (!key) return { sent: false, reason: 'no RESEND_API_KEY' };
+  try {
+    await new Resend(key).emails.send({
+      from: 'MYAH <hello@myahsits.com>',
+      to,
+      subject: 'Confirm your email for MYAH',
+      text: `Welcome to MYAH. Confirm your email to finish setting up your account: ${link}\n\nThe link works for 3 days. If you didn't sign up, you can ignore this email.`,
+      html: `
+<div style="font-family:Montserrat,Arial,sans-serif;max-width:520px;margin:0 auto;background:#faf6ee;padding:28px 24px;color:#2c1a0e">
+  <p style="font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 12px">MYAH · Make Yourself At Home</p>
+  <h1 style="font-family:Georgia,serif;font-weight:400;font-size:26px;margin:0 0 14px">Confirm your email</h1>
+  <p style="font-size:15px;line-height:1.7;color:#4a3726;margin:0 0 22px">Welcome to MYAH. Tap the button below to confirm this is your email, then log in to set up your page.</p>
+  <a href="${esc(link)}" style="display:inline-block;background:#2f5d45;color:#fff;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:14px 28px;border-radius:50px">Confirm my email</a>
+  <p style="font-size:13px;color:#6b4e35;line-height:1.6;margin:22px 0 0">The link works for 3 days. If you didn't sign up for MYAH, you can ignore this email.</p>
+</div>`,
+    });
+    return { sent: true };
+  } catch (e) {
+    return { sent: false, reason: e instanceof Error ? e.message : 'send failed' };
+  }
+}
+
+/** Sends the confirm-your-email link for a new account. */
+export async function sendVerifyLink(userId: string, email: string, origin = SITE) {
+  const { verifyToken } = await import('./verify-email');
+  const t = await verifyToken(userId, email);
+  return emailVerify(email, `${origin}/api/auth/verify?t=${encodeURIComponent(t)}`);
+}

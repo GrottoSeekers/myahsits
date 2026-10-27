@@ -759,13 +759,14 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   </section>
 )}
 
-  <section id="enquiry" data-sec="1" style="padding:100px 48px;background:var(--bg)">
+  <section id="enquiry" data-sec="1" class="sp-enq" style="padding:100px 48px;background:var(--bg)">
     <div data-split="1" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:60px;align-items:start">
       <div>
         <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>{head.enquiryLabel}</p>
         <h2 style="font-family:'Marcellus',serif;font-size:2.5rem;color:var(--tx);line-height:1.2;margin:0">{split(head.enquiryTitle)[0]}{split(head.enquiryTitle)[1] && <>{' '}<em style="color:var(--ac);">{split(head.enquiryTitle)[1]}</em></>}</h2>
         <div style="width:48px;height:2px;background:#6e5438;margin:24px 0 26px"></div>
         <p style="color:var(--tx2);line-height:1.85;font-size:.98rem;margin:0">{joint ? "Tell us about your home, your pets, and your dates and we'll get back to you within 24 hours." : "Tell me about your home, your pets, and your dates and I'll get back to you within 24 hours."}</p>
+        <button type="button" class="sp-btn sp-enq-open" data-enq-open="1" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:26px 12px 0 0;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--ac);border:1.5px solid var(--ac);border-radius:50px;padding:14px 30px;cursor:pointer;font-family:'Montserrat',sans-serif;box-shadow:0 6px 20px rgba(110,84,56,.28)">Send an enquiry</button>
 {waNum && (
         <a href={waHref} target="_blank" rel="noopener" class="sp-wa" style="display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:14px 28px;background:#25D366;color:#fff;border-radius:50px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;box-shadow:0 6px 20px rgba(37,211,102,.25);transition:background .2s, transform .12s">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -773,7 +774,7 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
         </a>
 )}
       </div>
-      <form data-enquiry="1" data-go={LAUNCHED ? '/messages' : undefined} style="display:flex;flex-direction:column;gap:18px;background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04)">
+      <form data-enquiry="1" class="sp-enq-form" data-go={LAUNCHED ? '/messages' : undefined} style="display:flex;flex-direction:column;gap:18px;background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04)">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div style="display:flex;flex-direction:column;gap:8px">
             <label for="fname" style="font-size:.74rem;font-weight:600;letter-spacing:.12em;color:#5c3d20;text-transform:uppercase">First name</label>
@@ -822,13 +823,13 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
 
   <footer data-sec="1" style="background:var(--tx);color:rgba(255,255,255,.7);padding:0 48px 32px;border-top:3px solid var(--ac)">
     <div style="max-width:1100px;margin:0 auto">
-      <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:56px;padding:64px 0 44px">
+      <div class="sp-foot-grid" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:56px;padding:64px 0 44px">
         <div style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
           <a href="/" style="display:inline-flex;align-items:center;gap:14px;text-decoration:none;line-height:1;margin-left:-4px;font-family:'Montserrat',sans-serif;font-weight:500;font-size:1.7rem;letter-spacing:.28em">
             <img src="/images/logo-mark-white.png" alt="" style="height:46px;width:46px;display:block;object-fit:contain" />
             <span style="display:flex;flex-direction:column;gap:5px;padding-left:14px;border-left:1px solid rgba(255,255,255,.28)"><span style="color:#fff;line-height:1">MYAH</span><span style="font-family:'Lato',sans-serif;font-weight:700;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.75);line-height:1">Make Yourself At Home</span></span>
           </a>
-          <p style="line-height:1.8;font-size:.95rem;margin:0;max-width:340px;color:rgba(255,255,255,.7)">{blurb}</p>
+          <p class="sp-foot-blurb" style="line-height:1.8;font-size:.95rem;margin:0;max-width:340px;color:rgba(255,255,255,.7)">{blurb}</p>
         </div>
         <div>
           <h4 style="color:#fff;font-size:.76rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid rgba(196,171,138,.28)">Quick links</h4>
@@ -1046,6 +1047,22 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
   .sp-show-all:hover, .sp-read-more:hover { background: var(--ac); border-color: var(--ac); color: #fff; }
   .sp-read-more { margin-top: 14px; padding: 10px 20px; }
   .sp-dock { display: none; }
+  /* Basic page, kept short (owner, round 3): tighter sections, one row of
+     photos, the booking form behind a button, a smaller footer. */
+  .sp-enq:not(.open) .sp-enq-form { display: none !important; }
+  .sp-enq:not(.open) [data-split] { grid-template-columns: minmax(0,1fr) !important; max-width: 760px !important; text-align: center; }
+  .sp-enq:not(.open) [data-split] p:first-child { justify-content: center; }
+  .sp-enq:not(.open) [data-split] h2 + div { margin-left: auto !important; margin-right: auto !important; }
+  .sp-enq.open .sp-enq-open { display: none !important; }
+  .sp-enq-form { animation: sp-enq-in .4s ease both; }
+  @keyframes sp-enq-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (min-width: 641px) {
+    section[data-sec] { padding-top: 76px !important; padding-bottom: 76px !important; }
+    [data-gal] { grid-template-columns: repeat(6, minmax(0,1fr)) !important; }
+    #about [style*="aspect-ratio:4/5"] { aspect-ratio: 1 / 1 !important; }
+    .sp-foot-grid { padding: 44px 0 32px !important; }
+  }
+  section[data-sec] h2 + div[style*="height:2px"] { margin-top: 18px !important; margin-bottom: 26px !important; }
   @media (max-width: 1000px) {
     .sp-dock { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 205; gap: 4px; padding: 6px; background: rgba(255,255,255,.96); backdrop-filter: blur(12px); border: 1px solid rgba(110,84,56,.22); border-radius: 50px; box-shadow: 0 12px 32px rgba(44,26,14,.18); transform: translateY(140%); transition: transform .3s ease; }
     .sp-dock.on { transform: none; }
@@ -1054,7 +1071,20 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
     body { padding-bottom: 84px; }
   }
   @media (max-width: 640px) {
-    [data-sec] { padding-top: 48px !important; padding-bottom: 48px !important; }
+    [data-sec] { padding-top: 44px !important; padding-bottom: 44px !important; }
+    section[data-sec] h2 { font-size: 1.85rem !important; }
+    #about [style*="aspect-ratio:4/5"] { aspect-ratio: 4 / 3 !important; }
+    [data-gal] { grid-template-columns: repeat(3, minmax(0,1fr)) !important; gap: 6px !important; }
+    [data-gal] > button { border-radius: 10px !important; }
+    .sp-gal-cap { font-size: .6rem !important; padding: 6px !important; }
+    .sp-enq-open { width: 100%; margin-right: 0 !important; }
+    .sp-enq .sp-wa { width: 100%; justify-content: center; margin-top: 10px !important; }
+    footer[data-sec] { padding-top: 0 !important; padding-bottom: 24px !important; }
+    .sp-foot-grid { grid-template-columns: minmax(0,1fr) !important; gap: 16px !important; padding: 30px 0 20px !important; }
+    .sp-foot-blurb { display: none; }
+    .sp-foot-grid h4 { border: 0 !important; padding: 0 !important; margin: 0 0 8px !important; }
+    .sp-foot-grid ul { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+    .sp-foot-grid li { margin: 0 !important; }
     /* booking form: names and dates side by side */
     form[data-enquiry] [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 10px !important; }
     /* verified profiles: two compact cards in a row */
@@ -1092,6 +1122,17 @@ const sigProps = { name, nameA, nameB, tagline, badge, hero, about, bio: bioPara
       else { delete more.dataset.open; more.textContent = 'Read more'; fold(); bio.scrollIntoView({ block: 'nearest' }); }
     });
     fold(); window.addEventListener('resize', fold);
+    // Booking form opens from "Send an enquiry" or any "Book" link.
+    var enq = document.querySelector('.sp-enq');
+    function openEnq(focus) {
+      if (!enq || enq.classList.contains('open')) return;
+      enq.classList.add('open');
+      if (focus) { var f = enq.querySelector('input'); if (f) setTimeout(function () { f.focus({ preventScroll: true }); }, 350); }
+    }
+    var eo = document.querySelector('[data-enq-open]');
+    if (eo) eo.addEventListener('click', function () { openEnq(true); enq.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    document.querySelectorAll('a[href="#enquiry"]').forEach(function (a) { a.addEventListener('click', function () { openEnq(false); }); });
+    if (location.hash === '#enquiry') openEnq(false);
     // Phone dock: appears once the visitor is past the top photo.
     var dock = document.querySelector('[data-dock]'), hero = document.querySelector('[data-hero]');
     if (dock && hero) {

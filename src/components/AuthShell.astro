@@ -1,0 +1,158 @@
+---
+// Log in / sign up frame (round 3): a full-height photo on the left in the
+// founders' page style (slow zoom, seal, a real review), the form on the
+// right. On a phone the photo becomes a short banner above the form.
+interface Props {
+  title: string;
+  pics?: string[];
+  quote?: { text: string; who: string };
+}
+const {
+  title,
+  pics = ['/images/slideshow-springer-beach.jpeg', '/images/slideshow-spaniel-bed.jpeg', '/images/slideshow-cockapoo-window.jpeg'],
+  quote = { text: 'We came home to happy puppies, and they went the extra mile.', who: 'Heather · home owner, Sydney' },
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2c1a0e" />
+  <link rel="icon" href="/images/favicon.png" />
+  <link rel="apple-touch-icon" href="/images/app-tile.png" />
+  <meta property="og:image" content="/images/logo-tile.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Montserrat:wght@400;500;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet" />
+  <title>{title} — MYAH</title>
+  <link rel="canonical" href={'https://www.myahsits.com' + Astro.url.pathname} />
+  <meta property="og:url" content={'https://www.myahsits.com' + Astro.url.pathname} />
+  <meta property="og:site_name" content="MYAH" />
+  <style is:global>
+    :root { --ink:#2c1a0e; --bg:#faf6ee; --cream:#f3ece0; --green:#2f5d45; --green2:#3e7a5b; --brown:#6e5438; --soft:#6b4e35; --tan:#c4ab8a; --line:rgba(110,84,56,.22); }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:'Montserrat',sans-serif; }
+    a { color:var(--green); }
+    .au { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); min-height:100vh; min-height:100svh; }
+    /* photo side */
+    .au-pic { position:sticky; top:0; height:100vh; height:100svh; overflow:hidden; background:var(--ink); color:#fff; }
+    .au-pic .bg img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 1.6s ease; }
+    .au-pic .bg img.on { opacity:1; animation:au-kb 12s ease-out both; }
+    @keyframes au-kb { from { transform:scale(1.08); } to { transform:scale(1); } }
+    .au-pic .shade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,13,7,.5) 0%,rgba(20,13,7,0) 26%,rgba(20,13,7,0) 50%,rgba(20,13,7,.88) 100%); }
+    .au-logo { position:absolute; top:28px; left:36px; display:inline-flex; align-items:center; gap:12px; text-decoration:none; color:#fff; z-index:2; }
+    .au-logo img { width:42px; height:42px; }
+    .au-logo span { display:flex; flex-direction:column; gap:4px; padding-left:12px; border-left:1px solid rgba(255,255,255,.45); font-weight:500; letter-spacing:.28em; font-size:1.15rem; line-height:1; }
+    .au-logo small { font-family:'Lato',sans-serif; font-weight:700; font-size:.46rem; letter-spacing:.2em; text-transform:uppercase; opacity:.85; }
+    .au-quote { position:absolute; left:36px; right:180px; bottom:40px; z-index:2; animation:au-rise 1s .3s both; }
+    .au-quote .st { color:#e2b866; letter-spacing:3px; font-size:.9rem; }
+    .au-quote p { font-family:'Marcellus',serif; font-size:1.7rem; line-height:1.35; margin:10px 0 12px; text-shadow:0 2px 18px rgba(20,13,7,.4); }
+    .au-quote small { font-size:.78rem; letter-spacing:.06em; color:rgba(255,255,255,.8); }
+    .au-seal { position:absolute; right:32px; bottom:36px; width:118px; height:118px; z-index:2; animation:au-rise 1s .6s both; }
+    .au-seal svg { width:100%; height:100%; animation:au-spin 28s linear infinite; }
+    .au-seal text { font:700 9.4px 'Lato',sans-serif; letter-spacing:.2em; fill:#f1e6d6; }
+    .au-seal img { position:absolute; inset:0; margin:auto; width:40px; height:40px; }
+    .au-seal::before { content:""; position:absolute; inset:20px; border-radius:50%; border:1px solid rgba(241,230,214,.35); background:rgba(20,13,7,.28); backdrop-filter:blur(4px); }
+    @keyframes au-spin { to { transform:rotate(360deg); } }
+    @keyframes au-rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+    /* form side */
+    .au-main { display:flex; align-items:center; justify-content:center; padding:56px 40px; }
+    .au-card { width:100%; max-width:440px; animation:au-rise .8s both; }
+    .au-eye { font-family:'Lato',sans-serif; font-size:.72rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--brown); margin:0 0 14px; display:flex; align-items:center; gap:12px; }
+    .au-eye::before { content:""; width:26px; height:1px; background:var(--brown); }
+    .au-card h1 { font-family:'Marcellus',serif; font-weight:400; font-size:2.6rem; line-height:1.1; margin:0 0 12px; }
+    .au-card h1 em { font-style:italic; color:var(--green); }
+    .au-lead { font-size:.96rem; color:var(--soft); line-height:1.7; margin:0 0 28px; }
+    .au-form { display:flex; flex-direction:column; gap:16px; }
+    .au-f { position:relative; display:block; }
+    .au-f input { width:100%; height:58px; padding:22px 16px 6px; border:1.5px solid rgba(44,26,14,.16); border-radius:14px; font:400 1rem 'Montserrat',sans-serif; color:var(--ink); background:#fff; transition:border-color .2s, box-shadow .2s; }
+    .au-f input:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 4px rgba(47,93,69,.12); }
+    .au-f span { position:absolute; left:17px; top:19px; font-size:.95rem; color:#8a6a4f; pointer-events:none; transition:all .18s ease; }
+    .au-f input:focus + span, .au-f input:not(:placeholder-shown) + span { top:9px; font-size:.66rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--brown); }
+    .au-f input::placeholder { color:transparent; }
+    .au-f.pw input { padding-right:72px; }
+    .au-show { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:0; color:var(--green); font:600 .7rem 'Montserrat',sans-serif; letter-spacing:.08em; text-transform:uppercase; padding:8px; cursor:pointer; }
+    .au-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; height:54px; font:600 .78rem 'Montserrat',sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#fff; background:var(--green); border:0; border-radius:50px; cursor:pointer; box-shadow:0 10px 26px rgba(47,93,69,.28); transition:background .2s, transform .12s, box-shadow .2s; text-decoration:none; }
+    .au-btn:hover { background:var(--green2); color:#fff; transform:translateY(-1px); box-shadow:0 14px 30px rgba(47,93,69,.32); }
+    .au-btn:active { transform:scale(.985); }
+    .au-btn.line { background:#fff; color:var(--green); border:1.5px solid var(--green); box-shadow:none; }
+    .au-btn.line:hover { background:#eef4ef; }
+    .au-alt { margin:26px 0 0; text-align:center; font-size:.9rem; color:var(--soft); }
+    .au-alt a { font-weight:700; text-decoration:none; border-bottom:1px solid rgba(47,93,69,.4); }
+    .au-note { display:flex; gap:12px; align-items:flex-start; border-radius:14px; padding:14px 16px; margin:0 0 20px; font-size:.88rem; line-height:1.55; }
+    .au-note svg { flex:none; margin-top:1px; }
+    .au-note.err { background:#fbf0ec; border:1px solid rgba(164,68,46,.25); color:#8a3f1e; }
+    .au-note.ok { background:#eef4ef; border:1px solid rgba(47,93,69,.25); color:var(--green); }
+    .au-note b { color:inherit; }
+    .au-trust { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin:24px 0 0; padding-top:20px; border-top:1px solid var(--line); font-size:.74rem; color:var(--soft); }
+    .au-trust span { display:inline-flex; align-items:center; gap:6px; }
+    .au-trust svg { color:var(--green); }
+    /* loader */
+    .au-load { position:fixed; inset:0; z-index:99; background:rgba(250,246,238,.9); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
+    .au-load.on { opacity:1; pointer-events:all; }
+    .au-load i { width:64px; height:64px; border-radius:50%; border:3px solid rgba(110,84,56,.18); border-top-color:var(--green); animation:au-spin 1s linear infinite; }
+    @media (max-width:900px) {
+      .au { grid-template-columns:1fr; }
+      .au-pic { position:relative; height:270px; }
+      .au-logo { top:calc(16px + env(safe-area-inset-top,0px)); left:16px; }
+      .au-logo img { width:36px; height:36px; }
+      .au-logo span { font-size:1rem; }
+      .au-quote { left:16px; right:96px; bottom:42px; }
+      .au-quote p { font-size:1.08rem; margin:6px 0 6px; }
+      .au-quote small { font-size:.68rem; }
+      .au-seal { width:72px; height:72px; right:14px; bottom:40px; }
+      .au-seal img { width:24px; height:24px; }
+      .au-seal::before { inset:13px; }
+      .au-main { align-items:flex-start; padding:0 16px 40px; }
+      .au-card { margin-top:-26px; background:var(--bg); border-radius:24px 24px 0 0; padding:28px 4px 0; position:relative; }
+      .au-card h1 { font-size:2rem; }
+      .au-lead { margin-bottom:22px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .au-pic .bg img.on, .au-seal svg, .au-quote, .au-seal, .au-card { animation:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="au">
+    <aside class="au-pic">
+      <div class="bg" aria-hidden="true">{pics.map((src, i) => <img src={src} alt="" class={i === 0 ? 'on' : undefined} loading={i === 0 ? 'eager' : 'lazy'} />)}</div>
+      <div class="shade"></div>
+      <a class="au-logo" href="/"><img src="/images/logo-mark-white.png" alt="" /><span>MYAH<small>Make Yourself At Home</small></span></a>
+      <div class="au-quote">
+        <span class="st" aria-label="Five stars">★★★★★</span>
+        <p>"{quote.text}"</p>
+        <small>{quote.who}</small>
+      </div>
+      <div class="au-seal" aria-hidden="true">
+        <svg viewBox="0 0 132 132"><defs><path id="au-ring" d="M66,66 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0" /></defs><text><textPath href="#au-ring" textLength="337" lengthAdjust="spacing">MYAH · MAKE YOURSELF AT HOME · </textPath></text></svg>
+        <img src="/images/logo-mark-white.png" alt="" />
+      </div>
+    </aside>
+    <main class="au-main">
+      <div class="au-card"><slot /></div>
+    </main>
+  </div>
+  <div class="au-load" data-loader aria-hidden="true"><i></i></div>
+  <script is:inline>
+  (() => {
+    document.querySelectorAll('[data-pw-toggle]').forEach((b) => b.addEventListener('click', () => {
+      const i = b.parentElement.querySelector('input');
+      const show = i.type === 'password';
+      i.type = show ? 'text' : 'password';
+      b.textContent = show ? 'Hide' : 'Show';
+      b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    }));
+    const load = document.querySelector('[data-loader]');
+    document.querySelectorAll('form').forEach((f) => f.addEventListener('submit', () => load.classList.add('on')));
+    window.addEventListener('pageshow', (e) => { if (e.persisted) load.classList.remove('on'); });
+    const pics = [...document.querySelectorAll('.au-pic .bg img')];
+    if (pics.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      let i = 0;
+      setInterval(() => { pics[i].classList.remove('on'); i = (i + 1) % pics.length; pics[i].classList.add('on'); }, 6000);
+    }
+  })();
+  </script>
+</body>
+</html>

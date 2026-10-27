@@ -24,8 +24,10 @@ import {
   arr,
 } from
   '../../../lib/dashboard';
+import LivePage from '../../../components/LivePage.astro';
 import PageDesign from
   '../../../components/PageDesign.astro';
+import { homeOf, HOME_TYPES, DUTIES, RULES, CAR } from '../../../lib/home';
 import {
   PAYMENTS_ENABLED,
   getBilling,
@@ -281,6 +283,16 @@ const initial = {
       '',
   },
 };
+// The home in detail and reviews from sitters (owner, round 3).
+const home = homeOf(me);
+const ownReviews = arr(me.reviews_json).filter((r: any) => r && r.text);
+const reqs = arr(me.review_requests_json);
+const newTok = Astro.url.searchParams.get('new_token') || '';
+const lastReq = newTok || ([...reqs].reverse().find((r: any) => r?.status === 'pending')?.token ?? '');
+const reviewLink = lastReq ? 'https://www.myahsits.com/review/' + lastReq : '';
+const fIn = 'width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:12px 14px;font-size:.95rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none';
+const fLb = 'display:flex;flex-direction:column;gap:7px;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;min-width:0';
+const secHead = (n: string, t: string) => `<div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">${n}</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">${t}</h2></div><div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>`;
 ---
 
 <!doctype html>
@@ -338,6 +350,26 @@ const initial = {
     .eo-strength:hover { border-color:rgba(110,84,56,.5) !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+
+  <style is:global>
+    .eo-sub { font-family:'Lato',sans-serif; font-size:.7rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#6e5438; margin:26px 0 12px; padding-top:20px; border-top:1px solid rgba(44,26,14,.07); }
+    .eo-home > .eo-sub:first-child { margin-top:0; padding-top:0; border-top:0; }
+    .eo-sub small { font-family:'Montserrat',sans-serif; font-size:.74rem; font-weight:400; letter-spacing:0; text-transform:none; color:#8a6a4f; margin-left:6px; }
+    .eo-g4 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .eo-g3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .eo-g2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .eo-home input:focus, .eo-home select:focus, .eo-home textarea:focus { border-color:#2f5d45 !important; box-shadow:0 0 0 3px rgba(47,93,69,.12); }
+    .eo-duties { display:flex; flex-wrap:wrap; gap:8px; }
+    .eo-duty { position:relative; cursor:pointer; }
+    .eo-duty input { position:absolute; opacity:0; pointer-events:none; }
+    .eo-duty span { display:inline-flex; align-items:center; gap:7px; padding:9px 15px; border-radius:50px; border:1.5px solid rgba(110,84,56,.28); background:#fff; font-size:.84rem; color:#5c3d20; transition:background .2s, border-color .2s, color .2s; }
+    .eo-duty span::before { content:"+"; font-weight:600; color:#8a6a4f; }
+    .eo-duty input:checked + span { background:#2f5d45; border-color:#2f5d45; color:#fff; }
+    .eo-duty input:checked + span::before { content:"✓"; color:#fff; }
+    .eo-duty input:focus-visible + span { outline:2px solid rgba(47,93,69,.4); outline-offset:2px; }
+    @media (max-width:760px) { .eo-g4 { grid-template-columns:repeat(2,minmax(0,1fr)); } .eo-g3, .eo-g2 { grid-template-columns:minmax(0,1fr); } }
+  </style>
+  <link rel="stylesheet" href="/edit-photos.css" />
 </head>
 <body>
 <div data-edit="1" style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -468,8 +500,77 @@ const initial = {
             <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
           </section>
 
+          <section id="home-details" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <Fragment set:html={secHead('06', 'The home in detail')} />
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:520px">What a guest would want to know before they book: the space, where they'll sleep, the area, house rules and what you'd like done. It all shows on your page.</p>
+            <div class="eo-home">
+              <p class="eo-sub">The space</p>
+              <div class="eo-g4">
+                <label style={fLb}>Type of home<select data-home="type" style={fIn}><option value="">Choose…</option>{HOME_TYPES.map((t) => <option value={t} selected={home.type === t}>{t}</option>)}</select></label>
+                <label style={fLb}>Bedrooms<input data-home="bedrooms" inputmode="numeric" value={home.bedrooms} placeholder="3" style={fIn} /></label>
+                <label style={fLb}>Bathrooms<input data-home="bathrooms" inputmode="decimal" value={home.bathrooms} placeholder="2" style={fIn} /></label>
+                <label style={fLb}>Outdoor space<input data-home="outdoor" value={home.outdoor} placeholder="Large fenced garden" style={fIn} /></label>
+              </div>
+              <label style={fLb + ';margin-top:14px'}>Where the sitter sleeps<input data-home="room" value={home.room} placeholder="Private double bedroom with its own bathroom" style={fIn} /></label>
+
+              <p class="eo-sub">Highlights <small>up to three things guests love</small></p>
+              <div class="eo-g3">
+                {[0, 1, 2].map((i) => <input data-home-hl={String(i)} value={home.highlights[i] || ''} placeholder={['Dog-friendly beach 5 minutes away', 'Log fire and a deep bath', 'Fast wifi and a desk'][i]} aria-label={'Highlight ' + (i + 1)} style={fIn} />)}
+              </div>
+
+              <p class="eo-sub">Where you'll be <small>city or region only, never the street</small></p>
+              <textarea data-home="area" rows="3" placeholder="A quiet village near Bath, with fields to walk the dogs straight from the door." aria-label="About the area" style={fIn + ';resize:vertical;line-height:1.7'}>{home.area}</textarea>
+              <div class="eo-g2" style="margin-top:14px">
+                <label style={fLb}>Nearby<input data-home="nearby" value={home.nearby} placeholder="Pub, shop and bus stop a 10 minute walk" style={fIn} /></label>
+                <label style={fLb}>Getting around<select data-home="car" style={fIn}>{CAR.map(([k, l]) => <option value={k} selected={home.car === k}>{l}</option>)}</select></label>
+              </div>
+
+              <p class="eo-sub">House rules</p>
+              <div class="eo-g4">
+                {RULES.map((r) => <label style={fLb}>{r.label}<select data-home-rule={r.key} style={fIn}><option value="">Not said</option>{r.options.map(([k, l]) => <option value={k} selected={home.rules[r.key] === k}>{l}</option>)}</select></label>)}
+              </div>
+              <label style={fLb + ';margin-top:14px'}>Anything else<input data-home="rules_note" value={home.rules_note} placeholder="Shoes off inside, please" style={fIn} /></label>
+
+              <p class="eo-sub">What you'd like the sitter to do</p>
+              <div class="eo-duties">
+                {DUTIES.map((d) => <label class="eo-duty"><input type="checkbox" data-home-duty={d} checked={home.duties.includes(d)} /><span>{d}</span></label>)}
+              </div>
+              <label style={fLb + ';margin-top:14px'}>Pets can be left alone for<input data-home="alone" value={home.alone} placeholder="Up to 4 hours" style={fIn} /></label>
+            </div>
+            <div class="eo-sec-save" style="display:flex;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.07)"><button type="button" data-save>Save changes</button></div>
+          </section>
+
+          <section id="reviews" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <Fragment set:html={secHead('07', 'Reviews from sitters')} />
+            <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:520px">Just like sitters, homes get reviews. After a sit, send your sitter this link: what they write goes straight onto your page, so the next sitter knows what a great host you are.</p>
+            {ownReviews.length > 0 && (
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:22px">
+                {ownReviews.map((r: any, i: number) => (
+                  <div style="display:flex;gap:16px;align-items:flex-start;background:#faf6ee;border:1px solid rgba(110,84,56,.2);border-radius:14px;padding:18px 20px">
+                    <div style="flex:1;min-width:0">
+                      <p style="font-size:.92rem;color:#2c1a0e;line-height:1.7;font-style:italic;margin:0 0 6px">&ldquo;{r.text}&rdquo;</p>
+                      <p style="font-size:.8rem;color:#2f5d45;font-weight:600;margin:0">&mdash; {r.name}</p>
+                    </div>
+                    <form action="/api/profile/reviews" method="POST" style="margin:0"><input type="hidden" name="_action" value="delete" /><input type="hidden" name="index" value={String(i)} /><button type="submit" title="Remove review" aria-label="Remove review" style="width:28px;height:28px;border-radius:50%;background:rgba(44,26,14,.08);color:#6b4e35;border:none;font-size:15px;cursor:pointer">&times;</button></form>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style="background:#faf6ee;border:1px dashed rgba(110,84,56,.45);border-radius:14px;padding:22px 24px">
+              <p style="font-size:.74rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0 0 12px">Ask a sitter for a review</p>
+              {reviewLink && (
+                <div style="display:flex;gap:10px;margin-bottom:14px">
+                  <input readonly value={reviewLink} data-own-review-link="1" aria-label="Review link" style={fIn + ';background:#fff;font-size:.84rem;min-width:0'} />
+                  <button type="button" data-copy-own-review="1" style="flex:none;font-family:'Montserrat',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:0;border-radius:50px;padding:0 22px;cursor:pointer">Copy</button>
+                </div>
+              )}
+              <form action="/api/profile/review-request" method="POST" style="margin:0"><button type="submit" style="font-family:'Montserrat',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;background:#fff;border:1.5px solid rgba(110,84,56,.45);border-radius:50px;padding:12px 24px;cursor:pointer">{reviewLink ? 'Make a new link' : 'Make a review link'}</button></form>
+            </div>
+            <p style="margin:18px 0 0;font-size:.82rem;color:#6b4e35">Anything you add or remove here saves straight away.</p>
+          </section>
+
           <section id="looking-for" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">06</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">What you&rsquo;re looking for</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">08</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">What you&rsquo;re looking for</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 22px;max-width:500px">Describe the ideal sitter &mdash; experience, expectations, house rules. Specific beats polite.</p>
             <textarea data-looking="1" rows="6" aria-label="What you're looking for" placeholder="e.g. Someone comfortable with a large dog, happy in a rural spot with no bus route, and around the house most of the day." style="width:100%;border:1.5px solid rgba(44,26,14,.18);border-radius:10px;padding:13px 16px;font-size:.97rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none;resize:vertical;line-height:1.7;transition:border-color .2s, box-shadow .2s">{initial.lookingFor}</textarea>
@@ -477,7 +578,7 @@ const initial = {
           </section>
 
           <section id="handover" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">07</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Handover details</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">09</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Handover details</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 16px"></div>
 
             <div style="display:flex;align-items:flex-start;gap:13px;background:rgba(110,84,56,.1);border:1px solid rgba(110,84,56,.32);border-radius:12px;padding:16px 18px;margin-bottom:26px;max-width:560px">
@@ -505,7 +606,7 @@ const initial = {
           </section>
 
           <section id="headings" data-card="1" class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">08</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">10</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Section headings</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 26px;max-width:500px">Leave anything blank to keep the wording shown.</p>
 
@@ -515,9 +616,10 @@ const initial = {
         </div>
 
         <aside data-aside="1" id="preview" style="position:sticky;top:28px;display:flex;flex-direction:column;gap:18px">
+          {me.slug && <LivePage href={'/' + (me.slug || '')} />}
           <div class="eo-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="padding:18px 22px;border-bottom:1px solid rgba(110,84,56,.2);display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">Page preview</p>
+              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">Preview as you type</p>
               <a href={pageUrl} class="eo-open" style="display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2f5d45;text-decoration:none;transition:gap .2s, color .2s">Open &rarr;</a>
             </div>
 
@@ -637,12 +739,40 @@ const initial = {
   };
   const hideLoader = () => { clearTimeout(hideT); loader.style.opacity = '0'; loader.style.pointerEvents = 'none'; };
 
+  // The home in detail: read straight from the form when saving.
+  const readHome = () => {
+    const v = (k) => { const el = q('[data-home="' + k + '"]'); return el ? el.value : ''; };
+    const rules = {};
+    qa('[data-home-rule]').forEach((el) => { if (el.value) rules[el.getAttribute('data-home-rule')] = el.value; });
+    return {
+      type: v('type'), bedrooms: v('bedrooms'), bathrooms: v('bathrooms'), outdoor: v('outdoor'), room: v('room'),
+      highlights: qa('[data-home-hl]').map((el) => el.value),
+      area: v('area'), nearby: v('nearby'), car: v('car'), rules, rules_note: v('rules_note'),
+      duties: qa('[data-home-duty]').filter((el) => el.checked).map((el) => el.getAttribute('data-home-duty')),
+      alone: v('alone'),
+    };
+  };
+  ['change', 'input'].forEach((ev) => document.addEventListener(ev, (e) => { if (e.target.closest && e.target.closest('#home-details')) { dirty(); render(); } }));
+  const cpy = q('[data-copy-own-review]');
+  cpy && cpy.addEventListener('click', () => { const i = q('[data-own-review-link]'); i.select(); navigator.clipboard && navigator.clipboard.writeText(i.value); cpy.textContent = 'Copied'; setTimeout(() => { cpy.textContent = 'Copy'; }, 1600); });
+
+  // See a photo big.
+  const viewer = document.createElement('div');
+  viewer.className = 'ep-viewer';
+  viewer.innerHTML = '<button type="button" aria-label="Close">&times;</button><img alt="" />';
+  document.body.appendChild(viewer);
+  viewer.addEventListener('click', (e) => { if (e.target === viewer || e.target.tagName === 'BUTTON') viewer.classList.remove('on'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') viewer.classList.remove('on'); });
+  document.addEventListener('click', (e) => { const v = e.target.closest && e.target.closest('[data-view]'); if (!v) return; viewer.querySelector('img').src = v.getAttribute('data-view'); viewer.classList.add('on'); });
+
   const JUMPS = [
     { href: '#page-style', label: 'Page design' },
     { href: '#details', label: 'Details' },
     { href: '#photos', label: 'Home photos' },
     { href: '#pets', label: 'Pets' },
     { href: '#amenities', label: 'Amenities' },
+    { href: '#home-details', label: 'The home' },
+    { href: '#reviews', label: 'Reviews' },
     { href: '#looking-for', label: 'Looking for' },
     { href: '#handover', label: 'Handover' },
     { href: '#headings', label: 'Headings' },
@@ -721,20 +851,18 @@ const initial = {
           '<p style="font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5c3d20;margin:0">' + esc(g.title) + '</p>' +
           '<span style="font-size:.78rem;color:#6b4e35">' + list.length + (list.length === 1 ? ' photo' : ' photos') + '</span>' +
         '</div>' +
-        '<p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">' + esc(g.desc) + '</p>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:12px">' +
+        '<p style="font-size:.86rem;color:#6b4e35;line-height:1.65;margin:0 0 16px;max-width:480px">' + esc(g.desc) + (list.length > 1 ? ' Tap a photo to see it big; use the arrows to change the order.' : '') + '</p>' +
+        '<div class="ep-tiles">' +
           list.map((img, i) => {
-            const badgeStyle = (g.key === 'hero' && i === 0)
-              ? 'position:absolute;left:6px;bottom:6px;font-size:.58rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:rgba(44,26,14,.62);padding:3px 9px;border-radius:50px'
-              : 'display:none';
-            const cap = g.key === 'gallery' ? '<input type="text" data-cap-photo="' + i + '" value="' + esc(img.cap || '') + '" maxlength="40" placeholder="Room or pet" aria-label="Name on photo ' + (i + 1) + '" style="width:118px;margin-top:6px;border:1.5px solid rgba(44,26,14,.18);border-radius:8px;padding:7px 9px;font-size:.78rem;font-family:\'Montserrat\',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none" />' : '';
-            return '<div style="display:flex;flex-direction:column">' + '<div class="eo-thumb" style="position:relative;width:118px;height:88px;border-radius:10px;overflow:hidden;border:1px solid rgba(110,84,56,.25);transition:transform .2s ease, box-shadow .2s ease">' +
-              '<img src="' + esc(img.src) + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block" />' +
-              '<span style="' + badgeStyle + '">Cover</span>' +
-              '<button type="button" data-remove-photo="' + g.key + ':' + i + '" title="Remove photo" class="eo-x" style="position:absolute;top:6px;right:6px;width:23px;height:23px;border-radius:50%;background:rgba(44,26,14,.6);color:#fff;border:none;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background .2s ease">&times;</button>' +
+            const cap = g.key === 'gallery' ? '<input type="text" data-cap-photo="' + i + '" value="' + esc(img.cap || '') + '" maxlength="40" placeholder="Room or pet" aria-label="Name on photo ' + (i + 1) + '" class="ep-cap" />' : '';
+            return '<div class="ep-tile' + (i === 0 ? ' first' : '') + '"><div class="ep-thumb">' +
+              '<button type="button" class="ep-view" data-view="' + esc(img.src) + '" aria-label="See photo ' + (i + 1) + ' big"><img src="' + esc(img.src) + '" alt="" /></button>' +
+              (g.key === 'hero' ? '<span class="ep-cover">Cover</span>' : '') +
+              (list.length > 1 ? '<span class="ep-move"><button type="button" data-mv-photo="' + g.key + ':' + i + ':-1" aria-label="Move earlier">&#8249;</button><button type="button" data-mv-photo="' + g.key + ':' + i + ':1" aria-label="Move later">&#8250;</button></span>' : '') +
+              '<button type="button" data-remove-photo="' + g.key + ':' + i + '" title="Remove photo" aria-label="Remove photo" class="ep-thumb-x">&times;</button>' +
             '</div>' + cap + '</div>';
           }).join('') +
-          '<button type="button" data-add-photo="' + g.key + '" class="eo-add" style="width:118px;height:88px;border-radius:10px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .25s ease, border-color .25s ease">+ Add</button>' +
+          '<button type="button" data-add-photo="' + g.key + '" class="eo-add ep-add" style="border-radius:12px;border:1.5px dashed rgba(110,84,56,.5);background:#faf6ee;color:#2f5d45;font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center">+ Add</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -954,8 +1082,15 @@ const initial = {
   };
 
   document.addEventListener('click', e => {
-    const t = e.target.closest && e.target.closest('[data-add-photo],[data-remove-photo],[data-remove-pet],[data-toggle-pet],[data-add-pet],[data-amenity],[data-remove-note],[data-add-note],[data-reset-colours],[data-save]');
+    const t = e.target.closest && e.target.closest('[data-mv-photo],[data-add-photo],[data-remove-photo],[data-remove-pet],[data-toggle-pet],[data-add-pet],[data-amenity],[data-remove-note],[data-add-note],[data-reset-colours],[data-save]');
     if (!t) return;
+    if (t.hasAttribute('data-mv-photo')) {
+      const [key, i, d] = t.getAttribute('data-mv-photo').split(':').map((x, n) => (n ? Number(x) : x));
+      const j = i + d, list = s[key];
+      if (j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      dirty(); render(); return;
+    }
     if (t.hasAttribute('data-add-photo')) { pickFor = t.getAttribute('data-add-photo'); picker.click(); return; }
     if (t.hasAttribute('data-remove-photo')) {
       const [key, i] = t.getAttribute('data-remove-photo').split(':');
@@ -990,7 +1125,7 @@ const initial = {
       name: s.name, location: s.location, tagline: s.tagline, bio: s.bio,
       contact_email: s.email, whatsapp_number: s.whatsapp, looking_for: s.lookingFor,
       amenities: s.amenities, theme: s.theme, headings: s.headings,
-      handover: s.handover, house_notes: s.houseNotes,
+      handover: s.handover, house_notes: s.houseNotes, home: readHome(),
       images: { hero: imgs('hero'), about: imgs('about'), gallery: imgs('gallery') },
       pets: s.pets.map(p => ({ index: p.index, new: p.new, name: p.name, type: p.type, breed: p.breed, age: p.age, temperament: p.temperament, special_needs: p.needs }))
     };
