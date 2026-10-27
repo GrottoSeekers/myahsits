@@ -272,6 +272,23 @@ const premiumProps = {
     footer.op-foot .bar i { width:4px; height:4px; border-radius:50%; background:rgba(196,171,138,.5); display:block; }
     footer.op-foot .love { font-size:.82rem; color:rgba(255,255,255,.55); font-style:italic; }
 
+    /* Basic owner page, kept short (owner, round 3) */
+    .op-enq:not(.open) .op-enq-form { display:none; }
+    .op-enq:not(.open) .op-split { grid-template-columns:minmax(0,1fr); max-width:760px; text-align:center; }
+    .op-enq:not(.open) .op-label { justify-content:center; }
+    .op-enq:not(.open) .op-rule { margin-left:auto; margin-right:auto; }
+    .op-enq:not(.open) .op-split > div > div { justify-content:center; }
+    .op-enq.open [data-enq-open] { display:none; }
+    .op-enq-form { animation:op-in .4s ease both; }
+    @keyframes op-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+    @media (min-width:641px) {
+      .op-sec { padding-top:76px; padding-bottom:76px; }
+      .op-gal { grid-template-columns:repeat(6,minmax(0,1fr)); }
+      .op-about-pic { aspect-ratio:1/1; }
+      .op-pet .pic { aspect-ratio:16/10; }
+      footer.op-foot .cols { padding:44px 0 32px; }
+    }
+    .op-rule { margin:18px 0 26px; }
     @media (max-width:1000px) {
       .op-top { padding:14px 24px; }
       .op-nav a.op-link { display:none; }
@@ -300,7 +317,25 @@ const premiumProps = {
       .op-scroll { display:none; }
       .op-hero { min-height:70vh; }
       .op-gal { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-      .op-gal .op-cap { font-size:.72rem; padding:20px 10px 10px; }
+      .op-gal .op-cap { font-size:.6rem; padding:16px 6px 6px; }
+      .op-sec { padding:44px 16px; }
+      .op-about-pic { aspect-ratio:4/3; }
+      .op-gal { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+      .op-gal button { border-radius:10px; }
+      /* pets: one swipeable row */
+      .op-pets { display:flex; gap:12px; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:2px 16px 8px; scroll-snap-type:x mandatory; scroll-padding:0 16px; }
+      .op-pets::-webkit-scrollbar { display:none; }
+      .op-pet { flex:none; width:240px; scroll-snap-align:start; }
+      .op-pet .body { padding:16px; }
+      .op-sits { grid-template-columns:minmax(0,1fr); gap:12px; }
+      .op-sit { padding:18px; }
+      .op-enq .op-split > div > div > * { flex:1 1 100%; justify-content:center; }
+      footer.op-foot .cols { gap:16px; padding:30px 0 20px; }
+      .op-foot-blurb { display:none; }
+      footer.op-foot h4 { border:0; padding:0; margin:0 0 8px; }
+      footer.op-foot ul { display:flex; flex-wrap:wrap; gap:6px 18px; }
+      footer.op-foot li { margin:0; }
+      footer.op-foot .bar { padding-top:18px; }
     }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
@@ -457,7 +492,7 @@ const premiumProps = {
     </section>
   )}
 
-  <section id="contact" class="op-sec">
+  <section id="contact" class={'op-sec op-enq' + (isMe ? ' open' : '')}>
     <div class="op-wrap op-split" style="align-items:start">
       <div>
         <p class="op-label">{head.enquiryLabel}</p>
@@ -465,6 +500,7 @@ const premiumProps = {
         <div class="op-rule"></div>
         <p class="op-p">Tell {first} a little about yourself, your experience with pets and the dates you're free.</p>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px">
+          {!isMe && <button type="button" class="op-btn" data-enq-open="1">Send an enquiry</button>}
           {canMessage && <button type="button" class="op-btn" data-chat={p.id}>Message {first} on MYAH</button>}
           {waNum && <a href={'https://wa.me/' + waNum} target="_blank" rel="noopener" class="op-wa">WhatsApp</a>}
           {!viewer && <a href={'/signup'} class="op-ghost">Join MYAH as a sitter</a>}
@@ -479,7 +515,7 @@ const premiumProps = {
           </div>
         </div>
       ) : (
-      <form class="op-form" data-enquiry="1">
+      <form class="op-form op-enq-form" data-enquiry="1">
         <div class="row">
           <label>First name<input type="text" name="first_name" placeholder="Jane" required /></label>
           <label>Last name<input type="text" name="last_name" placeholder="Smith" /></label>
@@ -503,7 +539,7 @@ const premiumProps = {
     <div class="cols">
       <div style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
         <a href="/" class="brand"><img src="/images/logo-mark-white.png" alt="" /><span>MYAH<small>Make Yourself At Home</small></span></a>
-        <p style="line-height:1.8;font-size:.95rem;margin:0;max-width:340px">{description}</p>
+        <p class="op-foot-blurb" style="line-height:1.8;font-size:.95rem;margin:0;max-width:340px">{description}</p>
       </div>
       <div>
         <h4>Quick links</h4>
@@ -550,6 +586,14 @@ const premiumProps = {
   q('[data-about-next]') && q('[data-about-next]').addEventListener('click', () => { showA(ai + 1); runA(); });
   ad.forEach((d) => d.addEventListener('click', () => { showA(+d.getAttribute('data-about-dot')); runA(); }));
   runA();
+
+  // Enquiry form opens from "Send an enquiry" or any "Get in touch" link.
+  const enq = q('.op-enq');
+  const openEnq = () => { if (enq && !enq.classList.contains('open')) enq.classList.add('open'); };
+  const eo = q('[data-enq-open]');
+  eo && eo.addEventListener('click', () => { openEnq(); const f = enq.querySelector('input'); f && setTimeout(() => f.focus(), 300); });
+  qa('a[href="#contact"]').forEach((a) => a.addEventListener('click', openEnq));
+  if (location.hash === '#contact') openEnq();
 
   // Gallery: "Show all"
   const all = q('[data-show-all]');
