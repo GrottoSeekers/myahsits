@@ -301,16 +301,24 @@ if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple
       .seal svg { animation-duration:45s; }
       .seal img { width:26px; height:26px; }
       .seal::before { inset:15px; }
-      .hero .shade { background:linear-gradient(180deg,rgba(20,13,7,.5) 0%,rgba(20,13,7,.15) 25%,rgba(20,13,7,.7) 55%,rgba(20,13,7,.94) 100%); }
-      .hero .wrap { padding-top:170px; padding-bottom:28px; }
+      /* Phone hero, same as the computer: the photo is the star. It fills the
+         top of the screen with nothing over it but the heading at its foot;
+         the rest sits below on the same dark ground (owner, 27 Oct 2026). */
+      .hero { display:block; min-height:0; --ph:min(76svh,660px); }
+      .hero .bg { position:absolute; top:0; left:0; right:0; height:var(--ph); overflow:hidden; }
+      .hero .shade { bottom:auto; height:var(--ph); background:linear-gradient(180deg,rgba(20,13,7,.45) 0%,rgba(20,13,7,0) 18%,rgba(20,13,7,0) 52%,rgba(20,13,7,.78) 86%,var(--ink) 100%); }
+      .hero .wrap { padding-top:calc(var(--ph) - 196px); padding-bottom:36px; gap:22px; }
+      .pill { font-size:.6rem; letter-spacing:.14em; padding:6px 11px; margin-bottom:14px; }
+      .hero h1 { margin-bottom:26px; }
+      .trust { gap:10px 16px; font-size:.78rem; margin-top:16px; }
       .cs-logo img { height:36px; width:36px; }
       .cs-logo { font-size:1.2rem; }
       .cs-top-cta { padding:10px 18px; font-size:.66rem; }
       .cs-top-cta .lg { display:none; }
       .cs-top-cta .sm { display:inline; }
       .wrap { padding:0 16px; }
-      .hero h1 { font-size:2.7rem; }
-      .hero .lead { font-size:.96rem; margin-bottom:20px; }
+      .hero h1 { font-size:2.55rem; line-height:1.04; }
+      .hero .lead { font-size:.95rem; line-height:1.7; margin-bottom:22px; }
         .sec { padding:64px 0; }
       h2, .final h2 { font-size:1.9rem; }
       .sec-head { margin-bottom:34px; }
