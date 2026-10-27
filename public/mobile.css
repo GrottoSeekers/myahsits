@@ -169,4 +169,3 @@ img, video { max-width: 100%; }
   .tc-icon { width: 40px; height: 40px; }
   .tc-title { font-size: 1.05rem; }
 }
-@media (prefers-reduced-motion: reduce) { .tc-card { transition: none; } .tc-card:hover { transform: none; } }

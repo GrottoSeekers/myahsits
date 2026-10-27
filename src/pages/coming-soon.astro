@@ -359,10 +359,6 @@ if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple
       .cs-logo img { height:32px; width:32px; }
       .cs-top-cta { padding:9px 12px; font-size:.6rem; letter-spacing:.06em; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .chip, .pill i, .seal svg, .hero .bg img.on, .hero .copy > * { animation:none; }
-      .reveal { opacity:1; transform:none; transition:none; }
-    }
   </style>
 </head>
 <body>
@@ -598,7 +594,7 @@ if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple
     const pics = [...document.querySelectorAll('[data-hero] .bg img')];
     // Photos load one ahead of when they're shown, so the page stays quick.
     const load = (img) => { if (img && img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; } };
-    if (pics.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (pics.length > 1) {
       let i = 0;
       window.addEventListener('load', () => load(pics[1]));
       setInterval(() => {

@@ -109,9 +109,6 @@ const {
       .au-card h1 { font-size:2rem; }
       .au-lead { margin-bottom:22px; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .au-pic .bg img.on, .au-seal svg, .au-quote, .au-seal, .au-card { animation:none; }
-    }
   </style>
 </head>
 <body>
@@ -148,7 +145,7 @@ const {
     document.querySelectorAll('form').forEach((f) => f.addEventListener('submit', () => load.classList.add('on')));
     window.addEventListener('pageshow', (e) => { if (e.persisted) load.classList.remove('on'); });
     const pics = [...document.querySelectorAll('.au-pic .bg img')];
-    if (pics.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (pics.length > 1) {
       let i = 0;
       setInterval(() => { pics[i].classList.remove('on'); i = (i + 1) % pics.length; pics[i].classList.add('on'); }, 6000);
     }
