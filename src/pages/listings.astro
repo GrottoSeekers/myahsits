@@ -45,6 +45,8 @@ const qr =
     ' slug,' +
     ' profile_pic,' +
     ' pets_json,' +
+    ' gallery_json,' +
+    ' reviews_json,' +
     ' hero_images_json)'
   )
   .eq('status', 'active')
@@ -90,6 +92,29 @@ function fmtDate(
   ).toLocaleDateString(
     'en-GB', opts,
   );
+}
+// Card details in the Airbnb style (round 3): photos, pets, short dates.
+function cardBits(l: any, lp: any, pets: any[], hero: any[], days: number) {
+  const gal = Array.isArray(lp?.gallery_json) ? lp.gallery_json : [];
+  const photos = [...hero, ...gal].map((x: any) => String(x?.src || '').replace(/^public\//, '/')).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
+  const names = pets.map((p: any) => p?.name).filter(Boolean);
+  const kinds: Record<string, number> = {};
+  pets.forEach((p: any) => { const t = String(p?.type || 'pet').toLowerCase(); kinds[t] = (kinds[t] || 0) + 1; });
+  const count = Object.entries(kinds).map(([t, n]) => n + ' ' + (n === 1 ? t : t === 'puppy' ? 'puppies' : t + 's')).join(', ');
+  const petLine = [names.length ? (names.length > 1 ? names.slice(0, -1).join(', ') + ' & ' + names[names.length - 1] : names[0]) : '', count].filter(Boolean).join(' · ');
+  const a = new Date(l.date_from + 'T00:00:00'), b = new Date(l.date_to + 'T00:00:00');
+  const sameMonth = a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
+  const short = sameMonth
+    ? a.getDate() + '–' + b.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+    : a.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' – ' + b.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const until = Math.ceil((a.getTime() - Date.now()) / 86400000);
+  const revs = Array.isArray(lp?.reviews_json) ? lp.reviews_json.filter((r: any) => r && r.text).length : 0;
+  return {
+    photos, petLine, short,
+    nights: days + (days === 1 ? ' night' : ' nights'),
+    badge: until <= 14 ? 'Starts soon' : days >= 21 ? 'Long stay' : '',
+    rating: revs ? '5.0 (' + revs + ')' : '',
+  };
 }
 const listings =
   (rawListings ?? [])
@@ -164,8 +189,18 @@ const listings =
         l.date_from,
       days,
       duration: dur,
+      ...cardBits(l, lp, pets, hero, days),
     };
   });
+// Saved sits for the heart on each card.
+let savedIds: string[] = [];
+if (acct?.profile?.id) {
+  try {
+    const sv = await supabase.from('saved_sits').select('listing_id').eq('profile_id', acct.profile.id);
+    savedIds = (sv.data ?? []).map((r: any) => r.listing_id);
+  } catch {}
+}
+const canSave = !!acct?.profile;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -198,6 +233,49 @@ const listings =
     }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <link rel="stylesheet" href="/sitcard.css" />
+  <style is:global>
+    .bs-main { flex:1; padding:44px 48px 100px; }
+    .bs-wrap { max-width:1240px; margin:0 auto; }
+    .bs-head { text-align:center; margin:0 0 26px; }
+    .bs-eye { font:700 .7rem 'Lato',sans-serif; letter-spacing:.2em; text-transform:uppercase; color:#6e5438; margin:0 0 10px; }
+    .bs-head h1 { font:400 2.6rem/1.1 'Marcellus',serif; margin:0; }
+    .bs-head h1 em { font-style:italic; color:#2f5d45; }
+    .bs-search { position:sticky; top:72px; z-index:40; max-width:880px; margin:0 auto 22px; display:flex; align-items:center; background:#fff; border:1px solid rgba(110,84,56,.2); border-radius:50px; padding:6px 6px 6px 10px; box-shadow:0 10px 30px rgba(44,26,14,.1); }
+    .bs-seg { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; padding:8px 18px; border-radius:50px; cursor:pointer; transition:background .2s; position:relative; }
+    .bs-seg + .bs-seg::before { content:""; position:absolute; left:0; top:22%; bottom:22%; width:1px; background:rgba(110,84,56,.2); }
+    .bs-seg:hover { background:#f6f0e6; }
+    .bs-seg span { font-size:.68rem; font-weight:700; letter-spacing:.06em; color:#2c1a0e; }
+    .bs-seg input, .bs-seg select { border:0 !important; outline:none; background:transparent; padding:0; font:400 .88rem 'Montserrat',sans-serif; color:#6b4e35; width:100%; appearance:none; -webkit-appearance:none; cursor:pointer; box-shadow:none !important; }
+    .bs-q { flex:1.4; }
+    .bs-go { flex:none; width:46px; height:46px; border-radius:50%; background:#2f5d45; color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(47,93,69,.35); }
+    .bs-cats { display:flex; align-items:center; gap:8px; overflow-x:auto; scrollbar-width:none; padding:6px 0 18px; margin:0 0 26px; border-bottom:1px solid rgba(110,84,56,.16); }
+    .bs-cats::-webkit-scrollbar { display:none; }
+    .bs-cats .len-chip { flex:none; display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px 14px 10px; border:0; border-bottom:2px solid transparent; background:none; font:600 .72rem 'Montserrat',sans-serif; color:#8a6a4f; cursor:pointer; transition:color .2s, border-color .2s; }
+    .bs-cats .len-chip svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .bs-cats .len-chip:hover { color:#2c1a0e; border-bottom-color:rgba(110,84,56,.3); }
+    .bs-cats .len-chip[aria-pressed="true"] { color:#2c1a0e; border-bottom-color:#2c1a0e; }
+    .bs-count { margin-left:auto; flex:none; font-size:.76rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#6b4e35; }
+    .bs-clear { flex:none; background:#fff; border:1px solid rgba(110,84,56,.3); border-radius:50px; padding:9px 16px; font:600 .72rem 'Montserrat',sans-serif; color:#2f5d45; cursor:pointer; }
+    .bs-empty { background:#fff; border:1px solid rgba(110,84,56,.22); border-radius:18px; padding:60px 32px; text-align:center; max-width:520px; margin:0 auto; }
+    .bs-empty > span { width:56px; height:56px; border-radius:16px; background:#faf6ee; color:#6e5438; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; }
+    .bs-empty h2 { font:400 1.5rem 'Marcellus',serif; margin:0 0 10px; }
+    .bs-empty p { margin:0; color:#6b4e35; line-height:1.7; }
+    @media (max-width:760px) {
+      .bs-main { padding:18px 16px 70px !important; }
+      .bs-head { text-align:left; margin-bottom:16px; }
+      .bs-head h1 { font-size:1.9rem; }
+      .bs-search { top:84px; flex-wrap:wrap; border-radius:22px; padding:6px; }
+      .bs-q { flex:1 1 calc(100% - 56px); }
+      .bs-seg { padding:7px 12px; }
+      .bs-seg:not(.bs-q) { flex:1 1 30%; }
+      .bs-seg:nth-child(2)::before { display:none; }
+      .bs-go { width:42px; height:42px; order:1; }
+      .bs-q { order:0; }
+      .bs-seg:not(.bs-q) { order:2; }
+      .bs-count { display:none; }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -238,71 +316,36 @@ const listings =
   </header>
 )}
 
-  <main data-page-pad="1" style="flex:1;padding:72px 48px 100px">
-    <div style="max-width:1100px;margin:0 auto">
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:56px;align-items:end;border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:34px">
-        <div>
-          <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 18px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Available sits</p>
-          <h1 style="font-family:'Marcellus',serif;font-size:2.9rem;color:#2c1a0e;line-height:1.15;margin:0">Find your <em style="color:#2f5d45;">next sit</em></h1>
-        </div>
-        <p style="color:#6b4e35;font-size:1.02rem;line-height:1.8;margin:0 0 6px;padding-left:28px;border-left:2px solid rgba(110,84,56,.35)">Browse homes looking for trusted sitters. Open any listing to see the full details, meet the pets, and get in touch.</p>
+  <main data-page-pad="1" class="bs-main">
+    <div class="bs-wrap">
+      <div class="bs-head">
+        <p class="bs-eye">Available sits</p>
+        <h1>Find your <em>next sit</em></h1>
       </div>
 
-      <div id="filter-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px 28px;margin:30px 0 28px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-        <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:18px">
-          <div style="position:relative">
-            <label for="q" style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35;margin:0 0 8px;display:block">Search</label>
-            <input id="q" type="search" placeholder="Title, owner, pet or place" style="font-family:'Montserrat',sans-serif;font-size:.9rem;color:#2c1a0e;background:#faf6ee;border:1.5px solid rgba(110,84,56,.35);border-radius:10px;padding:12px 14px 12px 40px;outline:none;width:100%;transition:border-color .2s, box-shadow .2s" />
-            <span style="position:absolute;left:14px;bottom:13px;pointer-events:none;display:flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg></span>
-          </div>
-          <div style="position:relative">
-            <label for="place" style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35;margin:0 0 8px;display:block">Location</label>
-            <select id="place" style="font-family:'Montserrat',sans-serif;font-size:.9rem;color:#2c1a0e;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:10px;padding:12px 38px 12px 14px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;width:100%;transition:border-color .2s, box-shadow .2s">
-              <option value="all">All locations</option>
-              <option value="UK">United Kingdom</option>
-              <option value="AU">Australia</option>
-            </select>
-            <span style="position:absolute;right:14px;bottom:15px;width:8px;height:8px;border-right:1.5px solid #2f5d45;border-bottom:1.5px solid #2f5d45;transform:rotate(45deg);pointer-events:none"></span>
-          </div>
-          <div style="position:relative">
-            <label for="pet" style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35;margin:0 0 8px;display:block">Pets</label>
-            <select id="pet" style="font-family:'Montserrat',sans-serif;font-size:.9rem;color:#2c1a0e;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:10px;padding:12px 38px 12px 14px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;width:100%;transition:border-color .2s, box-shadow .2s">
-              <option value="all">Any pets</option>
-              <option value="dog">Dogs</option>
-              <option value="cat">Cats</option>
-            </select>
-            <span style="position:absolute;right:14px;bottom:15px;width:8px;height:8px;border-right:1.5px solid #2f5d45;border-bottom:1.5px solid #2f5d45;transform:rotate(45deg);pointer-events:none"></span>
-          </div>
-          <div style="position:relative">
-            <label for="sort" style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35;margin:0 0 8px;display:block">Sort by</label>
-            <select id="sort" style="font-family:'Montserrat',sans-serif;font-size:.9rem;color:#2c1a0e;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:10px;padding:12px 38px 12px 14px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;width:100%;transition:border-color .2s, box-shadow .2s">
-              <option value="soonest">Starting soonest</option>
-              <option value="longest">Longest stay</option>
-              <option value="shortest">Shortest stay</option>
-            </select>
-            <span style="position:absolute;right:14px;bottom:15px;width:8px;height:8px;border-right:1.5px solid #2f5d45;border-bottom:1.5px solid #2f5d45;transform:rotate(45deg);pointer-events:none"></span>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid rgba(44,26,14,.08)">
-          <span style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35;margin-right:4px">Length of stay</span>
-          <button type="button" data-len="any" class="len-chip" style="font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;padding:9px 18px;border-radius:50px;cursor:pointer;transition:background .2s, color .2s, border-color .2s;background:#2f5d45;color:#fff;border:1.5px solid #2f5d45;">Any length</button>
-          <button type="button" data-len="week" class="len-chip" style="font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;padding:9px 18px;border-radius:50px;cursor:pointer;transition:background .2s, color .2s, border-color .2s;background:#fff;color:#5c3d20;border:1.5px solid rgba(110,84,56,.35);">Up to 1 week</button>
-          <button type="button" data-len="fortnight" class="len-chip" style="font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;padding:9px 18px;border-radius:50px;cursor:pointer;transition:background .2s, color .2s, border-color .2s;background:#fff;color:#5c3d20;border:1.5px solid rgba(110,84,56,.35);">1–2 weeks</button>
-          <button type="button" data-len="long" class="len-chip" style="font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;padding:9px 18px;border-radius:50px;cursor:pointer;transition:background .2s, color .2s, border-color .2s;background:#fff;color:#5c3d20;border:1.5px solid rgba(110,84,56,.35);">Over 2 weeks</button>
-        </div>
+      <div class="bs-search" id="filter-card" role="search">
+        <label class="bs-seg bs-q"><span>Search</span><input id="q" type="search" placeholder="Place, pet or owner" /></label>
+        <label class="bs-seg"><span>Where</span><select id="place"><option value="all">Anywhere</option><option value="UK">United Kingdom</option><option value="AU">Australia</option></select></label>
+        <label class="bs-seg"><span>Pets</span><select id="pet"><option value="all">Any pets</option><option value="dog">Dogs</option><option value="cat">Cats</option></select></label>
+        <label class="bs-seg"><span>Sort</span><select id="sort"><option value="soonest">Starting soonest</option><option value="longest">Longest stay</option><option value="shortest">Shortest stay</option></select></label>
+        <span class="bs-go" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span>
       </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:0 0 26px">
-        <p id="countLabel" style="margin:0;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#6b4e35"></p>
-        <button type="button" id="clearBtn" style="background:none;border:none;font-family:'Montserrat',sans-serif;font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#2f5d45;cursor:pointer;padding:4px 0;border-bottom:1px solid rgba(110,84,56,.4);transition:color .2s">Clear filters</button>
+      <div class="bs-cats" role="group" aria-label="Length of stay">
+        <button type="button" data-len="any" class="len-chip" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>All sits</button>
+        <button type="button" data-len="week" class="len-chip" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Up to a week</button>
+        <button type="button" data-len="fortnight" class="len-chip" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>1–2 weeks</button>
+        <button type="button" data-len="long" class="len-chip" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 19c4-1 6-5 8-9s4-6 8-6"/><circle cx="6" cy="8" r="2.5"/></svg>Long stays</button>
+        <span class="bs-count" id="countLabel"></span>
+        <button type="button" id="clearBtn" class="bs-clear">Clear</button>
       </div>
 
-      <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:24px"></div>
+      <div id="grid" class="sc-grid"></div>
 
-      <div id="emptyState" style="display:none;background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:72px 48px;text-align:center;max-width:520px;margin:0 auto;transition:box-shadow .3s ease, border-color .3s ease">
-        <span style="width:56px;height:56px;border-radius:16px;background:#faf6ee;border:1px solid rgba(110,84,56,.28);color:#6e5438;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg></span>
-        <h2 style="font-family:'Marcellus',serif;font-size:1.6rem;color:#2c1a0e;margin:0 0 12px">No sits match those filters</h2>
-        <p style="font-size:.95rem;color:#6b4e35;line-height:1.7;margin:0">Try widening your search — or clear the filters to see everything available.</p>
+      <div id="emptyState" class="bs-empty" style="display:none">
+        <span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span>
+        <h2>No sits match those filters</h2>
+        <p>Try widening your search — or clear the filters to see everything available.</p>
       </div>
     </div>
   </main>
@@ -366,7 +409,8 @@ const listings =
   footer a:hover { color:#c4ab8a !important; }
 </style>
 
-<script define:vars={{ listings }}>
+<script is:inline src="/sitcard.js"></script>
+<script define:vars={{ listings, savedIds, canSave }}>
   const ALL = listings;
   let state = { q: '', place: 'all', pet: 'all', len: 'any', sort: 'soonest' };
 
@@ -374,6 +418,7 @@ const listings =
   const empty = document.getElementById('emptyState');
   const countLabel = document.getElementById('countLabel');
 
+  const SAVED = new Set(savedIds);
   function chipStyle(on) {
     return on
       ? 'font-family:\'Montserrat\',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;padding:9px 18px;border-radius:50px;cursor:pointer;transition:background .2s, color .2s, border-color .2s;background:#2f5d45;color:#fff;border:1.5px solid #2f5d45;'
@@ -405,7 +450,7 @@ const listings =
 
     if (countLabel) {
       countLabel.textContent = rows.length === ALL.length
-        ? ALL.length + ' sits available'
+        ? ALL.length + (ALL.length === 1 ? ' sit' : ' sits') + ' available'
         : rows.length + ' of ' + ALL.length + ' sits';
     }
 
@@ -417,31 +462,15 @@ const listings =
     }
     empty.style.display = 'none';
     grid.style.display = 'grid';
-    grid.innerHTML = rows.map(sit => `
-      <a href="/listings/${sit.id}" class="sit-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:28px;text-decoration:none;color:inherit;box-shadow:0 1px 2px rgba(44,26,14,.04);display:flex;flex-direction:column;gap:18px;transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease">
-        <div style="display:flex;gap:16px;align-items:flex-start">
-          ${sit.pic ? `<img src="${sit.pic}" alt="${sit.owner}" style="width:54px;height:54px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(110,84,56,.35)" />` : `<div style="width:54px;height:54px;border-radius:50%;flex-shrink:0;border:2px solid rgba(110,84,56,.35);background:#faf6ee;display:flex;align-items:center;justify-content:center;font-family:'Marcellus',serif;font-size:1.4rem;color:#6e5438">${(sit.owner || '?').charAt(0)}</div>`}
-          <div style="flex:1;min-width:0">
-            <h3 style="font-family:'Marcellus',serif;font-size:1.2rem;color:#2c1a0e;margin:0 0 4px;line-height:1.3">${sit.title}</h3>
-            <p style="margin:0;font-size:.84rem;color:#2f5d45;font-weight:600;letter-spacing:.02em">${sit.owner}</p>
-          </div>
-          <span style="flex-shrink:0;background:rgba(110,84,56,.12);color:#2f5d45;font-weight:600;padding:5px 12px;border-radius:50px;font-size:.74rem;letter-spacing:.06em;white-space:nowrap">${sit.duration}</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:9px;font-size:.85rem;color:#6b4e35">
-          ${sit.location ? `<span style="display:flex;align-items:center;gap:9px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>${sit.location}</span>` : ''}
-          <span style="display:flex;align-items:center;gap:9px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>${sit.dates}</span>
-          ${sit.pets ? `<span style="display:flex;align-items:center;gap:9px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="8" cy="9" r="2.2"></circle><circle cx="16" cy="9" r="2.2"></circle><circle cx="12" cy="15.5" r="3"></circle></svg>${sit.pets}</span>` : ''}
-        </div>
-        ${sit.description ? `<p style="margin:0;padding-top:16px;border-top:1px solid rgba(44,26,14,.08);font-size:.9rem;color:#6b4e35;line-height:1.7">${sit.description.length > 120 ? sit.description.slice(0, 120) + '…' : sit.description}</p>` : ''}
-        <span style="margin-top:auto;font-size:.76rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#2f5d45;display:flex;align-items:center;gap:8px">View sit →</span>
-      </a>
-    `).join('');
+    grid.innerHTML = rows.map((sit, i) => window.sitCard(Object.assign({ canSave }, sit), SAVED.has(sit.id), i)).join('');
+    window.sitCardWire(grid);
   }
+  document.addEventListener('sitcard:saved', (e) => { if (e.detail.on) SAVED.add(e.detail.id); else SAVED.delete(e.detail.id); });
 
   document.querySelectorAll('.len-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       state.len = btn.dataset.len;
-      document.querySelectorAll('.len-chip').forEach(b => { (b).style.cssText = chipStyle(b.dataset.len === state.len); });
+      document.querySelectorAll('.len-chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.len === state.len)));
       render();
     });
   });
@@ -456,7 +485,7 @@ const listings =
     (document.getElementById('place')).value = 'all';
     (document.getElementById('pet')).value = 'all';
     (document.getElementById('sort')).value = 'soonest';
-    document.querySelectorAll('.len-chip').forEach(b => { (b).style.cssText = chipStyle(b.dataset.len === 'any'); });
+    document.querySelectorAll('.len-chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.len === 'any')));
     render();
   });
 
