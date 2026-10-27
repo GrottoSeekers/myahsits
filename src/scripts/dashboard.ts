@@ -1,10 +1,7 @@
 // Client behaviour shared by the sitter and owner dashboards:
 // tab switching, copy share link, navigation loader, unread-message badge + toasts.
-// Hooks: [data-tab], [data-tab-line], [data-panel], [data-share], [data-copy],
+// Hooks: [data-tab], [data-panel], [data-share], [data-copy],
 // [data-loader], [data-msg-badge], [data-msg-toasts].
-
-const ON = '#2f5d45';
-const OFF = '#8a6a4f';
 
 function initTabs() {
   const tabBtns = Array.from(document.querySelectorAll<HTMLElement>('[data-tab]'));
@@ -12,9 +9,8 @@ function initTabs() {
   const setTab = (id: string) => {
     tabBtns.forEach((b) => {
       const on = b.dataset.tab === id;
-      b.style.color = on ? ON : OFF;
-      const line = b.querySelector<HTMLElement>('[data-tab-line]');
-      if (line) line.style.background = on ? ON : 'transparent';
+      if (on) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
     });
     panels.forEach((p) => {
       const key = p.dataset.panel;

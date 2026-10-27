@@ -33,6 +33,7 @@ const n = buildNav(
   </div>
 </nav>
 
+<link rel="stylesheet" href="/apptabs.css" />
 <div data-app-tabs="1" class="apt">
   <div class="apt-in">
     {n.tabs.map((t) => (
@@ -49,24 +50,6 @@ const n = buildNav(
 
 <style is:global>
   .app-nav-link:hover { color: #2f5d45 !important; }
-  /* Dashboard · Sits · Messages · Profile: a floating pill bar that stays
-     at the top as you scroll, the current page in a green pill. */
-  .apt { position:sticky; top:0; z-index:50; padding:10px 16px; background:rgba(250,246,238,.82); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); border-bottom:1px solid rgba(110,84,56,.12); }
-  .apt-in { max-width:640px; margin:0 auto; display:flex; gap:4px; padding:5px; background:#fff; border:1px solid rgba(110,84,56,.16); border-radius:50px; box-shadow:0 8px 24px rgba(44,26,14,.07); }
-  .apt-t { flex:1; display:flex; align-items:center; justify-content:center; gap:8px; height:42px; padding:0 10px; border-radius:50px; color:#6e5438; text-decoration:none; font-family:'Montserrat',sans-serif; font-size:.7rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; transition:background .25s, color .25s, box-shadow .25s, transform .15s; }
-  .apt-t:hover { background:#f3ece0; color:#2c1a0e; }
-  .apt-t:active { transform:scale(.97); }
-  .apt-t[aria-current="page"] { background:#2f5d45; color:#fff; box-shadow:0 6px 16px rgba(47,93,69,.3); }
-  .apt-ic { position:relative; display:flex; }
-  .apt-badge { position:absolute; top:-6px; right:-9px; display:none; align-items:center; justify-content:center; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#a4442e; color:#fff; font-size:.55rem; font-weight:600; line-height:1; letter-spacing:0; box-shadow:0 0 0 2px #fff; }
-  /* side panels that stay in view sit below the bar */
-  @media (min-width:961px) { [data-aside] { top:86px !important; } }
-  @media (max-width:640px) {
-    .apt { padding:8px 10px; }
-    .apt-in { padding:4px; gap:2px; }
-    .apt-t { flex-direction:column; gap:3px; height:50px; padding:0 4px; font-size:.58rem; letter-spacing:.08em; }
-    .apt-t svg { width:18px; height:18px; }
-  }
 </style>
 
 <script is:inline>

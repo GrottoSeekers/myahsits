@@ -566,6 +566,14 @@ const glance = [
       [data-dash-grid] { grid-template-columns: minmax(0,1fr) !important; }
       [data-stats] { flex-direction: row !important; }
       [data-dash-two] { grid-template-columns: minmax(0,1fr) !important; }
+    }
+    @media (max-width: 560px) {
+      [data-dash-pad] { padding: 16px 16px 48px !important; }
+      [data-panel="dashboard"] { gap: 16px !important; }
+      [data-dash-two] { gap: 16px !important; }
+      .db-next { padding: 16px 18px !important; gap: 14px !important; }
+      .db-next > div { min-width: 0 !important; flex-basis: calc(100% - 80px) !important; }
+      .db-next > span:last-child { width: 100%; padding: 11px 20px !important; }
       [data-overview] { grid-template-columns: minmax(0,1fr) !important; }
     }
 
@@ -580,6 +588,7 @@ const glance = [
   </style>
   <link rel="stylesheet" href="/mobile.css" />
   <link rel="stylesheet" href="/dash.css" />
+  <link rel="stylesheet" href="/apptabs.css" />
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -606,20 +615,19 @@ const glance = [
     </div>
   </nav>
 
-  <div style="display:flex;background:#fff;border-bottom:1px solid rgba(44,26,14,.08);box-shadow:0 1px 4px rgba(0,0,0,.04);position:sticky;top:0;z-index:10">
-    {tabs.map((t) => (
-      <button type="button" data-tab={t.id} style={t.style}>
-        <span style="display:flex;position:relative">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={t.icon}></svg>
+  <div class="apt"><div class="apt-in">
+    {tabs.map((t, i) => (
+      <button type="button" data-tab={t.id} class="apt-t" aria-current={i === 0 ? 'page' : undefined}>
+        <span class="apt-ic">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={t.icon}></svg>
           {t.id === 'messages' && (
-            <span data-msg-badge="1" style="position:absolute;top:-5px;right:-10px;background:#a4442e;color:#fff;font-size:.55rem;font-weight:700;min-width:16px;height:16px;border-radius:8px;padding:0 4px;display:none;align-items:center;justify-content:center;line-height:1">0</span>
+            <span data-msg-badge="1" class="apt-badge">0</span>
           )}
         </span>
-        <span style="font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase">{t.label}</span>
-        <span data-tab-line="1" style={t.underlineStyle}></span>
+        <span>{t.label}</span>
       </button>
     ))}
-  </div>
+  </div></div>
 
   <div data-msg-toasts="1" style="position:fixed;top:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:10px;pointer-events:none"></div>
 
@@ -674,7 +682,8 @@ const glance = [
         </div>
 
         <div data-dash-two="1" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:stretch">
-        <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+        <details class="db-card db-fold" open data-fold="1" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+          <summary>
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;margin-bottom:16px">
             <h3 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Listing strength</h3>
             <span style="font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#2f5d45">{strengthLabel}</span>
@@ -682,6 +691,8 @@ const glance = [
           <div style="height:8px;border-radius:50px;background:rgba(110,84,56,.15);overflow:hidden;margin-bottom:22px">
             <div style={strengthBar}></div>
           </div>
+          <span class="db-fold-more">See the checklist &darr;</span>
+          </summary>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">
             {checklist.map((c) => (
               <div style="display:flex;align-items:center;gap:11px;font-size:.88rem;color:#2c1a0e">
@@ -689,12 +700,12 @@ const glance = [
               </div>
             ))}
           </div>
-        </div>
+        </details>
 
         <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
           <h3 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0 0 8px">Share your profile</h3>
-          <p style="font-size:.93rem;color:#6b4e35;margin:0 0 20px;line-height:1.7;max-width:560px">Send this link so sitters can see your home, pets, and get in touch.</p>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <p class="db-share-txt" style="font-size:.93rem;color:#6b4e35;margin:0 0 20px;line-height:1.7;max-width:560px">Send this link so sitters can see your home, pets, and get in touch.</p>
+          <div class="db-share-row" style="display:flex;gap:12px;flex-wrap:wrap">
             <input data-share="1" type="text" readonly="readonly" value={shareUrl} style="flex:1;min-width:240px;border:1.5px solid rgba(44,26,14,.15);border-radius:10px;padding:13px 16px;font-size:.92rem;font-family:'Montserrat',sans-serif;color:#2c1a0e;background:#faf6ee;outline:none" />
             <button type="button" data-copy="1" class="db-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:13px 28px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">Copy</button>
           </div>
@@ -786,5 +797,8 @@ const glance = [
   initDashboard();
 </script>
 <script is:inline src="/dash.js" defer></script>
+<script is:inline>
+  if (matchMedia('(max-width:560px)').matches) document.querySelectorAll('[data-fold]').forEach(function (d) { d.open = false; });
+</script>
 </body>
 </html>
