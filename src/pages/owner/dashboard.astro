@@ -1,6 +1,11 @@
 ---
 export const prerender =
   false;
+import DashHero from '../../components/DashHero.astro';
+import DashGlance from '../../components/DashGlance.astro';
+import DashPreview from '../../components/DashPreview.astro';
+import { PAYMENTS_ENABLED, getBilling } from '../../lib/billing';
+import { layoutOf } from '../../lib/tier';
 import IdGate from
   '../_idgate.astro';
 import YourSits from
@@ -522,6 +527,17 @@ const tabs = [
       ? '#2f5d45'
       : 'transparent'),
 }));
+// Dashboard banner and stat cards (founders' page style).
+const dashBilling = PAYMENTS_ENABLED ? await getBilling(session.userId).catch(() => null) : null;
+const design = layoutOf(profile, dashBilling);
+const dashPhoto = heroImages[0]?.src ? { src: heroImages[0].src, pos: heroImages[0].pos } : { src: pic, pos: 'center' };
+const appTotals = Object.values(appsBy).reduce((t, a) => ({ all: t.all + a.all, fresh: t.fresh + a.fresh }), { all: 0, fresh: 0 });
+const glance = [
+  { n: active.length, l: active.length === 1 ? 'open sit' : 'open sits', icon: 'cal', href: '/owner/listings' },
+  { n: appTotals.fresh || appTotals.all, l: appTotals.fresh ? 'new applications' : 'applications', icon: 'inbox', href: '/applications' },
+  { n: pets.length, l: pets.length === 1 ? 'pet' : 'pets', icon: 'paw', href: '/owner/profile/edit#pets' },
+  { n: amenities.length, l: 'home comforts', icon: 'home', href: '/owner/profile/edit#amenities' },
+];
 ---
 
 <!DOCTYPE html>
@@ -549,6 +565,7 @@ const tabs = [
       [data-dash-pad] { padding: 28px 24px 60px !important; }
       [data-dash-grid] { grid-template-columns: minmax(0,1fr) !important; }
       [data-stats] { flex-direction: row !important; }
+      [data-dash-two] { grid-template-columns: minmax(0,1fr) !important; }
       [data-overview] { grid-template-columns: minmax(0,1fr) !important; }
     }
 
@@ -562,6 +579,7 @@ const tabs = [
     .db-sit:hover { transform:translateY(-6px) !important; box-shadow:0 20px 50px rgba(44,26,14,.12) !important; border-color:rgba(110,84,56,.45) !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <link rel="stylesheet" href="/dash.css" />
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -610,20 +628,10 @@ const tabs = [
       <IdGate profile={acct!.profile} what="post sits and message sitters" />
 
       <div data-panel="dashboard" style="display:flex;flex-direction:column;gap:24px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;border-bottom:1px solid rgba(110,84,56,.3);padding-bottom:26px">
-          <div>
-            <p style="font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 14px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Your dashboard</p>
-            <h1 style="font-family:'Marcellus',serif;font-size:2.3rem;color:#2c1a0e;line-height:1.15;margin:0">Welcome back, <em style="color:#2f5d45;">{firstName}</em></h1>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <a href="/owner/profile/edit#photos" class="db-pill" style="display:inline-flex;align-items:center;gap:8px;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:50px;padding:11px 20px;transition:background .2s, color .2s, border-color .2s">Add photos</a>
-            <a href="/owner/profile/edit#pets" class="db-pill" style="display:inline-flex;align-items:center;gap:8px;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;text-decoration:none;background:#fff;border:1.5px solid rgba(110,84,56,.35);border-radius:50px;padding:11px 20px;transition:background .2s, color .2s, border-color .2s">Add a pet</a>
-            <a href="/owner/listings/new" class="db-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 28px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-              Post a sit
-            </a>
-          </div>
-        </div>
+        <DashHero kicker="Your home dashboard" first={firstName} photo={dashPhoto} avatar={pic} line={location ? 'Home owner · ' + location : 'Home owner'} url={pageUrl} href={publicHref}
+          primary={{ href: '/owner/listings/new', label: '+ Post a sit' }} secondary={{ href: publicHref, label: 'View your page' }}
+          pills={[{ href: '/owner/profile/edit', label: 'Edit your home' }, { href: '/owner/profile/edit#photos', label: 'Add photos' }, { href: '/owner/profile/edit#pets', label: 'Add a pet' }, { href: '/owner/profile/edit#page-style', label: 'Page design' }]}
+          pct={st.pct} pctLabel="Home page complete" design={design} designHref="/owner/profile/edit#page-style" />
 
         {nextSit && (
           <a href={nextSit.href} class="db-next" style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:#2c1a0e;border-radius:18px;padding:24px 28px;text-decoration:none;color:#fff;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:transform .3s ease, box-shadow .3s ease">
@@ -640,36 +648,7 @@ const tabs = [
             <span style="display:inline-flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 26px;white-space:nowrap">Open sit pack</span>
           </a>
         )}
-        <div data-dash-grid="1" style="display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:start">
-          <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <div style="display:flex;gap:24px;align-items:flex-start;margin-bottom:26px">
-              <img src={pic} alt={name} style="width:84px;height:84px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(110,84,56,.35)" />
-              <div style="min-width:0">
-                <h2 style="font-family:'Marcellus',serif;font-size:1.5rem;color:#2c1a0e;margin:0 0 5px">{name}</h2>
-                {location && (
-                  <p style="font-size:.85rem;color:#2f5d45;font-weight:600;letter-spacing:.04em;margin:0 0 7px;display:flex;align-items:center;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>{location}</p>
-                )}
-                <p style="font-size:.92rem;color:#6b4e35;line-height:1.6;margin:0 0 12px">{bio}</p>
-                <a href={publicHref} style="display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:#2f5d45;font-weight:600;text-decoration:none;letter-spacing:.03em;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px">{pageUrl}</a>
-              </div>
-            </div>
-            <div style="border-top:1px solid rgba(44,26,14,.08);padding-top:24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-              <a href="/owner/profile/edit" class="db-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-decoration:none;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 28px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">Edit profile</a>
-              <a href={publicHref} class="db-text-link" style="font-size:.78rem;color:#2f5d45;font-weight:600;text-decoration:none;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid rgba(110,84,56,.4);padding-bottom:2px;transition:color .2s">View public page</a>
-            </div>
-          </div>
-
-          <div data-stats="1" style="display:flex;flex-direction:column;gap:16px">
-            <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px;text-align:center;flex:1;display:flex;flex-direction:column;gap:7px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-              <span style="font-family:'Marcellus',serif;font-size:2.1rem;color:#6e5438;line-height:1">{pets.length}</span>
-              <span style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35">Pets</span>
-            </div>
-            <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px;text-align:center;flex:1;display:flex;flex-direction:column;gap:7px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-              <span style="font-family:'Marcellus',serif;font-size:2.1rem;color:#6e5438;line-height:1">{active.length}</span>
-              <span style="font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6b4e35">Active sits</span>
-            </div>
-          </div>
-        </div>
+        <DashGlance items={glance} />
 
         <YourSits cards={activeCards} />
 
@@ -694,6 +673,7 @@ const tabs = [
           </div>
         </div>
 
+        <div data-dash-two="1" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:stretch">
         <div class="db-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
           <div style="display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;margin-bottom:16px">
             <h3 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Listing strength</h3>
@@ -719,6 +699,9 @@ const tabs = [
             <button type="button" data-copy="1" class="db-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;box-shadow:0 6px 20px rgba(110,84,56,.28);padding:13px 28px;cursor:pointer;font-family:'Montserrat',sans-serif;white-space:nowrap;box-shadow:0 6px 20px rgba(110,84,56,.28);transition:background .2s, border-color .2s, transform .12s">Copy</button>
           </div>
         </div>
+        </div>
+
+        <DashPreview href={publicHref} url={pageUrl} edit="/owner/profile/edit" title="Your home page, as sitters see it" />
       </div>
 
       <div data-panel="sits" style="display:none">
@@ -802,5 +785,6 @@ const tabs = [
   import { initDashboard } from '../../scripts/dashboard';
   initDashboard();
 </script>
+<script is:inline src="/dash.js" defer></script>
 </body>
 </html>

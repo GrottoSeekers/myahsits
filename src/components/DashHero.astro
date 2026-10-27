@@ -1,0 +1,58 @@
+---
+// Dashboard welcome banner, in the founders' page style: their own top photo
+// behind a dark shade, the greeting, their page link and the main actions,
+// with a profile-strength ring. Used on the sitter and owner dashboards.
+interface Props {
+  kicker: string;
+  first: string;
+  photo: { src: string; pos?: string } | null;
+  avatar: string;
+  line: string;
+  url: string;
+  href: string;
+  primary: { href: string; label: string };
+  secondary: { href: string; label: string };
+  pills: { href: string; label: string }[];
+  pct: number;
+  pctLabel: string;
+  design: 'basic' | 'premium';
+  designHref: string;
+}
+const p = Astro.props;
+const R = 46, C = 2 * Math.PI * R;
+---
+<section class="dh" data-dh>
+  {p.photo && <img class="dh-bg" src={p.photo.src} alt="" style={`object-position:${p.photo.pos || 'center 30%'}`} />}
+  <div class="dh-shade"></div>
+  <div class="dh-in">
+    <div class="dh-main">
+      <p class="dh-kick"><i></i>{p.kicker}</p>
+      <h1 class="dh-h">Welcome back, <em>{p.first}</em></h1>
+      <div class="dh-who">
+        <img src={p.avatar} alt="" />
+        <div>
+          {p.line && <p>{p.line}</p>}
+          <a href={p.href} target="_blank" rel="noopener">{p.url} <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+      <div class="dh-acts">
+        <a class="dh-btn" href={p.primary.href}>{p.primary.label}</a>
+        <a class="dh-btn dh-glass" href={p.secondary.href}>{p.secondary.label}</a>
+      </div>
+      {p.pills.length > 0 && <div class="dh-pills">{p.pills.map((x) => <a href={x.href}>{x.label}</a>)}</div>}
+    </div>
+    <div class="dh-side">
+      <a class="dh-ring" href={p.primary.href} aria-label={`${p.pctLabel}: ${p.pct}%`}>
+        <svg viewBox="0 0 110 110" aria-hidden="true">
+          <circle cx="55" cy="55" r={R} class="track" />
+          <circle cx="55" cy="55" r={R} class="bar" style={`stroke-dasharray:${C.toFixed(1)};--off:${(C * (1 - p.pct / 100)).toFixed(1)};--full:${C.toFixed(1)}`} />
+        </svg>
+        <span><b data-count={p.pct + '%'}>{p.pct}%</b><small>{p.pctLabel}</small></span>
+      </a>
+      <a class="dh-design" href={p.designHref}>
+        <small>Page design</small>
+        <b>{p.design === 'premium' ? 'Premium' : 'Basic'}</b>
+      </a>
+    </div>
+  </div>
+</section>
