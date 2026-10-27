@@ -133,6 +133,8 @@ const petNames = pets
   )
   .filter(Boolean)
   .join(', ');
+// Cover photo for the preview card (round 3).
+const coverPic = String((arr(profile.hero_images_json)[0] as any)?.src || (arr(profile.gallery_json)[0] as any)?.src || '/images/slideshow-living-room.jpeg').replace(/^public\//, '/');
 const pic: string =
   profile.profile_pic ||
   '/images/' +
@@ -238,6 +240,7 @@ const statuses = [
     .el-danger:hover { border-color:rgba(185,28,28,.38) !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <link rel="stylesheet" href="/listing-form.css" />
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -361,6 +364,7 @@ const statuses = [
               <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">How sitters see it</p>
               <span data-status-pill="1"></span>
             </div>
+            <div class="lf-cover"><img src={coverPic} alt="" /><span class="lf-tag">Sit in the home</span><img class="lf-host" src={pic} alt="" /></div>
             <div style="padding:22px 24px 26px;background:#faf6ee;display:flex;flex-direction:column;gap:16px">
               <div style="display:flex;gap:14px;align-items:flex-start">
                 <img src={pic} alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(110,84,56,.35)" />

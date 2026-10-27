@@ -306,6 +306,24 @@ const channels = {
     .sv-ghost:hover { background:rgba(110,84,56,.1) !important; border-color:#2f5d45 !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <link rel="stylesheet" href="/sitcard.css" />
+  <style is:global>
+    .sv-grid { grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); }
+    .sv-dim { opacity:.6; }
+    .sv-st.sv-applied { background:#2f5d45; color:#fff; }
+    .sv-st.sv-closing { background:#a4442e; color:#fff; }
+    .sv-st.sv-filled { background:#2c1a0e; color:#fff; }
+    .sv-ago { font-size:.76rem; color:#8a6a4f; font-weight:500; }
+    .sv-fit { font-size:.8rem; color:#8a6a4f; margin-top:2px; }
+    .sv-fit.ok { color:#2f5d45; font-weight:600; }
+    @media (max-width:640px) {
+      [data-pad] { padding:20px 16px 60px !important; }
+      [data-pad] h1 { font-size:1.9rem !important; margin-bottom:10px !important; }
+      [data-pad] > div > div:first-child { padding-bottom:18px !important; margin-bottom:18px !important; }
+      [data-filters] { flex-wrap:nowrap !important; overflow-x:auto; scrollbar-width:none; }
+      [data-filters] button { flex:none; padding:9px 14px !important; }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -337,7 +355,7 @@ const channels = {
             <a href="/listings" class="sv-more" style="font-size:.76rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:#2f5d45;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:gap .2s, color .2s">Find more &rarr;</a>
           </div>
 
-          <div data-cards="1" style="display:grid;grid-template-columns:1fr 1fr;gap:18px"></div>
+          <div data-cards="1" class="sc-grid sv-grid"></div>
 
           <div data-empty="1" style="display:none">
             <p style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0 0 10px">Nothing here</p>
@@ -417,41 +435,25 @@ const channels = {
       return '<button type="button" data-filter="' + f.key + '" style="' + style + '">' + f.label + ' <span style="' + countStyle + '">' + f.count + '</span></button>';
     }).join('');
 
-    q('[data-cards]').innerHTML = list.map(x => {
+    // Airbnb-style cards (round 3), sharing sitcard.css with Browse sits.
+    const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>';
+    q('[data-cards]').innerHTML = list.map((x, i) => {
       const st = statusMap[x.status];
-      const dim = x.status === 'filled';
       const fit = x.fits ? '✓ Inside your free dates'
         : x.status === 'filled' ? 'Taken — someone else got it'
         : hasFree ? 'Outside the dates you marked free' : 'No free dates marked yet';
-      const fitStyle = 'display:flex;align-items:center;gap:9px;font-size:.86rem;font-weight:' + (x.fits ? '700' : '400') + ';color:' + (x.fits ? '#2f5d45' : '#8a6a4f') + ';';
-      const statusStyle = 'position:absolute;left:14px;top:14px;font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;padding:5px 12px;border-radius:50px;backdrop-filter:blur(6px);background:' + st.bg + ';';
-      const veilStyle = 'position:absolute;inset:0;background:rgba(250,246,238,.55);' + (dim ? '' : 'display:none;');
-      const heartStyle = 'position:absolute;right:14px;top:14px;width:34px;height:34px;border-radius:50%;background:#2f5d45;color:#fff;border:2px solid #fff;font-size:.9rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 4px 12px rgba(44,26,14,.2);transition:transform .15s ease, background .2s ease';
-      const wrapStyle = 'display:flex;flex-direction:column;background:#fff;border-radius:18px;overflow:hidden;transition:box-shadow .3s ease, border-color .3s ease, transform .2s ease;' +
-        (dim ? 'border:1px solid rgba(44,26,14,.1);opacity:.72;' : 'border:1px solid rgba(110,84,56,.22);box-shadow:0 1px 2px rgba(44,26,14,.04);');
-      return '<article style="' + wrapStyle + '">' +
-        '<div style="position:relative">' +
-          '<img src="' + esc(x.pic) + '" alt="" style="width:100%;height:168px;object-fit:cover;display:block;background:#e9e0d2" />' +
-          '<div style="' + veilStyle + '"></div>' +
-          '<span style="' + statusStyle + '">' + st.label + '</span>' +
-          '<button type="button" data-unsave="' + esc(x.id) + '" title="Saved" style="' + heartStyle + '">♥</button>' +
+      return '<a href="/listings/' + esc(x.id) + '" class="sc' + (x.status === 'filled' ? ' sv-dim' : '') + '" style="animation-delay:' + Math.min(i, 8) * 40 + 'ms">' +
+        '<div class="sc-pics"><div class="sc-track"><img src="' + esc(x.pic) + '" alt="" /></div>' +
+          '<span class="sc-badge sv-st sv-' + x.status + '">' + st.label + '</span>' +
+          '<button type="button" class="sc-heart" data-unsave="' + esc(x.id) + '" aria-pressed="true" aria-label="Remove from saved">' + HEART + '</button>' +
         '</div>' +
-        '<div style="padding:22px 24px 24px;display:flex;flex-direction:column;gap:14px;flex:1">' +
-          '<div>' +
-            '<h2 style="font-family:\'Marcellus\',serif;font-size:1.18rem;color:#2c1a0e;margin:0 0 6px;line-height:1.3">' + esc(x.title) + '</h2>' +
-            '<p style="font-size:.82rem;color:#2f5d45;font-weight:600;margin:0">' + esc(x.owner) + (x.location ? ' · ' + esc(x.location) : '') + '</p>' +
-          '</div>' +
-          '<div style="display:flex;flex-direction:column;gap:8px;font-size:.86rem;color:#6b4e35">' +
-            '<span style="display:flex;align-items:center;gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2f5d45" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>' + esc(x.dates) + '</span>' +
-            '<span style="' + fitStyle + '">' + fit + '</span>' +
-          '</div>' +
-          '<p style="font-size:.8rem;color:#8a6a4f;margin:0">Saved ' + esc(x.saved) + '</p>' +
-          '<div style="display:flex;gap:10px;margin-top:auto">' +
-            '<a href="/listings/' + esc(x.id) + '" class="sv-btn" style="flex:1;text-align:center;font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;border-radius:50px;padding:13px 12px;text-decoration:none;transition:background .25s ease, border-color .25s ease, transform .15s ease">View sit</a>' +
-            '<button type="button" data-unsave="' + esc(x.id) + '" class="sv-remove" style="font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b4e35;background:none;border:1.5px solid rgba(44,26,14,.15);border-radius:50px;padding:11px 18px;cursor:pointer;transition:border-color .2s, color .2s">Remove</button>' +
-          '</div>' +
-        '</div>' +
-      '</article>';
+        '<div class="sc-body">' +
+          '<div class="sc-top"><span>' + esc(x.location || x.owner) + '</span><span class="sv-ago">Saved ' + esc(x.saved) + '</span></div>' +
+          '<p class="sc-title">' + esc(x.title) + '</p>' +
+          '<span class="sc-line">Home of ' + esc(x.owner.split(/\s+/)[0]) + '</span>' +
+          '<span class="sc-when"><b>' + esc(x.dates) + '</b></span>' +
+          '<span class="sv-fit' + (x.fits ? ' ok' : '') + '">' + fit + '</span>' +
+        '</div></a>';
     }).join('');
 
     q('[data-empty]').style.cssText = 'flex-direction:column;align-items:flex-start;background:#fff;border:1px dashed rgba(110,84,56,.45);border-radius:18px;padding:44px 40px;' + (list.length === 0 ? 'display:flex;' : 'display:none;');
@@ -517,6 +519,7 @@ const channels = {
     if (!el) return;
     if (el.hasAttribute('data-filter')) { s.filter = el.getAttribute('data-filter'); render(); return; }
     if (el.hasAttribute('data-unsave')) {
+      e.preventDefault();
       const id = el.getAttribute('data-unsave');
       s.removed[id] = true; render();
       post({ action: 'unsave', listing_id: id }).catch(() => { delete s.removed[id]; render(); });

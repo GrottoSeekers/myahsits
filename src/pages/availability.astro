@@ -279,6 +279,59 @@ const cardLine =
     [data-months] button { user-select:none; -webkit-user-select:none; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <style is:global>
+    /* iPhone-style calendar (round 3) */
+    .ic-seg { display:inline-flex; padding:3px; border-radius:12px; background:#f0e9dd; gap:2px; }
+    .ic-seg button { display:inline-flex; align-items:center; gap:7px; border:0; background:none; border-radius:9px; padding:8px 14px; font:600 .78rem 'Montserrat',sans-serif; color:#6b4e35; cursor:pointer; transition:background .2s, color .2s, box-shadow .2s; }
+    .ic-seg button[aria-pressed="true"] { background:#fff; color:#2c1a0e; box-shadow:0 2px 8px rgba(44,26,14,.12); }
+    .ic-sw { width:10px; height:10px; border-radius:50%; display:block; }
+    .ic-sw-free { background:#2f5d45; } .ic-sw-maybe { background:#c4ab8a; } .ic-sw-clear { background:#fff; border:1px solid rgba(44,26,14,.25); }
+    .ic-month { min-width:0; }
+    .ic-title { margin:0 0 12px; font:400 1.5rem 'Marcellus',serif; color:#2c1a0e; }
+    .ic-title b { font-weight:400; color:#2f5d45; }
+    .ic-wk { display:grid; grid-template-columns:repeat(7,1fr); padding-bottom:8px; margin-bottom:6px; border-bottom:1px solid rgba(44,26,14,.08); }
+    .ic-wk span { text-align:center; font-size:.68rem; font-weight:600; color:#8a6a4f; }
+    .ic-wk span.we { color:#b39c80; }
+    .ic-grid { display:grid; grid-template-columns:repeat(7,1fr); row-gap:4px; }
+    .ic-d { position:relative; height:46px; border:0; background:none; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:pan-y; }
+    .ic-d span { position:relative; z-index:1; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font:500 .98rem 'Montserrat',sans-serif; color:#2c1a0e; transition:background .15s, color .15s, transform .15s; }
+    .ic-d:hover span { background:#f3ece0; }
+    .ic-d:active span { transform:scale(.9); }
+    .ic-past span { color:#c2b29d; }
+    .ic-today span { color:#2f5d45; font-weight:700; box-shadow:inset 0 0 0 1.5px #2f5d45; }
+    .ic-free::before, .ic-maybe::before, .ic-booked::before { content:""; position:absolute; top:4px; bottom:4px; left:50%; right:50%; }
+    .ic-free.ic-l::before, .ic-maybe.ic-l::before, .ic-booked.ic-l::before { left:0; }
+    .ic-free.ic-r::before, .ic-maybe.ic-r::before, .ic-booked.ic-r::before { right:0; }
+    .ic-free::before { background:#dfeae2; }
+    .ic-maybe::before { background:#efe5d6; }
+    .ic-booked::before { background:#e3dbd2; }
+    .ic-free span { background:#2f5d45 !important; color:#fff; font-weight:600; }
+    .ic-free.ic-l.ic-r span { background:transparent !important; color:#2f5d45; }
+    .ic-maybe span { background:#fff !important; color:#6e5438; box-shadow:inset 0 0 0 1.5px #c4ab8a; }
+    .ic-maybe.ic-l.ic-r span { background:transparent !important; box-shadow:none; }
+    .ic-booked span { background:#2c1a0e !important; color:#fff; }
+    .ic-booked.ic-l.ic-r span { background:transparent !important; color:#2c1a0e; }
+    .ic-booked { cursor:not-allowed; }
+    .ic-blank { pointer-events:none; }
+    [data-months] { gap:40px !important; }
+    .av-fold > summary { list-style:none; display:flex; justify-content:space-between; align-items:flex-start; cursor:pointer; }
+    .av-fold > summary::-webkit-details-marker { display:none; }
+    .av-fold-i::after { content:"+"; font-size:1.3rem; color:#2f5d45; }
+    .av-fold[open] .av-fold-i::after { content:"–"; }
+    @media (max-width:700px) {
+      [data-pad] { padding:20px 16px 120px !important; }
+      [data-pad] h1 { font-size:1.9rem !important; margin-bottom:10px !important; }
+      [data-pad] > div > div:first-child { padding-bottom:18px !important; margin-bottom:18px !important; }
+      [data-pad] > div > div:first-child > p:last-child { font-size:.9rem !important; }
+      [data-card] { padding:18px 16px !important; }
+      .ic-d { height:48px; }
+      .ic-d span { width:40px; height:40px; font-size:1.02rem; }
+      .ic-title { font-size:1.35rem; }
+      [data-legend] { gap:12px !important; margin-top:16px !important; padding-top:14px !important; }
+      [data-range] { min-width:0 !important; }
+      [data-aside] > div:last-child { display:none !important; }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -310,9 +363,9 @@ const cardLine =
             <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:24px">
               <div data-brushes style="display:flex;gap:9px;flex-wrap:wrap"></div>
               <div style="display:flex;gap:9px;align-items:center">
-                <button type="button" data-prev aria-label="Previous months">&larr;</button>
+                <button type="button" data-prev aria-label="Previous months">&#8249;</button>
                 <span data-range style="font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;min-width:120px;text-align:center"></span>
-                <button type="button" data-next aria-label="Next months">&rarr;</button>
+                <button type="button" data-next aria-label="Next months">&#8250;</button>
               </div>
             </div>
 
@@ -321,8 +374,8 @@ const cardLine =
             <div data-legend style="display:flex;gap:20px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid rgba(44,26,14,.08)"></div>
           </div>
 
-          <div data-card="1" class="av-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px 34px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <h2 style="font-family:'Marcellus',serif;font-size:1.25rem;color:#2c1a0e;margin:0 0 8px">The sits you&rsquo;ll take</h2>
+          <details data-card="1" class="av-card av-fold" open data-fold style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:32px 34px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <summary><h2 style="font-family:'Marcellus',serif;font-size:1.25rem;color:#2c1a0e;margin:0 0 8px">The sits you&rsquo;ll take</h2><span class="av-fold-i" aria-hidden="true"></span></summary>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.9rem;color:#6b4e35;line-height:1.7;margin:0 0 24px;max-width:480px">These narrow what owners can ask you for, and what we put in your alerts.</p>
 
@@ -340,7 +393,7 @@ const cardLine =
               <label for="notice" style="display:block;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#5c3d20;margin-bottom:12px">Notice you need</label>
               <div data-notices id="notice" style="display:flex;gap:10px;flex-wrap:wrap"></div>
             </div>
-          </div>
+          </details>
         </div>
 
         <aside data-aside="1" style="position:sticky;top:28px;display:flex;flex-direction:column;gap:20px">
@@ -382,6 +435,9 @@ const cardLine =
   </div>
 </div>
 
+<script is:inline>
+  if (matchMedia('(max-width:700px)').matches) document.querySelectorAll('[data-fold]').forEach(function (d) { d.open = false; });
+</script>
 <script is:inline define:vars={{ days, prefs, booked, openSits }}>
 (() => {
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -450,7 +506,7 @@ const cardLine =
     { key: 'maybe', label: 'Maybe', colour: 'rgba(110,84,56,.3)' },
     { key: 'clear', label: 'Clear', colour: '#faf6ee' }
   ];
-  const navBtnStyle = 'width:36px;height:36px;border-radius:50%;background:#fff;border:1.5px solid rgba(110,84,56,.35);color:#2f5d45;font-size:.9rem;cursor:pointer;transition:background .2s ease, border-color .2s ease';
+  const navBtnStyle = 'width:38px;height:38px;border-radius:50%;background:#f3ece0;border:0;color:#2f5d45;font-size:1.2rem;cursor:pointer;transition:background .2s ease';
   q('[data-prev]').setAttribute('style', navBtnStyle);
   q('[data-next]').setAttribute('style', navBtnStyle);
 
@@ -462,46 +518,44 @@ const cardLine =
   ];
   q('[data-legend]').innerHTML = legend.map(l =>
     '<span style="display:flex;align-items:center;gap:9px;font-size:.82rem;color:#6b4e35">' +
-      '<span style="width:14px;height:14px;border-radius:5px;display:block;flex-shrink:0;background:' + l.colour + ';border:1px solid rgba(44,26,14,.12);"></span>' + esc(l.label) +
+      '<span style="width:12px;height:12px;border-radius:50%;display:block;flex-shrink:0;background:' + l.colour + ';border:1px solid rgba(44,26,14,.12);"></span>' + esc(l.label) +
     '</span>').join('');
 
   const render = () => {
     const s = state;
 
-    q('[data-brushes]').innerHTML = brushDefs.map(b =>
-      '<button type="button" data-brush="' + b.key + '" style="' + 'display:inline-flex;align-items:center;gap:9px;font-family:\'Montserrat\',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;padding:10px 18px;border-radius:50px;cursor:pointer;transition:background .2s ease, border-color .2s ease, color .2s ease;' +
-        (s.brush === b.key ? 'background:rgba(110,84,56,.14);color:#2f5d45;border:1.5px solid rgba(110,84,56,.5);' : 'background:#fff;color:#6b4e35;border:1.5px solid rgba(44,26,14,.1);') + '">' +
-        '<span style="width:12px;height:12px;border-radius:4px;display:block;flex-shrink:0;background:' + b.colour + ';border:1px solid rgba(44,26,14,.15);"></span>' + esc(b.label) +
-      '</button>').join('');
+    q('[data-brushes]').innerHTML = '<span class="ic-seg" role="group" aria-label="Mark days as">' + brushDefs.map(b =>
+      '<button type="button" data-brush="' + b.key + '" aria-pressed="' + (s.brush === b.key) + '"><i class="ic-sw ic-sw-' + b.key + '"></i>' + esc(b.label) + '</button>').join('') + '</span>';
 
+    // iPhone-style months (round 3): plain numbers, round days, free days
+    // joined into one band, today ringed. Phones show one month at a time.
+    const one = matchMedia('(max-width:700px)').matches;
     const base = new Date(now.getFullYear(), now.getMonth() + s.offset, 1);
     const m1 = buildMonth(base.getFullYear(), base.getMonth());
     const second = new Date(base.getFullYear(), base.getMonth() + 1, 1);
     const m2 = buildMonth(second.getFullYear(), second.getMonth());
-    q('[data-range]').textContent = m1.label.split(' ')[0].slice(0, 3) + ' — ' + m2.label.split(' ')[0].slice(0, 3) + ' ' + m2.label.split(' ')[1];
+    q('[data-range]').textContent = one ? m1.label : m1.label.split(' ')[0].slice(0, 3) + ' — ' + m2.label.split(' ')[0].slice(0, 3) + ' ' + m2.label.split(' ')[1];
+    const todayK = key(now.getFullYear(), now.getMonth(), now.getDate());
+    const stateOf = k => (BOOKED[k] ? 'booked' : s.days[k] || '');
+    const shift = (k, d) => { const t = new Date(k + 'T00:00:00'); t.setDate(t.getDate() + d); return key(t.getFullYear(), t.getMonth(), t.getDate()); };
 
-    const cellFor = c => {
-      if (c.blank) return '<button type="button" tabindex="-1" aria-hidden="true" style="visibility:hidden;height:34px"></button>';
-      const isBooked = BOOKED[c.k];
-      const v = isBooked ? 'booked' : s.days[c.k];
-      const style = 'height:34px;border-radius:8px;font-family:\'Montserrat\',sans-serif;font-size:.8rem;font-weight:600;cursor:' + (isBooked ? 'not-allowed' : 'pointer') + ';transition:background .15s ease, color .15s ease, border-color .15s ease;' +
-        (isBooked
-          ? 'background:#2c1a0e;color:#fff;border:1.5px solid #2c1a0e;'
-          : v === 'free'
-            ? 'background:#2f5d45;color:#fff;border:1.5px solid #2f5d45;'
-            : v === 'maybe'
-              ? 'background:rgba(110,84,56,.22);color:#5c3d20;border:1.5px solid rgba(110,84,56,.4);'
-              : 'background:#faf6ee;color:#6b4e35;border:1.5px solid rgba(44,26,14,.08);');
-      return '<button type="button" data-day="' + c.k + '" style="' + style + '">' + c.day + '</button>';
+    const cellFor = (c, i) => {
+      if (c.blank) return '<span class="ic-d ic-blank" aria-hidden="true"></span>';
+      const v = stateOf(c.k);
+      const col = i % 7;
+      const L = v && col > 0 && stateOf(shift(c.k, -1)) === v && c.day > 1;
+      const R = v && col < 6 && stateOf(shift(c.k, 1)) === v && !c.last;
+      const cls = ['ic-d', v ? 'ic-' + v : '', L ? 'ic-l' : '', R ? 'ic-r' : '', c.k === todayK ? 'ic-today' : '', c.k < todayK ? 'ic-past' : ''].filter(Boolean).join(' ');
+      return '<button type="button" data-day="' + c.k + '" class="' + cls + '" aria-pressed="' + (v === 'free') + '" aria-label="' + c.day + ' ' + (v || 'not marked') + '"><span>' + c.day + '</span></button>';
     };
-    q('[data-months]').innerHTML = [m1, m2].map(m =>
-      '<div>' +
-        '<p style="font-family:\'Marcellus\',serif;font-size:1.12rem;color:#2c1a0e;margin:0 0 14px">' + esc(m.label) + '</p>' +
-        '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:8px">' +
-          WEEKDAYS.map(w => '<span style="text-align:center;font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6a4f">' + w + '</span>').join('') +
-        '</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px">' + m.cells.map(cellFor).join('') + '</div>' +
-      '</div>').join('');
+    q('[data-months]').innerHTML = (one ? [m1] : [m1, m2]).map(m => {
+      m.cells.forEach((c, i) => { if (!c.blank && i === m.cells.length - 1) c.last = true; });
+      return '<div class="ic-month">' +
+        '<p class="ic-title"><b>' + esc(m.label.split(' ')[0]) + '</b> ' + esc(m.label.split(' ')[1]) + '</p>' +
+        '<div class="ic-wk">' + WEEKDAYS.map((w, i) => '<span' + (i > 4 ? ' class="we"' : '') + '>' + w + '</span>').join('') + '</div>' +
+        '<div class="ic-grid">' + m.cells.map(cellFor).join('') + '</div>' +
+      '</div>';
+    }).join('');
 
     const chips = (list, field, multi) => list.map(v =>
       '<button type="button" data-pref="' + field + '" data-value="' + esc(v) + '" data-multi="' + (multi ? 1 : 0) + '" style="' + chip(multi ? P[field].includes(v) : P[field] === v) + '">' + esc(v) + '</button>').join('');
@@ -547,6 +601,24 @@ const cardLine =
 
   // Paint by clicking or dragging across days.
   const months = q('[data-months]');
+  // Touch: tap a day, or slide sideways across days to paint them.
+  let touchPaint = false;
+  months.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { const b = e.target.closest('[data-day]'); if (b) { touchPaint = true; paint(b.getAttribute('data-day')); } } });
+  months.addEventListener('pointermove', e => {
+    if (!touchPaint || e.pointerType === 'mouse') return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const b = el && el.closest && el.closest('[data-day]');
+    if (b) paint(b.getAttribute('data-day'));
+  });
+  ['pointerup', 'pointercancel'].forEach(t => months.addEventListener(t, () => { touchPaint = false; }));
+  // Swipe left or right on a phone to change month.
+  let sx = null;
+  months.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  months.addEventListener('touchend', e => {
+    if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 70 && !touchPaint) { state.offset += dx < 0 ? 1 : -1; render(); }
+  }, { passive: true });
+  window.addEventListener('resize', () => render());
   months.addEventListener('mousedown', e => {
     const b = e.target.closest('[data-day]');
     if (!b || e.button !== 0) return;
@@ -560,7 +632,7 @@ const cardLine =
   months.addEventListener('click', e => {
     // Keyboard activation (mouse clicks are handled on mousedown).
     const b = e.target.closest('[data-day]');
-    if (b && e.detail === 0) paint(b.getAttribute('data-day'));
+    if (b && e.detail === 0 && e.pointerType !== 'touch') paint(b.getAttribute('data-day'));
   });
 
   q('[data-prev]').addEventListener('click', () => { state.offset -= 1; render(); });

@@ -352,6 +352,51 @@ const prefs = {
     .nt-btn:hover { background:#3e7a5b !important; border-color:#3e7a5b !important; transform:translateY(-2px) !important; box-shadow:0 12px 28px rgba(110,84,56,.36) !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <style is:global>
+    /* iPhone-style notifications (round 3) */
+    .ios-seg { display:inline-flex; padding:3px; gap:2px; border-radius:12px; background:#ede5d8; max-width:100%; overflow-x:auto; scrollbar-width:none; }
+    .ios-seg button { flex:none; border:0; background:none; border-radius:9px; padding:8px 14px; font:600 .8rem 'Montserrat',sans-serif; color:#6b4e35; cursor:pointer; white-space:nowrap; transition:background .2s, box-shadow .2s, color .2s; }
+    .ios-seg button small { font-size:.68rem; color:#2f5d45; margin-left:3px; }
+    .ios-seg button[aria-pressed="true"] { background:#fff; color:#2c1a0e; box-shadow:0 2px 8px rgba(44,26,14,.12); }
+    [data-tabs] { min-width:0; max-width:100%; }
+    .nt-soon .nt-btn { color:#fff !important; }
+    .ios-clear { border:0; background:none; font:600 .84rem 'Montserrat',sans-serif; color:#2f5d45; cursor:pointer; padding:8px 4px; }
+    .ios-clear.off { color:#b39c80; }
+    .ios-g + .ios-g { margin-top:6px; }
+    .ios-gh { margin:0 0 10px 4px; font:700 1.25rem 'Montserrat',sans-serif; letter-spacing:-.01em; color:#2c1a0e; }
+    .ios-list { display:flex; flex-direction:column; gap:8px; }
+    .ios-n { position:relative; display:flex; align-items:center; border-radius:22px; background:rgba(255,255,255,.72); backdrop-filter:saturate(1.6) blur(18px); -webkit-backdrop-filter:saturate(1.6) blur(18px); border:1px solid rgba(255,255,255,.7); box-shadow:0 6px 24px rgba(44,26,14,.08), 0 1px 2px rgba(44,26,14,.06); animation:ios-in .45s cubic-bezier(.2,.8,.2,1) both; transition:transform .2s, box-shadow .2s; }
+    @keyframes ios-in { from { opacity:0; transform:translateY(-10px) scale(.98); } to { opacity:1; transform:none; } }
+    .ios-n:hover { transform:translateY(-1px); box-shadow:0 10px 30px rgba(44,26,14,.12); }
+    .ios-main { flex:1; min-width:0; display:flex; gap:12px; align-items:flex-start; padding:14px 6px 14px 14px; text-decoration:none; color:#2c1a0e; }
+    .ios-app { flex:none; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:linear-gradient(160deg,#3e7a5b,#2f5d45); color:#fff; font-size:1rem; box-shadow:0 2px 6px rgba(47,93,69,.3); }
+    .ios-app svg { width:20px; height:20px; }
+    .ios-urgent { background:linear-gradient(160deg,#c45a3e,#a4442e); }
+    .ios-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+    .ios-top { display:flex; justify-content:space-between; gap:10px; font-size:.7rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#8a6a4f; }
+    .ios-top time { flex:none; text-transform:none; letter-spacing:0; font-weight:500; }
+    .ios-body b { font-size:.95rem; font-weight:600; color:#2c1a0e; line-height:1.35; margin-top:2px; }
+    .ios-txt { font-size:.88rem; color:#4a3726; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .ios-n:not(.unread) { background:rgba(255,255,255,.45); }
+    .ios-n:not(.unread) .ios-body b { font-weight:500; color:#6b4e35; }
+    .ios-dot { flex:none; width:34px; align-self:stretch; border:0; background:none; cursor:pointer; position:relative; }
+    .ios-dot::after { content:""; position:absolute; top:50%; left:50%; width:10px; height:10px; margin:-5px 0 0 -5px; border-radius:50%; background:transparent; border:1.5px solid rgba(110,84,56,.3); transition:background .2s, border-color .2s; }
+    .ios-n.unread .ios-dot::after { background:#2f5d45; border-color:#2f5d45; }
+    .nt-fold > summary { list-style:none; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+    .nt-fold > summary::-webkit-details-marker { display:none; }
+    .nt-fold-i::after { content:"+"; font-size:1.3rem; color:#2f5d45; }
+    .nt-fold[open] .nt-fold-i::after { content:"–"; }
+    .nt-fold[open] > summary { margin-bottom:6px; }
+    @media (max-width:700px) {
+      [data-pad] { padding:18px 14px 60px !important; }
+      [data-pad] h1 { font-size:1.9rem !important; margin-bottom:8px !important; }
+      [data-pad] > div > div:first-child { padding-bottom:16px !important; margin-bottom:16px !important; }
+      [data-safety] { grid-template-columns:minmax(0,1fr) !important; gap:10px !important; }
+      [data-safety] a { padding:16px 18px !important; }
+      .nt-quiet { display:none; }
+      .ios-main { padding:12px 4px 12px 12px; }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -390,8 +435,8 @@ const prefs = {
             <p style="font-size:.95rem;color:#6b4e35;line-height:1.7;margin:0;max-width:420px">Nothing unread. Anything new lands here and, if you want it to, in your inbox.</p>
           </div>
 
-          <section data-card="1" class="nt-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;margin-top:28px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0 0 8px">If something goes wrong</h2>
+          <details data-card="1" class="nt-card nt-fold" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:22px 26px;margin-top:28px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <summary><h2 style="font-family:'Marcellus',serif;font-size:1.2rem;color:#2c1a0e;margin:0">If something goes wrong</h2><span class="nt-fold-i" aria-hidden="true"></span></summary>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 12px"></div>
             <p style="font-size:.93rem;color:#6b4e35;line-height:1.75;margin:0 0 26px;max-width:520px">Sits mostly go fine. When they don&rsquo;t, here is exactly what to do &mdash; no hunting through a help centre at eleven at night.</p>
 
@@ -423,26 +468,26 @@ const prefs = {
               <span style="width:26px;height:26px;border-radius:50%;background:#b91c1c;color:#fff;font-size:.8rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">!</span>
               <p style="font-size:.92rem;color:#5c3d20;line-height:1.7;margin:0">If an animal is hurt or someone is in danger, call a vet or the emergency services first. Tell us afterwards &mdash; we are not an emergency service and we would rather you got help fast.</p>
             </div>
-          </section>
+          </details>
         </div>
 
         <aside data-aside="1" style="position:sticky;top:28px;display:flex;flex-direction:column;gap:20px">
-          <div class="nt-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:26px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
-            <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 8px">What reaches you</p>
-            <p style="font-size:.86rem;color:#6b4e35;line-height:1.7;margin:0 0 20px">Everything shows on this page. Choose what also leaves it.</p>
+          <details class="nt-card nt-fold nt-set" open data-fold style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:22px 24px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <summary><p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0">What reaches you</p><span class="nt-fold-i" aria-hidden="true"></span></summary>
+            <p style="font-size:.86rem;color:#6b4e35;line-height:1.7;margin:10px 0 18px">Everything shows on this page. Choose what also leaves it.</p>
             <div data-prefs="1" style="display:flex;flex-direction:column;gap:14px"></div>
-          </div>
+          </details>
 
           {next && (
-            <div style="background:#2c1a0e;border-radius:18px;padding:26px">
-              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:0 0 14px">Your sit starts soon</p>
-              <p style="font-family:'Marcellus',serif;font-size:1.35rem;color:#fff;margin:0 0 8px;line-height:1.25">{sitTitle}</p>
-              <p style="font-size:.88rem;color:rgba(255,255,255,.7);line-height:1.65;margin:0 0 20px">{sitLine}</p>
+            <div class="nt-soon" style="background:linear-gradient(140deg,#fff 0%,#eef4ef 100%);border:1px solid rgba(47,93,69,.25);border-left:4px solid #2f5d45;border-radius:18px;padding:24px">
+              <p style="font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#2f5d45;margin:0 0 10px">Your sit starts soon</p>
+              <p style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0 0 6px;line-height:1.25">{sitTitle}</p>
+              <p style="font-size:.88rem;color:#6b4e35;line-height:1.65;margin:0 0 18px">{sitLine}</p>
               <a href={sitHref} class="nt-btn" style="display:flex;align-items:center;justify-content:center;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#2c1a0e;background:#2f5d45;border-radius:50px;padding:11px 22px;text-decoration:none;transition:background .25s ease, transform .15s ease">Open the sit</a>
             </div>
           )}
 
-          <div style="background:#faf6ee;border:1px solid rgba(110,84,56,.28);border-radius:18px;padding:22px 24px">
+          <div class="nt-quiet" style="background:#faf6ee;border:1px solid rgba(110,84,56,.28);border-radius:18px;padding:22px 24px">
             <p data-quiet="1" style="font-size:.86rem;color:#6b4e35;line-height:1.7;margin:0"></p>
           </div>
         </aside>
@@ -505,50 +550,33 @@ const prefs = {
       ? unread.length + (unread.length === 1 ? ' thing needs' : ' things need') + ' your attention. The rest is here for the record.'
       : 'Nothing unread. Everything that has happened on your account is kept here.';
 
-    q('[data-tabs]').innerHTML = tabDefs.map(t => {
-      const style = 'display:inline-flex;align-items:center;gap:9px;font-family:\'Montserrat\',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;padding:11px 20px;border-radius:50px;cursor:pointer;transition:background .25s ease, color .25s ease, border-color .25s ease;' +
-        (s.tab === t.key ? 'background:#2f5d45;color:#fff;border:1.5px solid #2f5d45;' : 'background:#fff;color:#5c3d20;border:1.5px solid rgba(110,84,56,.32);');
-      const countStyle = 'font-size:.7rem;padding:2px 8px;border-radius:50px;' + (s.tab === t.key ? 'background:rgba(255,255,255,.25);color:#fff;' : 'background:rgba(110,84,56,.14);color:#2f5d45;');
-      return '<button type="button" data-tab="' + t.key + '" style="' + style + '">' + t.label + ' <span style="' + countStyle + '">' + t.count + '</span></button>';
-    }).join('');
+    q('[data-tabs]').innerHTML = '<span class="ios-seg">' + tabDefs.map(t =>
+      '<button type="button" data-tab="' + t.key + '" aria-pressed="' + (s.tab === t.key) + '">' + t.label + (t.count ? ' <small>' + t.count + '</small>' : '') + '</button>').join('') + '</span>';
 
-    q('[data-read-all]').style.cssText = 'font-family:\'Montserrat\',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border-radius:50px;padding:10px 22px;cursor:pointer;transition:background .2s ease, border-color .2s ease, color .2s ease;' +
-      (unread.length ? 'background:#fff;color:#2f5d45;border:1.5px solid rgba(110,84,56,.45);' : 'background:none;color:#8a6a4f;border:1.5px solid rgba(44,26,14,.12);');
+    q('[data-read-all]').className = 'ios-clear' + (unread.length ? '' : ' off');
 
     const groups = ['Today', 'This week', 'Earlier'].map(label => ({
       label, items: list.filter(i => i.group === label)
     })).filter(g => g.items.length);
 
+    // iPhone-style notifications (round 3): app icon, "MYAH · kind" and the
+    // time on top, a bold title and two lines of text. Tap to open; the dot
+    // marks it read.
     q('[data-groups]').innerHTML = groups.map(g =>
-      '<div><p style="font-size:.7rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8a6a4f;margin:0 0 12px">' + g.label + '</p>' +
-      '<div style="display:flex;flex-direction:column;gap:11px">' + g.items.map(i => {
+      '<div class="ios-g"><p class="ios-gh">' + g.label + '</p>' +
+      '<div class="ios-list">' + g.items.map((i, n) => {
         const isRead = s.read[i.id];
         const tag = tagFor[i.kind];
-        const iconStyle = 'width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;transition:background .25s ease, color .25s ease;' +
-          (isRead ? 'background:#faf6ee;color:#8a6a4f;border:1px solid rgba(44,26,14,.08);' : 'background:#2f5d45;color:#fff;');
-        const titleStyle = 'font-size:1rem;margin:0;line-height:1.4;font-weight:' + (isRead ? '400' : '700') + ';color:' + (isRead ? '#6b4e35' : '#2c1a0e') + ';';
-        const tagStyle = 'font-size:.62rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 11px;border-radius:50px;background:' + tag.bg + ';color:' + tag.colour + ';';
-        const ctaStyle = 'font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:50px;padding:11px 22px;white-space:nowrap;transition:background .25s ease, border-color .25s ease, color .25s ease, transform .15s ease;' +
-          (isRead ? 'color:#6b4e35;border:1.5px solid rgba(44,26,14,.15);' : 'color:#fff;background:#2f5d45;border:1.5px solid #2f5d45;box-shadow:0 6px 18px rgba(110,84,56,.24);');
-        const readStyle = 'font-family:\'Montserrat\',sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#8a6a4f;background:none;border:none;cursor:pointer;padding:6px 4px;transition:color .2s';
-        const wrapStyle = 'display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0;border-radius:18px;transition:border-color .25s ease, background .25s ease;' +
-          (isRead ? 'background:#faf6ee;border:1px solid rgba(44,26,14,.08);' : 'background:#fff;border:1px solid rgba(110,84,56,.3);box-shadow:0 1px 2px rgba(44,26,14,.04);');
-        return '<article data-row="1" style="' + wrapStyle + '">' +
-          '<div style="display:flex;gap:16px;align-items:flex-start;padding:20px 22px;min-width:0">' +
-            '<span style="' + iconStyle + '">' + ICONS[i.kind] + '</span>' +
-            '<div style="flex:1;min-width:0">' +
-              '<div style="display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;margin-bottom:5px">' +
-                '<p style="' + titleStyle + '">' + esc(i.title) + '</p>' +
-                '<span style="' + tagStyle + '">' + tag.label + '</span>' +
-              '</div>' +
-              (i.body ? '<p style="font-size:.92rem;color:#6b4e35;line-height:1.7;margin:0 0 4px">' + esc(i.body) + '</p>' : '') +
-              '<p style="font-size:.79rem;color:#8a6a4f;margin:0">' + esc(i.when) + '</p>' +
-            '</div>' +
-          '</div>' +
-          '<div data-actions="1" style="display:flex;align-items:center;gap:10px;padding:20px 22px;justify-content:flex-end;flex-wrap:wrap">' +
-            '<a href="' + esc(i.href) + '" data-open="' + esc(i.id) + '" style="' + ctaStyle + '">' + esc(i.cta) + '</a>' +
-            '<button type="button" data-read="' + esc(i.id) + '" style="' + readStyle + '">' + (isRead ? 'Unread' : 'Read') + '</button>' +
-          '</div>' +
+        return '<article data-row="1" class="ios-n' + (isRead ? '' : ' unread') + '" style="animation-delay:' + Math.min(n, 8) * 50 + 'ms">' +
+          '<a href="' + esc(i.href) + '" data-open="' + esc(i.id) + '" class="ios-main">' +
+            '<span class="ios-app ios-' + esc(i.kind) + '">' + ICONS[i.kind] + '</span>' +
+            '<span class="ios-body">' +
+              '<span class="ios-top"><span>MYAH · ' + tag.label + '</span><time>' + esc(i.when) + '</time></span>' +
+              '<b>' + esc(i.title) + '</b>' +
+              (i.body ? '<span class="ios-txt">' + esc(i.body) + '</span>' : '') +
+            '</span>' +
+          '</a>' +
+          '<button type="button" data-read="' + esc(i.id) + '" class="ios-dot" aria-label="' + (isRead ? 'Mark as unread' : 'Mark as read') + '" title="' + (isRead ? 'Mark as unread' : 'Mark as read') + '"></button>' +
         '</article>';
       }).join('') + '</div></div>'
     ).join('');
@@ -612,6 +640,9 @@ const prefs = {
 
   render();
 })();
+</script>
+<script is:inline>
+  if (matchMedia('(max-width:700px)').matches) document.querySelectorAll('[data-fold]').forEach(function (d) { d.open = false; });
 </script>
 </body>
 </html>

@@ -155,6 +155,80 @@ const myProfileId =
     .mx-send:active { transform:translateY(0) scale(.96) !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <style is:global>
+    /* WhatsApp-style messages in MYAH colours (round 3) */
+    [data-msg-pad] { padding:24px 48px 40px !important; }
+    [data-msg-head] { padding-bottom:16px !important; margin-bottom:18px !important; border-bottom:0 !important; }
+    [data-msg-head] h1 { font-size:1.9rem !important; }
+    .wa-app { display:grid; grid-template-columns:360px minmax(0,1fr); height:calc(100vh - 250px); min-height:520px; background:#fff; border:1px solid rgba(110,84,56,.2); border-radius:20px; overflow:hidden; box-shadow:0 18px 50px rgba(44,26,14,.08); }
+    .wa-side { display:flex; flex-direction:column; min-height:0; border-right:1px solid rgba(110,84,56,.14); background:#fff; }
+    .wa-side-head { padding:16px 16px 10px; }
+    .wa-h { margin:0 0 12px; font:400 1.5rem 'Marcellus',serif; color:#2c1a0e; }
+    .wa-search { display:flex; align-items:center; gap:10px; padding:9px 14px; border-radius:12px; background:#f3ece0; color:#8a6a4f; }
+    .wa-search input { flex:1; min-width:0; border:0; outline:none; background:none; font:400 .9rem 'Montserrat',sans-serif; color:#2c1a0e; }
+    .wa-filters { display:flex; gap:6px; margin-top:10px; }
+    .wa-filters button { border:0; border-radius:50px; padding:6px 13px; background:#f3ece0; font:600 .76rem 'Montserrat',sans-serif; color:#6b4e35; cursor:pointer; }
+    .wa-filters button[aria-pressed="true"] { background:#dcebdf; color:#2f5d45; }
+    .wa-list { flex:1; overflow-y:auto; }
+    .wa-row { display:flex; gap:13px; align-items:center; width:100%; padding:10px 16px; border:0; background:#fff; cursor:pointer; text-align:left; font-family:'Montserrat',sans-serif; transition:background .15s; }
+    .wa-row:hover { background:#faf6ee; }
+    .wa-row.on { background:#f3ece0; }
+    .wa-row > img { width:50px; height:50px; border-radius:50%; object-fit:cover; flex:none; }
+    .wa-mid { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; padding:4px 0 10px; border-bottom:1px solid rgba(44,26,14,.07); }
+    .wa-row:last-child .wa-mid { border-bottom:0; }
+    .wa-top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+    .wa-top b { font-weight:600; font-size:.98rem; color:#2c1a0e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wa-top small { flex:none; font-size:.72rem; color:#8a6a4f; }
+    .wa-row.unread .wa-top small { color:#2f5d45; font-weight:700; }
+    .wa-sit { font-size:.7rem; font-weight:600; color:#2f5d45; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wa-last { display:flex; align-items:center; gap:5px; font-size:.86rem; color:#6b4e35; min-width:0; }
+    .wa-last > span { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wa-row.unread .wa-last > span { color:#2c1a0e; font-weight:600; }
+    .wa-last em { flex:none; font-style:normal; min-width:20px; height:20px; padding:0 6px; border-radius:50px; background:#2f5d45; color:#fff; font-size:.68rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .wa-tick { font-style:normal; font-size:.72rem; letter-spacing:-3px; padding-right:3px; color:rgba(44,26,14,.4); }
+    .wa-tick.read { color:#3b8fd0; }
+    .wa-none { padding:24px 18px; color:#8a6a4f; font-size:.88rem; }
+    .wa-thread { min-width:0; min-height:0; background:#efe7da url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%236e5438' fill-opacity='.07'%3E%3Ccircle cx='20' cy='22' r='3'/%3E%3Ccircle cx='27' cy='17' r='3'/%3E%3Ccircle cx='34' cy='22' r='3'/%3E%3Cellipse cx='27' cy='30' rx='6' ry='5'/%3E%3Ccircle cx='80' cy='78' r='3'/%3E%3Ccircle cx='87' cy='73' r='3'/%3E%3Ccircle cx='94' cy='78' r='3'/%3E%3Cellipse cx='87' cy='86' rx='6' ry='5'/%3E%3Cpath d='M70 20l6 6-6 6-6-6z'/%3E%3Cpath d='M18 80l5 5-5 5-5-5z'/%3E%3C/g%3E%3C/svg%3E"); }
+    .wa-thread > div:first-child { background:#f6f0e6 !important; border-bottom:1px solid rgba(110,84,56,.14) !important; padding:10px 18px !important; }
+    [data-scroll] { padding:18px 6% !important; gap:2px !important; }
+    .wa-day { text-align:center; margin:10px 0; }
+    .wa-day span { display:inline-block; padding:5px 12px; border-radius:8px; background:#fff; box-shadow:0 1px 1px rgba(44,26,14,.12); font-size:.72rem; font-weight:600; color:#6b4e35; text-transform:uppercase; letter-spacing:.06em; }
+    .wa-line { display:flex; margin:1px 0; }
+    .wa-line.tail { margin-top:8px; }
+    .wa-line.me { justify-content:flex-end; }
+    .wa-b { position:relative; max-width:min(75%,520px); padding:7px 10px 6px 11px; border-radius:10px; box-shadow:0 1px 1px rgba(44,26,14,.13); word-wrap:break-word; }
+    .wa-b.pop { animation:msg-pop .25s ease; }
+    .wa-line.them .wa-b { background:#fff; }
+    .wa-line.me .wa-b { background:#dcebdf; }
+    .wa-line.tail.them .wa-b { border-top-left-radius:0; }
+    .wa-line.tail.me .wa-b { border-top-right-radius:0; }
+    .wa-line.tail .wa-b::before { content:""; position:absolute; top:0; width:10px; height:12px; }
+    .wa-line.tail.them .wa-b::before { left:-8px; background:#fff; clip-path:polygon(0 0,100% 0,100% 100%); }
+    .wa-line.tail.me .wa-b::before { right:-8px; background:#dcebdf; clip-path:polygon(0 0,100% 0,0 100%); }
+    .wa-txt { font-size:.93rem; line-height:1.45; color:#2c1a0e; white-space:pre-wrap; }
+    .wa-meta { float:right; display:inline-flex; align-items:center; gap:3px; margin:8px 0 -4px 12px; font-size:.66rem; color:rgba(44,26,14,.5); }
+    [data-compose] { background:#f6f0e6 !important; border-top:0 !important; padding:10px 14px !important; }
+    [data-compose] [data-input] { background:#fff !important; border:0 !important; border-radius:22px !important; padding:12px 18px !important; box-shadow:0 1px 1px rgba(44,26,14,.08); }
+    [data-compose] .mx-send { width:46px !important; height:46px !important; box-shadow:none !important; }
+    @media (max-width:900px) {
+      [data-msg-pad] { padding:16px !important; }
+      .wa-app { grid-template-columns:minmax(0,1fr); height:auto; min-height:0; border-radius:18px; }
+      .wa-side { border-right:0; }
+      .wa-list { max-height:none; }
+    }
+    @media (max-width:760px) {
+      [data-msg-head] { display:none !important; }
+      .wa-app { border:0; box-shadow:none; background:transparent; border-radius:0; margin:0 -14px; }
+      .wa-side { background:transparent; }
+      .wa-side-head { padding:4px 14px 8px; }
+      .wa-h { font:700 1.9rem 'Montserrat',sans-serif; letter-spacing:-.02em; margin-bottom:10px; }
+      .wa-row { background:transparent; padding:8px 14px; }
+      .wa-row.on { background:transparent; }
+      body.mx-open .wa-thread > div:first-child { padding:8px 10px !important; }
+      body.mx-open [data-scroll] { padding:12px 10px !important; }
+      .wa-b { max-width:82%; }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -181,11 +255,18 @@ const myProfileId =
         <p data-unread="1" style="margin:0 0 4px;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#6b4e35"></p>
       </div>
 
-      <div data-msg-grid="1" style="display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px;align-items:start">
+      <div data-msg-grid="1" class="wa-app">
 
-        <div data-conv-list="1" class="mx-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease"></div>
+        <div class="wa-side">
+          <div class="wa-side-head">
+            <p class="wa-h">Chats</p>
+            <label class="wa-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input data-wa-search type="search" placeholder="Search" aria-label="Search chats" /></label>
+            <div class="wa-filters" role="group" aria-label="Show"><button type="button" data-wa-filter="all" aria-pressed="true">All</button><button type="button" data-wa-filter="unread" aria-pressed="false">Unread</button></div>
+          </div>
+          <div data-conv-list="1" class="wa-list"></div>
+        </div>
 
-        <div data-thread="1" style="background:#faf6ee;border:1px solid rgba(110,84,56,.22);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;height:640px;box-shadow:0 1px 2px rgba(44,26,14,.04)">
+        <div data-thread="1" class="wa-thread" style="display:flex;flex-direction:column">
           <div style="display:flex;align-items:center;gap:13px;padding:14px 20px;background:#fff;border-bottom:1px solid rgba(110,84,56,.2);flex-shrink:0">
             <img data-active-pic="1" src="/images/avatar-cream.png" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(110,84,56,.3)" />
             <div style="flex:1;min-width:0">
@@ -241,37 +322,35 @@ const myProfileId =
   let firstThreadLoad = true;
 
   // ── conversation list ──────────────────────────────────────────
+  let waFilter = 'all';
   const renderList = () => {
     const list = q('[data-conv-list]');
     if (!list) return;
-    list.innerHTML = conversations.map(c => {
+    // WhatsApp-style rows (round 3): avatar, name and last message, time and
+    // an unread count on the right.
+    const needle = (q('[data-wa-search]') && q('[data-wa-search]').value.trim().toLowerCase()) || '';
+    const rows = conversations.filter(c => {
+      const unread = c.id === active ? 0 : (c.unread_count || 0);
+      if (waFilter === 'unread' && !unread) return false;
+      if (!needle) return true;
+      return (((c.other && c.other.name) || '') + ' ' + ((c.listing && c.listing.title) || '')).toLowerCase().includes(needle);
+    });
+    list.innerHTML = rows.length ? rows.map(c => {
       const on = c.id === active;
       const unread = on ? 0 : (c.unread_count || 0);
       const last = c.last_message;
       const text = last ? last.body || '' : '';
-      const preview = last ? (last.sender_profile_id === myProfileId ? 'You: ' : '') + (text.length > 58 ? text.slice(0, 58) + '…' : text) : '';
-      const rowStyle = 'display:flex;gap:15px;align-items:center;width:100%;padding:17px 19px;border:none;border-bottom:1px solid rgba(44,26,14,.06);cursor:pointer;font-family:\'Montserrat\',sans-serif;text-align:left;transition:background .15s;border-left:3px solid ' +
-        (on ? '#2f5d45;background:rgba(110,84,56,.08);' : 'transparent;background:' + (unread ? 'rgba(110,84,56,.08)' : '#fff') + ';');
-      const badgeStyle = unread
-        ? 'position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:50px;background:#2f5d45;border:2.5px solid #fff;color:#fff;font-size:.64rem;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1'
-        : 'display:none';
-      const previewStyle = 'font-size:.85rem;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' +
-        (unread ? 'color:#5c3d20;font-weight:700;' : 'color:#6b4e35;');
-      return '<button type="button" data-conv="' + esc(c.id) + '" style="' + rowStyle + '">' +
-        '<span style="position:relative;flex-shrink:0">' +
-          '<img src="' + esc(avatar(c.other && c.other.profile_pic)) + '" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block" />' +
-          '<span style="' + badgeStyle + '">' + (unread || '') + '</span>' +
-        '</span>' +
-        '<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left">' +
-          '<span style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
-            '<span style="font-weight:600;font-size:.95rem;color:#2c1a0e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc((c.other && c.other.name) || 'Unknown') + '</span>' +
-            '<span style="font-size:.74rem;color:#6b4e35;flex-shrink:0">' + esc(last ? listTime(last.created_at) : '') + '</span>' +
-          '</span>' +
-          '<span style="font-size:.72rem;color:#2f5d45;font-weight:600;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc((c.listing && c.listing.title) || '') + '</span>' +
-          '<span style="' + previewStyle + '">' + esc(preview) + '</span>' +
+      const mine = last && last.sender_profile_id === myProfileId;
+      const tick = mine ? '<i class="wa-tick' + (last.read_at ? ' read' : '') + '">' + (last.read_at ? '✓✓' : '✓') + '</i>' : '';
+      return '<button type="button" data-conv="' + esc(c.id) + '" class="wa-row' + (on ? ' on' : '') + (unread ? ' unread' : '') + '">' +
+        '<img src="' + esc(avatar(c.other && c.other.profile_pic)) + '" alt="" />' +
+        '<span class="wa-mid">' +
+          '<span class="wa-top"><b>' + esc((c.other && c.other.name) || 'Unknown') + '</b><small>' + esc(last ? listTime(last.created_at) : '') + '</small></span>' +
+          '<span class="wa-sit">' + esc((c.listing && c.listing.title) || '') + '</span>' +
+          '<span class="wa-last">' + tick + '<span>' + esc(text) + '</span>' + (unread ? '<em>' + unread + '</em>' : '') + '</span>' +
         '</span>' +
       '</button>';
-    }).join('');
+    }).join('') : '<p class="wa-none">' + (needle ? 'No chats match “' + esc(needle) + '”.' : waFilter === 'unread' ? 'No unread chats.' : 'No messages yet.') + '</p>';
   };
 
   const renderUnread = () => {
@@ -315,27 +394,21 @@ const myProfileId =
     const fresh = msgs.filter(m => !knownIds.has(m.id));
     let html = '';
     let lastDay = '';
+    let prevMine = null;
     msgs.forEach(m => {
       const day = dayLabel(m.created_at);
       if (day !== lastDay) {
-        html += '<div style="text-align:center;margin:4px 0 14px"><span style="background:rgba(110,84,56,.14);color:#5c3d20;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:50px;display:inline-block">' + esc(day) + '</span></div>';
-        lastDay = day;
+        html += '<div class="wa-day"><span>' + esc(day) + '</span></div>';
+        lastDay = day; prevMine = null;
       }
       const mine = m.sender_profile_id === myProfileId;
       const read = !!m.read_at;
       const isNew = firstThreadLoad || !knownIds.has(m.id);
-      const rowStyle = 'display:flex;padding:0 2px;margin-bottom:6px;justify-content:' + (mine ? 'flex-end' : 'flex-start');
-      const bubbleStyle = 'max-width:78%;padding:11px 15px;border-radius:16px;word-wrap:break-word;' + (isNew ? 'animation:msg-pop .3s ease;' : '') +
-        (mine
-          ? 'background:#e9e0d2;border:1px solid rgba(110,84,56,.35);border-bottom-right-radius:5px;'
-          : 'background:#fff;border:1px solid rgba(44,26,14,.08);border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(44,26,14,.04);');
-      const checkStyle = 'font-size:.7rem;letter-spacing:-2px;' + (mine ? (read ? 'color:#2f5d45;' : 'color:rgba(44,26,14,.4);') : 'display:none');
-      html += '<div style="' + rowStyle + '"><div style="' + bubbleStyle + '">' +
-        '<span style="font-size:.92rem;line-height:1.55;color:#2c1a0e">' + esc(m.body) + '</span>' +
-        '<span style="display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:5px">' +
-          '<span style="font-size:.66rem;color:rgba(44,26,14,.45)">' + hhmm(m.created_at) + '</span>' +
-          '<span style="' + checkStyle + '">' + (mine ? (read ? '✓✓' : '✓') : '') + '</span>' +
-        '</span>' +
+      const tail = prevMine !== mine;
+      prevMine = mine;
+      html += '<div class="wa-line ' + (mine ? 'me' : 'them') + (tail ? ' tail' : '') + '"><div class="wa-b' + (isNew ? ' pop' : '') + '">' +
+        '<span class="wa-txt">' + esc(m.body) + '</span>' +
+        '<span class="wa-meta">' + hhmm(m.created_at) + (mine ? '<i class="wa-tick' + (read ? ' read' : '') + '">' + (read ? '✓✓' : '✓') + '</i>' : '') + '</span>' +
       '</div></div>';
     });
     box.innerHTML = html;
@@ -393,6 +466,13 @@ const myProfileId =
   // Arriving from a notification or "Open message" link (?c=…) opens that conversation.
   if (initialConv) openThread(false);
 
+  const wsearch = q('[data-wa-search]');
+  wsearch && wsearch.addEventListener('input', () => renderList());
+  document.querySelectorAll('[data-wa-filter]').forEach(b => b.addEventListener('click', () => {
+    waFilter = b.getAttribute('data-wa-filter');
+    document.querySelectorAll('[data-wa-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    renderList();
+  }));
   q('[data-conv-list]').addEventListener('click', e => {
     const row = e.target.closest && e.target.closest('[data-conv]');
     if (row) { selectThread(row.getAttribute('data-conv')); openThread(true); }

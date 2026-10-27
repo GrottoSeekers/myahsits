@@ -1,0 +1,35 @@
+/* Sit cards (Browse sits and Saved), Airbnb style in MYAH colours:
+   photo first with swipeable photos and a heart, then place, title, pets, dates. */
+.sc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:34px 22px; }
+.sc { position:relative; display:flex; flex-direction:column; gap:10px; text-decoration:none; color:#2c1a0e; animation:sc-in .5s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes sc-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+.sc:hover { color:#2c1a0e; }
+.sc-pics { position:relative; aspect-ratio:20/19; border-radius:18px; overflow:hidden; background:#e9e0d2; }
+.sc-track { display:flex; height:100%; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; }
+.sc-track::-webkit-scrollbar { display:none; }
+.sc-track img { flex:none; width:100%; height:100%; object-fit:cover; scroll-snap-align:start; transition:transform .6s ease; }
+.sc:hover .sc-track img { transform:scale(1.03); }
+.sc-noimg { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font:400 2.4rem 'Marcellus',serif; color:#8a6a4f; }
+.sc-heart { position:absolute; top:12px; right:12px; z-index:2; width:36px; height:36px; border:0; background:none; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; }
+.sc-heart svg { width:26px; height:26px; fill:rgba(20,13,7,.35); stroke:#fff; stroke-width:2; transition:transform .2s, fill .2s; filter:drop-shadow(0 1px 3px rgba(0,0,0,.3)); }
+.sc-heart:hover svg { transform:scale(1.1); }
+.sc-heart[aria-pressed="true"] svg { fill:#2f5d45; }
+.sc-badge { position:absolute; top:14px; left:14px; z-index:2; padding:6px 12px; border-radius:50px; background:rgba(255,255,255,.95); font-size:.72rem; font-weight:600; color:#2c1a0e; box-shadow:0 2px 10px rgba(20,13,7,.15); }
+.sc-dots { position:absolute; bottom:12px; left:0; right:0; z-index:2; display:flex; justify-content:center; gap:5px; pointer-events:none; }
+.sc-dots i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.6); transition:background .2s, transform .2s; }
+.sc-dots i.on { background:#fff; transform:scale(1.2); }
+.sc-nav { position:absolute; top:50%; z-index:2; width:32px; height:32px; margin-top:-16px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#2c1a0e; font-size:1.1rem; cursor:pointer; opacity:0; transition:opacity .2s; box-shadow:0 2px 8px rgba(20,13,7,.2); display:flex; align-items:center; justify-content:center; padding:0 0 2px; }
+.sc-nav.l { left:10px; } .sc-nav.r { right:10px; }
+.sc:hover .sc-nav { opacity:1; }
+.sc-host { position:absolute; left:14px; bottom:30px; z-index:2; width:44px; height:44px; border-radius:12px; border:2px solid #fff; object-fit:cover; box-shadow:0 4px 12px rgba(20,13,7,.3); background:#f3ece0; }
+.sc-body { display:flex; flex-direction:column; gap:3px; padding:0 2px; }
+.sc-top { display:flex; justify-content:space-between; gap:10px; font-size:.95rem; font-weight:600; }
+.sc-top span:last-child { font-weight:500; white-space:nowrap; }
+.sc-title { font:400 1.08rem/1.3 'Marcellus',serif; margin:2px 0 0; }
+.sc-line { font-size:.86rem; color:#6b4e35; }
+.sc-when { font-size:.86rem; color:#2c1a0e; margin-top:2px; }
+.sc-when b { font-weight:600; }
+@media (max-width:640px) {
+  .sc-grid { grid-template-columns:minmax(0,1fr); gap:30px; }
+  .sc-nav { display:none; }
+}

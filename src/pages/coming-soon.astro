@@ -377,6 +377,7 @@ const ribbon = ['Launching soon', 'Everyone ID checked', 'Made by sitters', 'Fre
             </div>
             <input class="trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
             <input type="hidden" name="source" value="coming-soon" />
+            <input type="hidden" name="ref" data-ref />
             <div class="roles" role="radiogroup" aria-label="I'm interested as a">
               <span>I'm a</span>
               <label><input type="radio" name="role" value="sitter" /> Sitter</label>
@@ -512,6 +513,7 @@ const ribbon = ['Launching soon', 'Everyone ID checked', 'Made by sitters', 'Fre
           </div>
           <input class="trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <input type="hidden" name="source" value="coming-soon-bottom" />
+          <input type="hidden" name="ref" data-ref />
           <div class="roles" role="radiogroup" aria-label="I'm interested as a">
             <span>I'm a</span>
             <label><input type="radio" name="role" value="sitter" /> Sitter</label>
@@ -535,6 +537,10 @@ const ribbon = ['Launching soon', 'Everyone ID checked', 'Made by sitters', 'Fre
 
   <script is:inline>
   (() => {
+    // How they found us: a ?utm_source= / ?ref= tag, else the page they came from.
+    const sp = new URLSearchParams(location.search);
+    const via = sp.get('utm_source') || sp.get('ref') || document.referrer || '';
+    document.querySelectorAll('[data-ref]').forEach((i) => { i.value = via; });
     // Send the interest form without leaving the page.
     document.querySelectorAll('form[data-interest]').forEach((f) => {
       const st = f.querySelector('[data-status]');
