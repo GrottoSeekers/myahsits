@@ -34,11 +34,57 @@ if (allowed) try {
 let interest: any[] = [];
 let interestError = '';
 if (allowed) try {
-  const r = await supabase.from('launch_interest').select('email, role, source, created_at, notified_at').order('created_at', { ascending: false }).limit(2000);
+  // select('*') so an older list without the where-from columns still loads.
+  const r = await supabase.from('launch_interest').select('*').order('created_at', { ascending: false }).limit(5000);
   if (r.error) interestError = r.error.message;
   interest = r.data ?? [];
 } catch (e) { interestError = e instanceof Error ? e.message : 'error'; }
 const waiting = interest.filter((i) => !i.notified_at).length;
+
+// Overview (round 3): who has signed up, when, and where from.
+let members: any[] = [];
+if (allowed) try {
+  const r = await supabase.from('users').select('*').order('created_at', { ascending: false }).limit(5000);
+  members = r.data ?? [];
+} catch {}
+let profiles: any[] = [];
+if (allowed) try {
+  const r = await supabase.from('profiles').select('id, location, id_check_status').limit(5000);
+  profiles = r.data ?? [];
+} catch {}
+const DAY = 864e5;
+const since = (n: number) => (x: any) => x.created_at && Date.now() - new Date(x.created_at).getTime() < n * DAY;
+const count = (list: any[], key: (x: any) => string) => {
+  const m = new Map<string, number>();
+  list.forEach((x) => { const k = key(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+};
+const COUNTRY: Record<string, string> = { GB: 'United Kingdom', AU: 'Australia', NZ: 'New Zealand', US: 'United States', IE: 'Ireland', CA: 'Canada', FR: 'France', ES: 'Spain', DE: 'Germany', NL: 'Netherlands', IT: 'Italy', PT: 'Portugal', ZA: 'South Africa', AE: 'United Arab Emirates' };
+const flag = (c: string) => (c && c.length === 2 ? String.fromCodePoint(...[...c.toUpperCase()].map((ch) => 127397 + ch.charCodeAt(0))) : '');
+const everyone = [
+  ...interest.map((i) => ({ kind: 'list', created_at: i.created_at, role: i.role, country: i.country, city: i.city, via: i.referrer || (i.source ? 'Coming soon page' : ''), device: i.device })),
+  ...members.map((u) => ({ kind: 'member', created_at: u.created_at, role: u.role, country: u.signup_country, city: u.signup_city, via: '', device: u.signup_device })),
+];
+const located = everyone.filter((x) => x.country);
+const byCountry = count(located, (x) => x.country).map(([c, n]) => ({ label: (flag(c) + ' ' + (COUNTRY[c] || c)).trim(), n }));
+const byCity = count(everyone.filter((x) => x.city), (x) => x.city + (x.country ? ', ' + x.country : '')).slice(0, 8).map(([label, n]) => ({ label, n }));
+const VIA: Record<string, string> = { 'instagram.com': 'Instagram', 'l.instagram.com': 'Instagram', 'facebook.com': 'Facebook', 'm.facebook.com': 'Facebook', 'l.facebook.com': 'Facebook', 'tiktok.com': 'TikTok', 'google.com': 'Google', 't.co': 'X (Twitter)', 'linkedin.com': 'LinkedIn', 'lnkd.in': 'LinkedIn' };
+const byVia = count(interest, (i) => (i.referrer ? VIA[i.referrer] || i.referrer : 'Typed in or shared link')).map(([label, n]) => ({ label, n }));
+const byDevice = count(everyone.filter((x) => x.device), (x) => x.device).map(([d, n]) => ({ label: d === 'phone' ? 'Phone' : d === 'tablet' ? 'Tablet' : 'Computer', n }));
+const roleN = (r: string) => interest.filter((i) => i.role === r).length;
+const days30 = Array.from({ length: 30 }, (_, i) => {
+  const d = new Date(Date.now() - (29 - i) * DAY);
+  const k = d.toISOString().slice(0, 10);
+  return { k, label: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), n: everyone.filter((x) => String(x.created_at || '').slice(0, 10) === k).length };
+});
+const maxDay = Math.max(1, ...days30.map((d) => d.n));
+const tiles = [
+  { n: interest.length, l: 'On the launch list', sub: `+${interest.filter(since(7)).length} this week` },
+  { n: members.length, l: 'Accounts', sub: `+${members.filter(since(7)).length} this week` },
+  { n: profiles.filter((p) => p.id_check_status === 'verified').length, l: 'ID verified', sub: `${pending.length} waiting` },
+  { n: located.length ? byCountry.length : 0, l: 'Countries', sub: byCountry[0] ? 'Most from ' + byCountry[0].label.replace(/^\S+\s/, '') : 'Recorded from today' },
+];
+const unknownWhere = everyone.length - located.length;
 
 const sideOf = async (userId: string) => {
   try { const { data } = await supabase.from('users').select('role').eq('id', userId).limit(1); return (data as any)?.[0]?.role === 'owner' ? 'Home owner' : 'Sitter'; } catch { return 'Member'; }
@@ -107,6 +153,39 @@ const rows = await Promise.all(pending.map(async (p) => ({
     .recent li { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid rgba(110,84,56,.12); font-size:.9rem; }
     .recent ul { list-style:none; margin:0; padding:0; }
     .tag { font-size:.66rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:50px; }
+    .ad-tabs { display:inline-flex; gap:3px; padding:4px; margin:6px 0 26px; border-radius:14px; background:#efe7da; max-width:100%; overflow-x:auto; }
+    .ad-tabs button { flex:none; border:0; background:none; border-radius:10px; padding:10px 18px; font:600 .82rem 'Montserrat',sans-serif; color:#6b4e35; cursor:pointer; }
+    .ad-tabs button small { margin-left:6px; font-size:.7rem; padding:2px 7px; border-radius:50px; background:#2f5d45; color:#fff; }
+    .ad-tabs button[aria-selected="true"] { background:#fff; color:#2c1a0e; box-shadow:0 2px 8px rgba(44,26,14,.12); }
+    [data-adpane][hidden] { display:none; }
+    .ad-h2 { font-family:'Marcellus',serif; font-weight:400; font-size:1.5rem; margin:0 0 14px; }
+    .ov-tiles { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:16px; }
+    .ov-tile { position:relative; overflow:hidden; background:linear-gradient(160deg,#fff,#fbf7f0); border:1px solid rgba(110,84,56,.2); border-radius:18px; padding:20px; display:flex; flex-direction:column; gap:3px; box-shadow:0 10px 28px rgba(44,26,14,.05); }
+    .ov-tile::before { content:""; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,#2f5d45,#c4ab8a); }
+    .ov-tile b { font:400 2.2rem/1 'Marcellus',serif; color:#2f5d45; }
+    .ov-tile span { font:700 .66rem 'Lato',sans-serif; letter-spacing:.14em; text-transform:uppercase; color:#6e5438; margin-top:6px; }
+    .ov-tile small { font-size:.78rem; color:#8a6a4f; }
+    .ov-card { background:#fff; border:1px solid rgba(110,84,56,.2); border-radius:18px; padding:22px 24px; margin-bottom:16px; }
+    .ov-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:16px; }
+    .ov-head p { margin:0; font:400 1.15rem 'Marcellus',serif; color:#2c1a0e; }
+    .ov-head span { font-size:.72rem; color:#8a6a4f; }
+    .ov-bars { display:grid; grid-template-columns:repeat(30,minmax(0,1fr)); align-items:end; gap:4px; height:140px; padding-bottom:2px; border-bottom:1px solid rgba(44,26,14,.1); }
+    .ov-bar { height:100%; display:flex; align-items:flex-end; }
+    .ov-bar i { display:block; width:100%; min-height:2px; border-radius:4px 4px 0 0; background:#2f5d45; transition:background .2s; }
+    .ov-bar:hover i { background:#c4ab8a; }
+    .ov-axis { display:flex; justify-content:space-between; font-size:.7rem; color:#8a6a4f; margin-top:6px; }
+    .ov-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .ov-grid .ov-card { margin:0; }
+    .ov-list { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+    .ov-list li { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto; align-items:center; gap:12px; font-size:.9rem; color:#2c1a0e; }
+    .ov-list li span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ov-list li i { position:relative; height:8px; border-radius:8px; background:#f3ece0; overflow:hidden; }
+    .ov-list li i::after { content:""; position:absolute; inset:0 auto 0 0; width:var(--w); border-radius:8px; background:#2f5d45; }
+    .ov-list li b { font-weight:600; min-width:24px; text-align:right; }
+    .ov-none { margin:0; font-size:.88rem; color:#8a6a4f; line-height:1.6; }
+    .ov-note { margin:14px 0 0; font-size:.78rem; color:#8a6a4f; }
+    .ov-note code { background:#f3ece0; padding:1px 6px; border-radius:6px; }
+    @media (max-width:760px) { .ov-tiles { grid-template-columns:1fr 1fr; gap:10px; } .ov-grid { grid-template-columns:minmax(0,1fr); } .ov-bars { gap:2px; height:110px; } .ov-tile b { font-size:1.8rem; } }
     @media (max-width:640px) { .ad-top { padding:12px 16px; } main { padding:24px 16px 60px; } .pics { grid-template-columns:1fr; } h1 { font-size:1.9rem; } }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
@@ -136,7 +215,51 @@ const rows = await Promise.all(pending.map(async (p) => ({
       ) : (
       <>
       <p class="eyebrow">Founders only</p>
-      <h1>ID checks</h1>
+      <h1>MYAH <em style="color:#2f5d45">admin</em></h1>
+      <nav class="ad-tabs" role="tablist">
+        <button type="button" data-adtab="overview" aria-selected="true">Overview</button>
+        <button type="button" data-adtab="checks" aria-selected="false">ID checks{rows.length ? <small>{rows.length}</small> : null}</button>
+        <button type="button" data-adtab="list" aria-selected="false">Launch list <small>{interest.length}</small></button>
+      </nav>
+
+      <section data-adpane="overview">
+        <div class="ov-tiles">
+          {tiles.map((t) => <div class="ov-tile"><b>{t.n}</b><span>{t.l}</span><small>{t.sub}</small></div>)}
+        </div>
+        <div class="ov-card">
+          <div class="ov-head"><p>Sign-ups, last 30 days</p><span>Launch list and accounts</span></div>
+          <div class="ov-bars" role="img" aria-label={`Sign-ups per day for the last 30 days, most in a day ${maxDay}`}>
+            {days30.map((d) => <div class="ov-bar" title={`${d.label}: ${d.n}`}><i style={`height:${Math.round((d.n / maxDay) * 100)}%`}></i></div>)}
+          </div>
+          <div class="ov-axis"><span>{days30[0].label}</span><span>{days30[14].label}</span><span>Today</span></div>
+        </div>
+        <div class="ov-grid">
+          <div class="ov-card">
+            <div class="ov-head"><p>Where they signed up from</p><span>Country</span></div>
+            {byCountry.length ? <ul class="ov-list">{byCountry.map((r) => <li><span>{r.label}</span><i style={`--w:${Math.round((r.n / byCountry[0].n) * 100)}%`}></i><b>{r.n}</b></li>)}</ul> : <p class="ov-none">No locations yet. Recorded for everyone who signs up from now on.</p>}
+            {unknownWhere > 0 && byCountry.length > 0 && <p class="ov-note">{unknownWhere} signed up before locations were recorded.</p>}
+          </div>
+          <div class="ov-card">
+            <div class="ov-head"><p>Top cities</p><span>City or region only</span></div>
+            {byCity.length ? <ul class="ov-list">{byCity.map((r) => <li><span>{r.label}</span><i style={`--w:${Math.round((r.n / byCity[0].n) * 100)}%`}></i><b>{r.n}</b></li>)}</ul> : <p class="ov-none">No cities yet.</p>}
+          </div>
+          <div class="ov-card">
+            <div class="ov-head"><p>How they found you</p><span>Launch list</span></div>
+            {byVia.length ? <ul class="ov-list">{byVia.map((r) => <li><span>{r.label}</span><i style={`--w:${Math.round((r.n / byVia[0].n) * 100)}%`}></i><b>{r.n}</b></li>)}</ul> : <p class="ov-none">Nothing yet.</p>}
+            <p class="ov-note">Add <code>?utm_source=instagram</code> to links you post to see them here.</p>
+          </div>
+          <div class="ov-card">
+            <div class="ov-head"><p>Who they are</p><span>Launch list</span></div>
+            <ul class="ov-list">
+              {[['Sitters', roleN('sitter')], ['Home owners', roleN('owner')], ['Both', roleN('both')]].map(([l, n]) => <li><span>{l}</span><i style={`--w:${Math.round(((n as number) / Math.max(1, roleN('sitter'), roleN('owner'), roleN('both'))) * 100)}%`}></i><b>{n}</b></li>)}
+            </ul>
+            {byDevice.length > 0 && <p class="ov-note">{byDevice.map((d) => `${d.label} ${Math.round((d.n / byDevice.reduce((a, b) => a + b.n, 0)) * 100)}%`).join(' · ')}</p>}
+          </div>
+        </div>
+      </section>
+
+      <section data-adpane="checks" hidden>
+      <h2 class="ad-h2">ID checks</h2>
       <p class="lead">Check that the face in the selfie matches the photo ID, and that the name matches the profile. Approving unlocks applying, posting, messaging and confirming for that member. The photos are deleted as soon as you decide.</p>
 
       {setupError && (
@@ -169,6 +292,9 @@ const rows = await Promise.all(pending.map(async (p) => ({
         </div>
       ))}
 
+      </section>
+
+      <section data-adpane="list" hidden>
       {!LAUNCHED && (
         <div class="card recent">
           <p class="eyebrow" style="margin-bottom:6px">Launching soon mode</p>
@@ -192,7 +318,7 @@ const rows = await Promise.all(pending.map(async (p) => ({
             {interest.length > 0 && (
               <ul>
                 {interest.slice(0, 50).map((i) => (
-                  <li><span style="word-break:break-all">{i.email}</span>
+                  <li><span style="word-break:break-all">{i.email}{(i.city || i.country) && <small style="display:block;color:#8a6a4f;font-size:.76rem;margin-top:2px">{[i.city, i.country].filter(Boolean).join(', ')}{i.referrer ? ' · via ' + (VIA[i.referrer] || i.referrer) : ''}</small>}</span>
                     <span class="tag" style="background:#f3ece0;color:#6e5438;white-space:nowrap;align-self:center">{i.role === 'owner' ? 'Home owner' : i.role === 'sitter' ? 'Sitter' : i.role === 'both' ? 'Both' : '—'}{i.notified_at ? ' · emailed' : ''}</span></li>
                 ))}
               </ul>
@@ -212,11 +338,23 @@ const rows = await Promise.all(pending.map(async (p) => ({
           </ul>
         </div>
       )}
+      </section>
       </>
       )}
     </div>
   </main>
   <script is:inline>
+    (function () {
+      var tabs = document.querySelectorAll('[data-adtab]');
+      function show(k) {
+        tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.getAttribute('data-adtab') === k)); });
+        document.querySelectorAll('[data-adpane]').forEach(function (p) { p.hidden = p.getAttribute('data-adpane') !== k; });
+      }
+      tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.getAttribute('data-adtab')); history.replaceState(null, '', '#' + t.getAttribute('data-adtab')); }); });
+      var h = location.hash.slice(1);
+      if (h === 'launch-list') h = 'list';
+      if (h && document.querySelector('[data-adpane="' + h + '"]')) show(h);
+    })();
     var lb = document.querySelector('[data-launch-email]');
     if (lb) lb.addEventListener('click', function () {
       var st = document.querySelector('[data-launch-status]');

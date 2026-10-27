@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { supabase } from '../../../lib/supabase';
 import { signSession, sessionCookie } from '../../../lib/auth';
 import { verifyOn } from '../../../lib/verify-email';
+import { visitFrom } from '../../../lib/geo';
 import { sendVerifyLink } from '../../../lib/email';
 
 export const POST: APIRoute = async ({ request, url }) => {
@@ -40,11 +41,17 @@ export const POST: APIRoute = async ({ request, url }) => {
     }
 
     const hash = await bcrypt.hash(password, 12);
-    const { data: newUser, error } = await supabase
+    // Where they joined from, for /admin (supabase/signup-insights.sql).
+    const g = visitFrom(request, String(form.get('ref') || ''));
+    const geo = { signup_country: g.country, signup_city: g.city || g.region, signup_device: g.device };
+    let { data: newUser, error } = await supabase
       .from('users')
-      .insert({ email, password: hash, role })
+      .insert({ email, password: hash, role, ...geo })
       .select('*')
       .single();
+    if (error && /column/i.test(error.message)) {
+      ({ data: newUser, error } = await supabase.from('users').insert({ email, password: hash, role }).select('*').single());
+    }
 
     if (error || !newUser) {
       return new Response(null, { status: 302, headers: { Location: `/signup?error=db&detail=${encodeURIComponent(error?.message ?? 'Insert failed')}` } });

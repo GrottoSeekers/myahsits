@@ -152,3 +152,16 @@ BEGIN
     UPDATE users SET email_verified_at = COALESCE(created_at, now());
   END IF;
 END $$;
+
+-- ───────────────────────────────────────────────────────────────────
+-- From supabase/signup-insights.sql (27 Oct 2026)
+-- ───────────────────────────────────────────────────────────────────
+ALTER TABLE public.launch_interest ADD COLUMN IF NOT EXISTS country  text;
+ALTER TABLE public.launch_interest ADD COLUMN IF NOT EXISTS region   text;
+ALTER TABLE public.launch_interest ADD COLUMN IF NOT EXISTS city     text;
+ALTER TABLE public.launch_interest ADD COLUMN IF NOT EXISTS referrer text;
+ALTER TABLE public.launch_interest ADD COLUMN IF NOT EXISTS device   text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_country text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_city    text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_device  text;
+NOTIFY pgrst, 'reload schema';
