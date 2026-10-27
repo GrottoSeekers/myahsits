@@ -649,6 +649,36 @@ const navSide =
     .cs-cancel:hover { color:#2c1a0e !important; }
   </style>
   <link rel="stylesheet" href="/mobile.css" />
+  <style is:global>
+    /* Sit pack as tabs, one part at a time (round 3: less scrolling) */
+    .cs-tabs { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:2px; margin-bottom:-8px; }
+    .cs-tabs::-webkit-scrollbar { display:none; }
+    .cs-tabs button { flex:none; border:1px solid rgba(110,84,56,.28); background:#fff; border-radius:50px; padding:11px 18px; font:600 .78rem 'Montserrat',sans-serif; color:#5c3d20; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+    .cs-tabs button small { font-size:.7rem; color:#2f5d45; margin-left:4px; }
+    .cs-tabs button[aria-selected="true"] { background:#2f5d45; border-color:#2f5d45; color:#fff; }
+    .cs-tabs button[aria-selected="true"] small { color:#dcebdf; }
+    .cs-tabs button.sos { color:#a4442e; border-color:rgba(164,68,46,.3); }
+    .cs-tabs button.sos[aria-selected="true"] { background:#a4442e; border-color:#a4442e; color:#fff; }
+    [data-pane] { animation:cs-in .35s ease both; }
+    [data-pane][hidden] { display:none !important; }
+    @keyframes cs-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+    @media (max-width:700px) {
+      [data-pad] { padding:16px 14px 60px !important; }
+      .cs-hero { padding:22px 20px !important; gap:14px !important; }
+      .cs-hero h1 { font-size:1.6rem !important; }
+      .cs-hero > div:last-child { text-align:left !important; display:flex; align-items:baseline; gap:10px; }
+      .cs-hero > div:last-child p:first-child { font-size:2.2rem !important; }
+      [data-card] { padding:20px 18px !important; }
+      [data-pet] { grid-template-columns:64px minmax(0,1fr) !important; gap:14px !important; padding:16px !important; }
+      [data-pet] img { width:56px !important; height:56px !important; }
+      [data-pet] span[style*="width:82px"] { width:64px !important; }
+      [data-facts] { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:14px 16px !important; }
+      [data-facts] p { font-size:.9rem !important; }
+      [data-private-note] { padding:14px 16px !important; gap:12px !important; margin-bottom:16px !important; }
+      [data-private-note] p { font-size:.84rem !important; line-height:1.55 !important; }
+      [data-private-note] > span:first-child { display:none !important; }
+    }
+  </style>
 </head>
 <body>
 <div style="min-height:100vh;display:flex;flex-direction:column;background:#faf6ee">
@@ -666,18 +696,18 @@ const navSide =
   <main data-pad="1" data-screen-label="Confirmed sit" style="flex:1;padding:52px 48px 90px">
     <div style="max-width:1120px;margin:0 auto">
 
-      <div style="background:#2c1a0e;border-radius:20px;padding:38px 40px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap">
+      <div class="cs-hero" style="background:linear-gradient(135deg,#fff 0%,#fbf7f0 55%,#f3ece0 100%);border:1px solid rgba(110,84,56,.2);border-radius:22px;padding:34px 38px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap;box-shadow:0 14px 40px rgba(44,26,14,.07);position:relative;overflow:hidden">
         <div style="min-width:0">
           <p style="font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#6e5438;margin:0 0 14px;display:flex;align-items:center;gap:12px"><span style="width:26px;height:1px;background:#6e5438;display:block;flex-shrink:0"></span>Confirmed sit</p>
-          <h1 style="font-family:'Marcellus',serif;font-size:2.3rem;color:#fff;line-height:1.15;margin:0 0 12px">{heroTitle}{heroSep}
+          <h1 style="font-family:'Marcellus',serif;font-size:2.3rem;color:#2c1a0e;line-height:1.15;margin:0 0 12px">{heroTitle}{heroSep}
             {heroWhere && (
-              <em style="color:#2f5d45;">{heroWhere}</em>
+              <em style="color:#2f5d45;font-style:italic">{heroWhere}</em>
             )}</h1>
-          <p style="font-size:1rem;color:rgba(255,255,255,.75);line-height:1.7;margin:0">{heroLine}</p>
+          <p style="font-size:1rem;color:#6b4e35;line-height:1.7;margin:0">{heroLine}</p>
         </div>
         <div style="text-align:right;flex-shrink:0">
-          <p style="font-family:'Marcellus',serif;font-size:3.4rem;color:#6e5438;margin:0;line-height:1">{daysLeft}</p>
-          <p style="font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);margin:6px 0 0">{countLabel}</p>
+          <p style="font-family:'Marcellus',serif;font-size:3.4rem;color:#2f5d45;margin:0;line-height:1">{daysLeft}</p>
+          <p style="font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6e5438;margin:6px 0 0">{countLabel}</p>
         </div>
       </div>
 
@@ -687,7 +717,13 @@ const navSide =
 
         <div style="display:flex;flex-direction:column;gap:24px">
 
-          <section data-card="1" class="cs-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+          <div class="cs-tabs" role="tablist" aria-label="Sit pack">
+            <button type="button" role="tab" data-pack="basics" aria-selected="true">The basics</button>
+            {petCards.length > 0 && <button type="button" role="tab" data-pack="pets" aria-selected="false">Pets <small>{petCards.length}</small></button>}
+            {houseNotes.length > 0 && <button type="button" role="tab" data-pack="home" aria-selected="false">House notes</button>}
+            <button type="button" role="tab" data-pack="help" aria-selected="false" class="sos">If something goes wrong</button>
+          </div>
+          <section data-card="1" data-pane="basics" class="cs-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">01</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">The basics</h2></div>
             <div style="width:40px;height:2px;background:#6e5438;margin:0 0 26px"></div>
             <p style="font-size:.82rem;color:#8a6a4f;line-height:1.6;margin:-18px 0 24px">{basicsNote}</p>
@@ -703,7 +739,7 @@ const navSide =
           </section>
 
           {petCards.length > 0 && (
-            <section data-card="1" class="cs-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <section data-card="1" data-pane="pets" hidden class="cs-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
               <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">02</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">Care routine</h2></div>
               <div style="width:40px;height:2px;background:#6e5438;margin:0 0 26px"></div>
               <p style="font-size:.82rem;color:#8a6a4f;line-height:1.6;margin:-18px 0 24px">{careNote}</p>
@@ -733,7 +769,7 @@ const navSide =
           )}
 
           {houseNotes.length > 0 && (
-            <section data-card="1" class="cs-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
+            <section data-card="1" data-pane="home" hidden class="cs-card" style="background:#fff;border:1px solid rgba(110,84,56,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04);transition:box-shadow .3s ease, border-color .3s ease">
               <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#6e5438;letter-spacing:.08em">03</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">The house</h2></div>
               <div style="width:40px;height:2px;background:#6e5438;margin:0 0 26px"></div>
               <p style="font-size:.82rem;color:#8a6a4f;line-height:1.6;margin:-18px 0 24px">{houseNote}</p>
@@ -748,7 +784,7 @@ const navSide =
             </section>
           )}
 
-          <section data-card="1" style="background:#fff;border:1px solid rgba(185,28,28,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04)">
+          <section data-card="1" data-pane="help" hidden style="background:#fff;border:1px solid rgba(185,28,28,.22);border-radius:18px;padding:34px 36px;box-shadow:0 1px 2px rgba(44,26,14,.04)">
             <div style="display:flex;align-items:baseline;gap:14px;margin:0 0 8px"><span style="font-family:'Marcellus',serif;font-size:.92rem;color:#b91c1c;letter-spacing:.08em">04</span><h2 style="font-family:'Marcellus',serif;font-size:1.3rem;color:#2c1a0e;margin:0">If something goes wrong</h2></div>
             <div style="width:40px;height:2px;background:#b91c1c;margin:0 0 26px"></div>
             <p style="font-size:.82rem;color:#8a6a4f;line-height:1.6;margin:-18px 0 24px">{helpNote}</p>
@@ -858,6 +894,18 @@ const navSide =
   });
 
   render();
+})();
+</script>
+<script is:inline>
+(() => {
+  const tabs = [...document.querySelectorAll('[data-pack]')];
+  const show = (k) => {
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.pack === k)));
+    document.querySelectorAll('[data-pane]').forEach((p) => { p.hidden = p.dataset.pane !== k; });
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.pack)));
+  const h = location.hash.slice(1);
+  if (h && tabs.some((t) => t.dataset.pack === h)) show(h);
 })();
 </script>
 </body>
