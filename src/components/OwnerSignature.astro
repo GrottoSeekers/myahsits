@@ -4,6 +4,9 @@
 // for the home, pets, photos, open sits and contact, one panel at a time.
 // owner-page/[slug].astro picks this or the Basic page (see lib/tier.ts).
 // Styles and script follow SignatureProfile.astro; keep the two in step.
+import HomeDetails from './HomeDetails.astro';
+import OwnerReviews from './OwnerReviews.astro';
+import { type Home, hasHome, homeFacts } from '../lib/home';
 interface Pic { src: string; pos?: string; alt?: string; cap?: string }
 interface Props {
   name: string; first: string; location: string; tagline: string; badge: string;
@@ -13,6 +16,7 @@ interface Props {
   waNum: string; slug: string; ownerId: string; isMe: boolean; canMessage: boolean; signedIn: boolean;
   head: Record<string, string>; theme: { bg: string; accent: string; light: string; text: string; soft: string };
   description: string; ogImage: string;
+  home: Home; reviews: { text: string; name: string; initials?: string; platform?: string }[];
 }
 const p = Astro.props;
 const fileOf = (src: string) => String(src || '').split('/').pop();
@@ -31,8 +35,9 @@ const ICON = {
 const glance = [
   ...(p.pets.length ? [{ n: String(p.pets.length), l: p.pets.length === 1 ? 'pet to meet' : 'pets to meet', i: ICON.paw }] : []),
   ...(p.sits.length ? [{ n: String(p.sits.length), l: p.sits.length === 1 ? 'open sit' : 'open sits', i: ICON.cal }] : []),
-  ...(p.amenities.length ? [{ n: String(p.amenities.length), l: 'home comforts', i: ICON.home }] : []),
+  ...(p.reviews.length ? [{ n: String(p.reviews.length), l: p.reviews.length === 1 ? 'sitter review' : 'sitter reviews', i: ICON.home }] : p.amenities.length ? [{ n: String(p.amenities.length), l: 'home comforts', i: ICON.home }] : []),
 ];
+const showHome = p.amenities.length > 0 || p.lookingFor.length > 0 || hasHome(p.home);
 const petNames = p.pets.map((x) => x.name);
 const meet = petNames.length ? 'Meet ' + (petNames.length > 1 ? petNames.slice(0, -1).join(', ') + ' & ' + petNames[petNames.length - 1] : petNames[0]) : '';
 // Running ribbon under the photo.
@@ -40,13 +45,15 @@ const ribbon = [
   meet,
   p.sits.length ? `${p.sits.length} open ${p.sits.length === 1 ? 'sit' : 'sits'}` : '',
   p.location,
+  ...homeFacts(p.home).slice(0, 2),
+  ...p.home.highlights,
   ...p.amenities.slice(0, 3),
 ].filter(Boolean);
 const cells = p.gallery.length + 3;
 const lastWideD = p.gallery.length > 4 && cells % 4 === 3;
 const lastWideM = p.gallery.length > 4 && cells % 3 === 2;
 const status = p.badge || ('Home owner' + (p.location ? ' · ' + p.location : ''));
-const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:color-mix(in srgb, ${p.theme.accent} 82%, #fff);--tan:${p.theme.light};--ink:${p.theme.text};--soft:${p.theme.soft}`;
+const themeVars = `--accent:${p.theme.accent};--bg:${p.theme.bg};--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:color-mix(in srgb, ${p.theme.accent} 82%, #fff);--tan:${p.theme.light};--ink:${p.theme.text};--soft:${p.theme.soft}`;
 const title = p.name + ' — MYAH';
 ---
 <html lang="en" style={themeVars}>
@@ -383,7 +390,9 @@ const title = p.name + ' — MYAH';
     <div class="in" role="tablist">
       <span class="sg-pill" aria-hidden="true"></span>
       <button type="button" role="tab" aria-selected="true" aria-controls="about" data-tab="about">Home</button>
+      {showHome && <button type="button" role="tab" aria-selected="false" aria-controls="stay" data-tab="stay">The home</button>}
       {p.pets.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="pets" data-tab="pets">Pets <small>{p.pets.length}</small></button>}
+      {p.reviews.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="reviews" data-tab="reviews">Reviews <small>{p.reviews.length}</small></button>}
       {p.gallery.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="photos" data-tab="photos">Photos <small>{p.gallery.length}</small></button>}
       {p.sits.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="sits" data-tab="sits">Sits <small>{p.sits.length}</small></button>}
       <button type="button" role="tab" aria-selected="false" aria-controls="contact" data-tab="contact">Contact</button>
@@ -407,11 +416,25 @@ const title = p.name + ' — MYAH';
           <div class="sg-bio" data-bio>{p.bio.length ? p.bio.map((t) => <p>{t}</p>) : <p>{p.first} hasn't written about their home yet. Get in touch to ask.</p>}</div>
           <button type="button" class="sg-more" data-bio-more hidden>Read more</button>
           {glance.length > 0 && <div class={'sg-glance' + (glance.length === 3 ? ' og3' : '')}>{glance.map((g) => <div><svg viewBox="0 0 24 24" aria-hidden="true" set:html={g.i}></svg><b data-count={g.n}>{g.n}</b><span>{g.l}</span></div>)}</div>}
-          {p.amenities.length > 0 && <><h3 class="og-sub">Home amenities</h3><div class="og-chips">{p.amenities.map((a) => <span>{a}</span>)}</div></>}
-          {p.lookingFor.length > 0 && <><h3 class="og-sub">What we&rsquo;re looking for</h3><div class="og-card">{p.lookingFor.map((l) => <p>{l}</p>)}</div></>}
         </div>
       </div>
     </section>
+
+    {showHome && (
+      <section class="sg-panel" id="stay" role="tabpanel" hidden>
+        <span class="lbl">The home</span>
+        <h2 class="sg-h serif">Everything about <em>the stay</em></h2>
+        <HomeDetails home={p.home} amenities={p.amenities} lookingFor={p.lookingFor} first={p.first} />
+      </section>
+    )}
+
+    {p.reviews.length > 0 && (
+      <section class="sg-panel" id="reviews" role="tabpanel" hidden>
+        <span class="lbl">What sitters say</span>
+        <h2 class="sg-h serif">Reviews of <em>this home</em></h2>
+        <OwnerReviews reviews={p.reviews} />
+      </section>
+    )}
 
     {p.pets.length > 0 && (
       <section class="sg-panel" id="pets" role="tabpanel" hidden>

@@ -5,6 +5,7 @@ import { getSession } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 import { getAccount } from '../../../lib/account';
 import { safeUpdate, jsonArr, jsonObj } from '../../../lib/db';
+import { cleanHome } from '../../../lib/home';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -31,7 +32,7 @@ const storagePath = (url: string) => {
 // Saves the whole /owner/profile/edit page in one go (the design has a single
 // "Save changes" bar). Multipart body:
 //   data          JSON: { name, location, tagline, bio, contact_email, whatsapp_number,
-//                         looking_for, amenities[], theme{}, headings{}, handover{...},
+//                         looking_for, amenities[], theme{}, headings{}, handover{...}, home{},
 //                         house_notes[{label,value}], images{hero,about,gallery}, pets[] }
 //                 images.* and pets[] items are either an existing entry (kept by src /
 //                 photo_url) or { new: n } pointing at an uploaded file.
@@ -84,9 +85,12 @@ export const POST: APIRoute = async ({ request }) => {
     };
 
     // Theme colours (the page design choice is kept).
-    const theme: Record<string, string> = {};
+    const theme: Record<string, any> = {};
     const layout = jsonObj(profile.theme_json).layout;
     if (layout) theme.layout = layout;
+    // The home in detail (lib/home.ts) lives alongside the colours.
+    const home = data.home ? cleanHome(data.home) : jsonObj(profile.theme_json).home;
+    if (home) theme.home = home;
     for (const [k, col] of Object.entries(THEME_KEYS)) {
       const v = str(data.theme?.[k], 7);
       if (HEX.test(v)) theme[col] = v;

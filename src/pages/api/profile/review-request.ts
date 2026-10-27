@@ -5,9 +5,12 @@ import { getSession } from '../../../lib/auth';
 import { supabase } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
+  let edit = '/profile/edit';
   try {
     const session = await getSession(request);
     if (!session) return new Response(null, { status: 302, headers: { Location: '/login' } });
+    // Owners collect reviews from sitters on their own edit page.
+    edit = session.role === 'owner' ? '/owner/profile/edit' : '/profile/edit';
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -34,11 +37,11 @@ export const POST: APIRoute = async ({ request }) => {
       .eq('id', profile.id);
 
     if (error) {
-      return new Response(null, { status: 302, headers: { Location: `/profile/edit?error=server#reviews` } });
+      return new Response(null, { status: 302, headers: { Location: `${edit}?error=server#reviews` } });
     }
 
-    return new Response(null, { status: 302, headers: { Location: `/profile/edit?saved=reviews&new_token=${token}#reviews` } });
+    return new Response(null, { status: 302, headers: { Location: `${edit}?saved=reviews&new_token=${token}#reviews` } });
   } catch {
-    return new Response(null, { status: 302, headers: { Location: '/profile/edit?error=server#reviews' } });
+    return new Response(null, { status: 302, headers: { Location: edit + '?error=server#reviews' } });
   }
 };

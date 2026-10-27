@@ -12,6 +12,9 @@ import { jsonArr, jsonObj } from '../../lib/db';
 import { PAYMENTS_ENABLED, getBilling } from '../../lib/billing';
 import { layoutOf } from '../../lib/tier';
 import OwnerSignature from '../../components/OwnerSignature.astro';
+import HomeDetails from '../../components/HomeDetails.astro';
+import OwnerReviews from '../../components/OwnerReviews.astro';
+import { homeOf, hasHome, homeFacts } from '../../lib/home';
 
 const { slug } = Astro.params;
 if (!slug) return new Response('Not found', { status: 404 });
@@ -57,6 +60,10 @@ const bio = esc(p.bio).split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
 const lookingFor = esc(p.looking_for).split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean);
 const pets = jsonArr(p.pets_json).filter((x: any) => x && x.name);
 const amenities = jsonArr(p.amenities_json).map(esc).filter(Boolean);
+// The home in detail and reviews from sitters (round 3).
+const home = homeOf(p);
+const showHome = amenities.length > 0 || hasHome(home);
+const reviews = jsonArr(p.reviews_json).filter((r: any) => r && r.text).map((r: any) => ({ text: esc(r.text), name: esc(r.name).split(/\s+/)[0] || 'Sitter', initials: esc(r.initials), platform: esc(r.platform) }));
 const gallery = jsonArr(p.gallery_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), alt: esc(g.alt), cap: esc(g.cap) }));
 const aboutPics = jsonArr(p.about_images_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), alt: esc(g.alt) }));
 const heroPics = jsonArr(p.hero_images_json).filter((g: any) => g && g.src).map((g: any) => ({ src: local(g.src), pos: esc(g.pos) || 'center' }));
@@ -116,6 +123,8 @@ const description = name + (location ? ' — ' + location : '') + '. ' + (taglin
 const sections = [
   { id: 'about', label: 'Home', show: bio.length > 0 || about.length > 0 },
   { id: 'pets', label: 'Pets', show: pets.length > 0 },
+  { id: 'home', label: 'The home', show: showHome || lookingFor.length > 0 },
+  { id: 'reviews', label: 'Reviews', show: reviews.length > 0 },
   { id: 'photos', label: 'Photos', show: gallery.length > 0 },
   { id: 'sits', label: 'Sits', show: sitCards.length > 0 },
 ].filter((s) => s.show);
@@ -126,7 +135,7 @@ const want = Astro.url.searchParams.get('layout');
 if (isMe && (want === 'basic' || want === 'premium')) PREMIUM = want === 'premium';
 const premiumProps = {
   name, first, location, tagline, badge: esc(p.badge_text),
-  hero, about: aboutPics, bio, lookingFor, amenities,
+  hero, about: aboutPics, bio, lookingFor, amenities, home, reviews,
   pets: pets.map((x: any) => ({ name: esc(x.name), line: petLine(x), temperament: esc(x.temperament), needs: esc(x.special_needs), photo: x.photo_url ? local(x.photo_url) : '', initials: initials(esc(x.name)) })),
   gallery, sits: sitCards, waNum, slug, ownerId: p.id, isMe: isMe && !inFrame, canMessage, signedIn: !!viewer,
   head, theme, description, ogImage: hero[0].src.startsWith('http') ? hero[0].src : '/images/logo-tile.png',
@@ -377,7 +386,7 @@ const premiumProps = {
       {tagline && <p class="tag">{tagline}</p>}
       <a href="#contact" class="op-btn" style="padding:16px 36px;font-size:.82rem">Get in touch</a>
       <div class="meta">
-        {[pets.length > 0 && `${pets.length} ${pets.length === 1 ? 'pet' : 'pets'}`, sitCards.length > 0 && `${sitCards.length} open ${sitCards.length === 1 ? 'sit' : 'sits'}`, location].filter(Boolean).map((t, i) => <>{i > 0 && <i></i>}<span>{t}</span></>)}
+        {[homeFacts(home)[0], homeFacts(home)[1], pets.length > 0 && `${pets.length} ${pets.length === 1 ? 'pet' : 'pets'}`, reviews.length > 0 && `★ ${reviews.length} ${reviews.length === 1 ? 'review' : 'reviews'}`, sitCards.length > 0 && `${sitCards.length} open ${sitCards.length === 1 ? 'sit' : 'sits'}`, location].filter(Boolean).map((t, i) => <>{i > 0 && <i></i>}<span>{t}</span></>)}
       </div>
     </div>
     <a href={sections[0] ? '#' + sections[0].id : '#contact'} aria-label="Scroll down" class="op-scroll"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></a>
@@ -433,25 +442,24 @@ const premiumProps = {
     </section>
   )}
 
-  {(amenities.length > 0 || lookingFor.length > 0) && (
+  {(showHome || lookingFor.length > 0) && (
     <section id="home" class="op-sec">
-      <div class={'op-wrap' + (amenities.length && lookingFor.length ? ' op-split' : '')} style="align-items:start">
-        {amenities.length > 0 && (
-          <div>
-            <p class="op-label">The home</p>
-            <h2 class="op-h2">Home <em>amenities</em></h2>
-            <div class="op-rule"></div>
-            <div class="op-chips">{amenities.map((a) => <span class="op-chip">{a}</span>)}</div>
-          </div>
-        )}
-        {lookingFor.length > 0 && (
-          <div>
-            <p class="op-label">The right sitter</p>
-            <h2 class="op-h2">What we're <em>looking for</em></h2>
-            <div class="op-rule"></div>
-            <div class="op-card">{lookingFor.map((l) => <p class="op-p">{l}</p>)}</div>
-          </div>
-        )}
+      <div class="op-wrap">
+        <p class="op-label">The home</p>
+        <h2 class="op-h2">Everything about <em>the stay</em></h2>
+        <div class="op-rule"></div>
+        <HomeDetails home={home} amenities={amenities} lookingFor={lookingFor} first={first} />
+      </div>
+    </section>
+  )}
+
+  {reviews.length > 0 && (
+    <section id="reviews" class="op-sec">
+      <div class="op-wrap">
+        <p class="op-label">What sitters say</p>
+        <h2 class="op-h2">Reviews of <em>this home</em></h2>
+        <div class="op-rule"></div>
+        <OwnerReviews reviews={reviews} />
       </div>
     </section>
   )}
