@@ -1,0 +1,244 @@
+---
+// The founders' booking form (owner, 5 Nov 2026): three short steps, like a
+// Rover booking request or an Airbnb message to the host. 1) you and your
+// dates, 2) you and your home, 3) your pets, photos, then email or WhatsApp.
+// Photos are shrunk in the browser and arrive as email attachments.
+// The suburb is only emailed to the founders; it is never shown on the site.
+// Styles are at the end of this file (global, prefixed .fe).
+interface Props { waHref: string; launched: boolean }
+const { waHref, launched } = Astro.props;
+const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
+---
+<form class="sg-form fe" data-enquiry data-enquiry-rich data-go={launched ? '/messages' : undefined} novalidate>
+  <div class="fe-bar"><span data-fe-label>Step 1 of 3 · You and your dates</span><i><b data-fe-fill style="width:33.3%"></b></i></div>
+
+  <fieldset class="fe-step" data-fe-step="1">
+    <p class="fe-note" data-fe-quote hidden>Your quote is already in the message. Add your details and we'll take it from there.</p>
+    <div class="two">
+      <label>First name<input name="first_name" required autocomplete="given-name" /></label>
+      <label>Last name<input name="last_name" autocomplete="family-name" /></label>
+    </div>
+    <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+    <label>Phone (optional)<input type="tel" name="phone" autocomplete="tel" /></label>
+    <div class="two">
+      <label>From<input type="date" name="date_from" required /></label>
+      <label>To<input type="date" name="date_to" required /></label>
+    </div>
+  </fieldset>
+
+  <fieldset class="fe-step" data-fe-step="2" hidden>
+    <div class="two">
+      <label>Town or city<input name="city" required autocomplete="address-level2" placeholder="e.g. Sydney" /></label>
+      <label>Suburb (optional)<input name="suburb" autocomplete="address-level3" /></label>
+    </div>
+    <p class="fe-note">Your suburb is only shared with us, never shown on the site. We ask for your full address once the sit is booked.</p>
+    <p class="fe-sub">Your home</p>
+    <div class="fe-chips">{homes.map((h, i) => <label><input type="radio" name="home_type" value={h} checked={i === 0} /><span>{h}</span></label>)}</div>
+    <label>About you<textarea name="about" rows="3" placeholder="Who lives at home, where you're off to, anything you'd like us to know about you"></textarea></label>
+  </fieldset>
+
+  <fieldset class="fe-step" data-fe-step="3" hidden>
+    <label>Your pets &amp; home<textarea name="message" rows="5" placeholder="Names, breeds, ages, routines, your vet, anything we should know"></textarea></label>
+    {[['pet_photo', 'Photos of your pets'], ['home_photo', 'Photos of your home (optional)']].map(([k, t]) => (
+      <div class="fe-photos">
+        <p class="fe-sub">{t}</p>
+        <div class="fe-thumbs" data-fe-thumbs={k}>
+          <label class="fe-add"><input type="file" accept="image/*" multiple data-fe-file={k} /><span>+ Add</span></label>
+        </div>
+      </div>
+    ))}
+    <p class="fe-note">At least one photo of your pets, please, and up to 4 of each. They come to us with your email.</p>
+    <div class="sg-send2" data-fe-send>
+      <button type="submit" class="btn btn-main" data-fe-email>Send email</button>
+      {waHref && <a class="btn btn-line" href={waHref} target="_blank" rel="noopener" data-form-wa>Send on WhatsApp</a>}
+    </div>
+  </fieldset>
+
+  <div class="fe-nav">
+    <button type="button" class="btn btn-line" data-fe-back hidden>Back</button>
+    <button type="button" class="btn btn-main" data-fe-next>Next</button>
+  </div>
+  <p class="sg-status" data-enquiry-status role="status"></p>
+</form>
+
+
+<style is:global>
+  /* Global because the photo thumbnails are added by script. Mirrors .sg-form
+     and .btn in SignatureProfile.astro, scoped to this form (.fe). */
+  .fe, .fe * { box-sizing:border-box; }
+  .sg-form.fe { position:relative; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:22px; padding:30px 26px 26px; display:grid; gap:14px; box-shadow:0 18px 50px rgba(44,26,14,.08); margin:0; }
+  .sg-form.fe::before { content:""; position:absolute; left:0; right:0; top:0; height:4px; background:linear-gradient(90deg,var(--forest),var(--tan)); }
+  .fe .two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+  .fe label { display:grid; gap:6px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
+  .fe input:not([type=radio]):not([type=file]), .fe textarea { font:400 .95rem 'Montserrat',sans-serif; color:var(--ink); background:var(--paper); border:1.5px solid rgba(110,84,56,.25); border-radius:12px; padding:12px 14px; width:100%; min-width:0; }
+  .fe textarea { resize:vertical; }
+  .fe input:focus, .fe textarea:focus { outline:none; border-color:var(--forest); box-shadow:0 0 0 3px rgba(47,93,69,.12); }
+  .fe .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; width:100%; min-height:48px; padding:0 12px; border-radius:50px; font:600 .76rem 'Montserrat',sans-serif; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; border:1.5px solid transparent; cursor:pointer; transition:transform .15s, background .2s, border-color .2s, color .2s; }
+  .fe .btn:hover { transform:translateY(-2px); }
+  .fe .btn-main { background:var(--forest); color:#fff; box-shadow:0 10px 26px rgba(20,13,7,.28); }
+  .fe .btn-line { background:#fff; color:var(--forest); border-color:rgba(110,84,56,.4); }
+  .fe .btn:disabled { opacity:.6; cursor:default; transform:none; }
+  .fe .sg-send2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:4px; }
+  .fe .sg-status { margin:0; min-height:1.2em; text-align:center; font-size:.86rem; font-weight:600; color:var(--forest); }
+  .fe .sg-send2.wa-first > :last-child { order:-1; }
+  .fe-step { border:0; margin:0; padding:0; min-width:0; display:grid; gap:14px; }
+  .fe .fe-step[hidden] { display:none; }
+  .fe .fe-bar { display:grid; gap:8px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--forest); }
+  .fe .fe-bar i { display:block; height:4px; border-radius:4px; background:var(--cream); overflow:hidden; }
+  .fe .fe-bar b { display:block; height:100%; background:var(--forest); transition:width .4s ease; }
+  .fe .fe-note { margin:-4px 0 0; font-size:.8rem; line-height:1.55; color:var(--soft); }
+  .fe .fe-sub { margin:0 0 -6px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
+  .fe .fe-chips { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .fe .fe-chips label { display:block; position:relative; cursor:pointer; letter-spacing:0; text-transform:none; }
+  .fe .fe-chips input { position:absolute; opacity:0; pointer-events:none; }
+  .fe .fe-chips span { display:block; padding:11px 12px; border-radius:12px; border:1.5px solid rgba(110,84,56,.22); background:var(--paper); font:600 .86rem 'Montserrat',sans-serif; color:var(--ink); text-align:center; }
+  .fe .fe-chips input:checked + span { background:var(--ink); border-color:var(--ink); color:#fff; }
+  .fe .fe-chips input:focus-visible + span { outline:2px solid var(--forest); outline-offset:2px; }
+  .fe .fe-photos { display:grid; gap:12px; }
+  .fe .fe-thumbs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+  .fe .fe-thumb, .fe-add { position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; }
+  .fe .fe-thumb img { width:100%; height:100%; object-fit:cover; }
+  .fe .fe-thumb button { position:absolute; top:4px; right:4px; width:26px; height:26px; border-radius:50%; border:0; background:rgba(20,13,7,.7); color:#fff; font-size:1rem; line-height:1; cursor:pointer; }
+  .fe .fe-add { display:flex !important; align-items:center; justify-content:center; border:1.5px dashed rgba(110,84,56,.4); background:var(--paper); cursor:pointer; }
+  .fe .fe-add[hidden] { display:none !important; }
+  .fe .fe-add input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .fe .fe-add span { font:600 .78rem 'Montserrat',sans-serif; letter-spacing:.04em; text-transform:none; color:var(--forest); }
+  .fe .fe-nav { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); gap:10px; }
+  .fe .fe-nav [data-fe-back][hidden] + [data-fe-next] { grid-column:1 / -1; }
+  .fe .fe-nav [hidden] { display:none; }
+  .fe .fe-thumb { display:block; }
+  .fe .fe-thumb img { display:block; max-width:none; }
+  @media (max-width:560px) {
+    .sg-form.fe { padding:20px; border-radius:18px; }
+    .fe .btn { font-size:.66rem; letter-spacing:.08em; padding:0 8px; }
+  }
+</style>
+
+<script is:inline>
+(() => {
+  const form = document.querySelector('[data-enquiry-rich]');
+  if (!form) return;
+  const $ = (s) => form.querySelector(s), $$ = (s) => Array.from(form.querySelectorAll(s));
+  const steps = $$('[data-fe-step]'), titles = ['You and your dates', 'You and your home', 'Your pets'];
+  const back = $('[data-fe-back]'), next = $('[data-fe-next]'), status = $('[data-enquiry-status]');
+  let at = 0;
+  const show = (i) => {
+    at = i;
+    steps.forEach((s, k) => { s.hidden = k !== i; });
+    $('[data-fe-label]').textContent = 'Step ' + (i + 1) + ' of 3 · ' + titles[i];
+    $('[data-fe-fill]').style.width = ((i + 1) / 3 * 100).toFixed(1) + '%';
+    back.hidden = i === 0; next.hidden = i === 2;
+    $('[data-fe-quote]').hidden = !/price builder/.test($('[name=message]').value) || i !== 0;
+    // The way they chose under the quote (email or WhatsApp) is the main button.
+    const wa = $('[data-form-wa]'), em = $('[data-fe-email]');
+    if (wa) {
+      const preferWa = form.dataset.prefer === 'wa';
+      wa.className = 'btn ' + (preferWa ? 'btn-main' : 'btn-line');
+      em.className = 'btn ' + (preferWa ? 'btn-line' : 'btn-main');
+      $('[data-fe-send]').classList.toggle('wa-first', preferWa);
+    }
+    status.textContent = '';
+  };
+  const top = () => {
+    const bars = (document.querySelector('[data-top]')?.offsetHeight || 0) + (document.querySelector('.sg-tabs')?.offsetHeight || 0);
+    const y = form.getBoundingClientRect().top + window.scrollY - bars - 16;
+    if (Math.abs(window.scrollY - y) > 40) window.scrollTo({ top: y, behavior: 'smooth' });
+  };
+  // Required fields on the current step; the first one missing is pointed out.
+  const ok = (i) => {
+    const bad = Array.from(steps[i].querySelectorAll('input[required]')).find((el) => !el.checkValidity());
+    if (bad) { bad.reportValidity(); bad.focus(); return false; }
+    return true;
+  };
+  next.addEventListener('click', () => { if (ok(at)) { show(at + 1); top(); } });
+  back.addEventListener('click', () => { show(at - 1); top(); });
+  // Opened from the quote: start at step 1 with the quote noted.
+  form.addEventListener('fe:reset', () => show(0));
+
+  // Photos: shrunk to 1400px JPEGs in the browser (keeps the upload small).
+  const MAX = 4, photos = { pet_photo: [], home_photo: [] };
+  const shrink = (file) => new Promise((res) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob((b) => res(b), 'image/jpeg', 0.72);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    img.src = url;
+  });
+  const draw = (k) => {
+    const box = $('[data-fe-thumbs="' + k + '"]'), add = box.querySelector('.fe-add');
+    box.querySelectorAll('.fe-thumb').forEach((t) => t.remove());
+    photos[k].forEach((p, i) => {
+      const t = document.createElement('span'); t.className = 'fe-thumb';
+      t.innerHTML = '<img alt=""><button type="button" aria-label="Remove photo">×</button>';
+      t.querySelector('img').src = p.url;
+      t.querySelector('button').addEventListener('click', () => { URL.revokeObjectURL(p.url); photos[k].splice(i, 1); draw(k); });
+      box.insertBefore(t, add);
+    });
+    add.hidden = photos[k].length >= MAX;
+  };
+  $$('[data-fe-file]').forEach((input) => input.addEventListener('change', async () => {
+    const k = input.dataset.feFile;
+    const files = Array.from(input.files || []).filter((f) => /^image\//.test(f.type) || /\.(heic|heif|jpe?g|png|webp)$/i.test(f.name));
+    input.value = '';
+    for (const f of files) {
+      if (photos[k].length >= MAX) break;
+      const blob = await shrink(f);
+      if (!blob) { status.textContent = "That photo couldn't be read. Try a JPEG or PNG."; continue; }
+      photos[k].push({ blob, url: URL.createObjectURL(blob) });
+      draw(k);
+    }
+  }));
+
+  const val = (n) => String(new FormData(form).get(n) || '').trim();
+  // WhatsApp: everything in the form goes in the message (photos can't go in a link).
+  const wa = $('[data-form-wa]');
+  wa && wa.addEventListener('click', (e) => {
+    if (!ok(0) || !ok(1)) { e.preventDefault(); return; }
+    const where = [val('suburb'), val('city')].filter(Boolean).join(', ');
+    const n = photos.pet_photo.length + photos.home_photo.length;
+    const lines = [
+      'Hi Callum and Niamh, it’s ' + val('first_name') + (val('last_name') ? ' ' + val('last_name') : '') + '.',
+      /Arrive /.test(val('message')) ? '' : 'Dates: ' + val('date_from') + ' to ' + val('date_to') + '.',
+      'Home: ' + val('home_type') + (where ? ' in ' + where : '') + '.',
+      val('about') ? '\nAbout me: ' + val('about') : '',
+      val('message') ? '\n' + val('message') : '',
+      n ? '\nI’ll send ' + n + ' photo' + (n > 1 ? 's' : '') + ' of my pets and home here next.' : '',
+      '\nEmail: ' + val('email') + (val('phone') ? ' · Phone: ' + val('phone') : ''),
+    ].filter(Boolean);
+    wa.href = wa.href.split('?')[0] + '?text=' + encodeURIComponent(lines.join('\n'));
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    for (let i = 0; i < 3; i++) if (!ok(i)) { show(i); top(); ok(i); return; }
+    // Home photos are optional; at least one pet photo comes with an email.
+    if (!photos.pet_photo.length) { show(2); status.textContent = 'Please add at least one photo of your pets.'; $('[data-fe-file="pet_photo"]').closest('.fe-photos').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    const fd = new FormData(form);
+    fd.append('slug', location.pathname.replace(/^\/|\/$/g, ''));
+    Object.keys(photos).forEach((k) => photos[k].forEach((p, i) => fd.append(k, p.blob, k.replace('_photo', '') + '-' + (i + 1) + '.jpg')));
+    status.textContent = 'Sending…';
+    const btn = $('[data-fe-email]'); btn.disabled = true;
+    try {
+      const r = await fetch('/api/enquiry', { method: 'POST', body: fd });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || '');
+      if (form.dataset.go) { window.location.href = form.dataset.go; return; }
+      form.reset();
+      Object.keys(photos).forEach((k) => { photos[k].forEach((p) => URL.revokeObjectURL(p.url)); photos[k] = []; draw(k); });
+      delete form.dataset.prefer;
+      show(0);
+      status.textContent = "Email sent. We'll be in touch soon.";
+    } catch (err) {
+      status.textContent = (err && err.message) || 'That did not send. Please try again.';
+    }
+    btn.disabled = false;
+  });
+  show(0);
+})();
+</script>

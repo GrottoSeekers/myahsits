@@ -5,6 +5,7 @@
 // The founders page uses it (approved 26 Oct 2026); ?layout=classic shows the old one.
 import LaunchSoon from '../pages/_launchsoon.astro';
 import FoundersQuote from './FoundersQuote.astro';
+import FoundersEnquiry from './FoundersEnquiry.astro';
 import { foundersWhy, foundersTrust } from '../data/founders';
 import { quotePrices } from '../data/founders-pricing';
 const fromDay = Math.min(quotePrices.base.dog, quotePrices.base.cat);
@@ -498,6 +499,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
           {p.isFounders && <p class="sg-quote-link">Want a price first? <a href="#prices" data-open="prices">Build your quote</a></p>}
           {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Text on WhatsApp</a>}
         </div>
+        {p.isFounders ? <FoundersEnquiry waHref={p.waNum ? p.waHref : ''} launched={p.launched} /> : (
         <form class="sg-form" data-enquiry data-go={p.launched ? '/messages' : undefined}>
           <div class="two">
             <label>First name<input name="first_name" required autocomplete="given-name" /></label>
@@ -509,14 +511,10 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
             <label>To<input type="date" name="date_to" required /></label>
           </div>
           <label>Your pets &amp; home<textarea name="message" rows="3" placeholder="Breed, age, anything we should know"></textarea></label>
-          {p.isFounders && p.waNum ? (
-            <div class="sg-send2">
-              <button type="submit" class="btn btn-main">Send email</button>
-              <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener" data-form-wa>Send on WhatsApp</a>
-            </div>
-          ) : <button type="submit" class="btn btn-main">Send email</button>}
+          <button type="submit" class="btn btn-main">Send email</button>
           <p class="sg-status" data-enquiry-status role="status"></p>
         </form>
+        )}
       </div>
       {!p.launched && <div class="sg-launch"><LaunchSoon /></div>}
     </section>
@@ -660,17 +658,8 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
     // enquiry (same behaviour as the current page)
     const form = q('[data-enquiry]'), status = q('[data-enquiry-status]');
-    // Send on WhatsApp (founders' page): whatever is in the form goes in the message.
-    const formWa = q('[data-form-wa]');
-    formWa && formWa.addEventListener('click', () => {
-      const fd = new FormData(form), name = String(fd.get('first_name') || '').trim();
-      const from = String(fd.get('date_from') || ''), to = String(fd.get('date_to') || '');
-      const text = 'Hi Callum and Niamh' + (name ? ", it's " + name : '') + '.'
-        + (from && to && !/Arrive /.test(String(fd.get('message') || '')) ? '\nDates: ' + from + ' to ' + to + '.' : '')
-        + (String(fd.get('message') || '').trim() ? '\n\n' + String(fd.get('message')).trim() : '');
-      formWa.href = formWa.href.split('?')[0] + '?text=' + encodeURIComponent(text);
-    });
-    form && form.addEventListener('submit', e => {
+    // The founders' form (FoundersEnquiry) sends itself, with photos.
+    form && !form.hasAttribute('data-enquiry-rich') && form.addEventListener('submit', e => {
       e.preventDefault();
       const fd = new FormData(form); fd.append('slug', pageSlug);
       if (form.hasAttribute('data-go')) { navigator.sendBeacon('/api/enquiry', fd); window.location.href = form.getAttribute('data-go'); return; }

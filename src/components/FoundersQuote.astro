@@ -124,7 +124,7 @@ const { waHref = '' } = Astro.props as { waHref?: string };
       <ul class="q-lines" data-q-lines></ul>
       <p class="q-small">Rough estimate. Shopping receipts and any holiday surcharge are added separately. We confirm the final price with you before anything is booked.</p>
       <button type="button" class="q-btn" data-q-send data-open="book">Send by email</button>
-      {waHref && <a class="q-btn q-btn-wa" href={waHref} target="_blank" rel="noopener" data-q-wa>Send on WhatsApp</a>}
+      {waHref && <button type="button" class="q-btn q-btn-wa" data-q-send data-pref="wa" data-open="book">Send on WhatsApp</button>}
     </aside>
   </div>
   <div class="q-strip" data-q-strip><span>Estimate <b data-q-strip-total>$0</b></span><button type="button" class="q-btn" data-q-jump>See total</button></div>
@@ -302,8 +302,11 @@ const { waHref = '' } = Astro.props as { waHref?: string };
   calc();
   // Send: put the dates and the quote into the Book form (the data-open
   // handler on the page then opens the Book tab).
-  document.querySelector('[data-q-send]').addEventListener('click', () => {
+  // Both buttons under the total open the booking form with the quote in it;
+  // the one pressed (email or WhatsApp) is the main button at the end.
+  document.querySelectorAll('[data-q-send]').forEach((btn) => btn.addEventListener('click', () => {
     const book = document.querySelector('[data-enquiry]'); if (!book) return;
+    if (btn.dataset.pref === 'wa') book.dataset.prefer = 'wa'; else delete book.dataset.prefer;
     const from = q('[name=q_from]').value, to = q('[name=q_to]').value;
     if (from) book.querySelector('[name=date_from]').value = from;
     if (to) book.querySelector('[name=date_to]').value = to;
@@ -317,7 +320,8 @@ const { waHref = '' } = Astro.props as { waHref?: string };
       const first = book.querySelector('[name=first_name]');
       if (first && !first.value) first.focus({ preventScroll: true });
     }, 60);
-  });
+    book.dispatchEvent(new Event('fe:reset'));
+  }));
   // Phone: the strip at the bottom jumps to the total, and hides once it shows.
   const sum = document.querySelector('[data-q-sum]'), strip = document.querySelector('[data-q-strip]');
   document.querySelector('[data-q-jump]').addEventListener('click', () => sum.scrollIntoView({ behavior: 'smooth', block: 'center' }));
