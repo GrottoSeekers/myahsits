@@ -123,7 +123,7 @@ const { waHref = '' } = Astro.props as { waHref?: string };
       <span class="q-per" data-q-days hidden></span>
       <ul class="q-lines" data-q-lines></ul>
       <p class="q-small">Rough estimate. Shopping receipts and any holiday surcharge are added separately. We confirm the final price with you before anything is booked.</p>
-      <button type="button" class="q-btn" data-q-send data-open="book">Send us this quote by email</button>
+      <button type="button" class="q-btn" data-q-send data-open="book">Send by email</button>
       {waHref && <a class="q-btn q-btn-wa" href={waHref} target="_blank" rel="noopener" data-q-wa>Send on WhatsApp</a>}
     </aside>
   </div>
@@ -308,6 +308,15 @@ const { waHref = '' } = Astro.props as { waHref?: string };
     if (from) book.querySelector('[name=date_from]').value = from;
     if (to) book.querySelector('[name=date_to]').value = to;
     const msg = book.querySelector('[name=message]'); msg.value = summary; msg.rows = 8;
+    // Land on the form itself (on phones the page could end up at the sign-up
+    // section below it), once the Book tab has opened.
+    setTimeout(() => {
+      // stop below the top bar and the tabs, which stay on screen
+      const bars = (document.querySelector('[data-top]')?.offsetHeight || 0) + (document.querySelector('.sg-tabs')?.offsetHeight || 0);
+      window.scrollTo({ top: book.getBoundingClientRect().top + window.scrollY - bars - 16, behavior: 'smooth' });
+      const first = book.querySelector('[name=first_name]');
+      if (first && !first.value) first.focus({ preventScroll: true });
+    }, 60);
   });
   // Phone: the strip at the bottom jumps to the total, and hides once it shows.
   const sum = document.querySelector('[data-q-sum]'), strip = document.querySelector('[data-q-strip]');
