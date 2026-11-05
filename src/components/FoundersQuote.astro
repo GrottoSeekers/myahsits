@@ -26,13 +26,19 @@ const $ = (n: number) => '$' + n;
       <fieldset class="q-card">
         <legend>Your pets</legend>
         <p class="q-sub">Your first pet</p>
-        <div class="q-chips">
+        <div class="q-opts q-two-up">
           <label><input type="radio" name="main" value="dog" checked /><span>Dog<small>{$(P.base.dog)} a day</small></span></label>
           <label><input type="radio" name="main" value="cat" /><span>Cat<small>{$(P.base.cat)} a day</small></span></label>
         </div>
-        <div class="q-count"><span>Extra dogs<small>+{$(P.extraPet.dog)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraDogs">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
-        <div class="q-count"><span>Extra cats or small pets<small>+{$(P.extraPet.catOrSmall)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraCats">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
-        <div class="q-count"><span>Puppies or kittens under 12 months<small>+{$(P.extraPet.young)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="young">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        {[
+          ['extraDogs', 'Extra dogs', '+' + $(P.extraPet.dog) + ' a day each', 4],
+          ['extraCats', 'Extra cats or small pets', '+' + $(P.extraPet.catOrSmall) + ' a day each', 4],
+          ['young', 'Puppies or kittens under 12 months', '+' + $(P.extraPet.young) + ' a day each', 3],
+        ].map(([k, t, d, max]) => (
+          <div class="q-row"><p class="q-q">{t}<small>{d}</small></p>
+            <div class="q-opts q-nums">{Array.from({ length: Number(max) + 1 }, (_, i) => <label><input type="radio" name={String(k)} value={i} checked={i === 0} /><span>{i}</span></label>)}</div>
+          </div>
+        ))}
       </fieldset>
 
       <fieldset class="q-card">
@@ -56,8 +62,14 @@ const $ = (n: number) => '$' + n;
       <fieldset class="q-card" data-dogs-only>
         <legend>Walks</legend>
         <p class="q-sub">The first walk of the day (30 to 40 minutes) is included.</p>
-        <div class="q-count"><span>Extra walks a day<small>30 to 40 minutes · +{$(P.walks.extra)} each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="walks">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
-        <div class="q-count"><span>Long walks a day<small>60 minutes or more · +{$(P.walks.long)} each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="longWalks">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        {[
+          ['walks', 'Extra walks a day', '30 to 40 minutes · +' + $(P.walks.extra) + ' each', 4],
+          ['longWalks', 'Long walks a day', '60 minutes or more · +' + $(P.walks.long) + ' each', 3],
+        ].map(([k, t, d, max]) => (
+          <div class="q-row"><p class="q-q">{t}<small>{d}</small></p>
+            <div class="q-opts q-nums">{Array.from({ length: Number(max) + 1 }, (_, i) => <label><input type="radio" name={String(k)} value={i} checked={i === 0} /><span>{i}</span></label>)}</div>
+          </div>
+        ))}
         <p class="q-sub" style="margin-top:16px">Where does your dog go to the toilet?</p>
         <div class="q-opts">
           <label><input type="radio" name="toilet" value="In the garden on their own" checked /><span>In the garden on their own</span></label>
@@ -69,25 +81,35 @@ const $ = (n: number) => '$' + n;
 
       <fieldset class="q-card">
         <legend>Medication</legend>
-        <label class="q-check"><input type="checkbox" name="med" /><span>Medication at set times, for example 6.30pm every day<small>+{$(P.medication)} a day</small></span></label>
+        <div class="q-opts">
+          <label><input type="radio" name="med" value="0" checked /><span>No medication, or none at set times<small>Included</small></span></label>
+          <label><input type="radio" name="med" value="1" /><span>Medication at set times, for example 6.30pm every day<small>+{$(P.medication)} a day</small></span></label>
+        </div>
       </fieldset>
 
       <details class="q-card q-more">
         <summary>Extras: welcome home, keys and meeting us</summary>
         <p class="q-sub">Welcome home</p>
-        <p class="q-note" style="margin-top:0">Fresh bread and milk will be waiting when you get back, as a thank you for choosing us.</p>
         <div class="q-opts">
-          <label><input type="radio" name="shop" value="none" checked /><span>Just the bread and milk<small>Included</small></span></label>
-          <label><input type="radio" name="shop" value="essentials" /><span>Essentials restock: send us a short list before your flight<small>{$(P.welcomeHome.essentials)} + the receipt</small></span></label>
-          <label><input type="radio" name="shop" value="fullShop" /><span>Your full weekly shop, or more than one shop<small>{$(P.welcomeHome.fullShop)} + the receipt</small></span></label>
+          <label><input type="radio" name="shop" value="none" checked /><span>Fresh bread and milk<small>Waiting for you when you get home, as a thank you for choosing us. Included</small></span></label>
+          <label><input type="radio" name="shop" value="essentials" /><span>Essentials restock<small>Send us a short list before your flight and we do a small shop for your return, up to 1 hour including travel to and from the shop. {$(P.welcomeHome.essentials)} service fee + the receipt</small></span></label>
+          <label><input type="radio" name="shop" value="fullShop" /><span>Full shop<small>Your full weekly shop, or shopping at more than one store. {$(P.welcomeHome.fullShop)} service fee + the receipt</small></span></label>
         </div>
         <p class="q-sub" style="margin-top:18px">Key collection</p>
-        <div class="q-count"><span>Trips to collect or drop off keys<small>{$(P.keys.trip)} a trip</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="keyTrips">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
-        <label class="q-check"><input type="checkbox" name="keyFar" /><span>More than 1 hour from central Sydney<small>+{$(P.keys.far)} a trip</small></span></label>
+        <div class="q-opts">
+          <label><input type="radio" name="keys" value="none" checked /><span>Not needed<small>You hand us the keys at the start of the sit. Included</small></span></label>
+          <label><input type="radio" name="keys" value="near" /><span>We collect your keys, within 1 hour of central Sydney<small>One trip · {$(P.keys.trip)}</small></span></label>
+          <label><input type="radio" name="keys" value="far" /><span>We collect your keys, more than 1 hour from central Sydney<small>One trip · {$(P.keys.trip + P.keys.far)}</small></span></label>
+        </div>
         <p class="q-sub" style="margin-top:18px">Meet and greet</p>
-        <p class="q-note" style="margin-top:0">A 30-minute meet and greet is free within an hour of us.</p>
-        <label class="q-check"><input type="checkbox" name="meetFar" /><span>More than 1 hour from Sydney<small>+{$(P.meet.far)}</small></span></label>
-        <label class="q-check"><input type="checkbox" name="meetLong" /><span>Longer consultation, up to 1.5 hours<small>+{$(P.meet.extended)}</small></span></label>
+        <div class="q-opts q-two-up">
+          <label><input type="radio" name="meetWhere" value="near" checked /><span>Within 1 hour of us<small>Free</small></span></label>
+          <label><input type="radio" name="meetWhere" value="far" /><span>More than 1 hour from Sydney<small>+{$(P.meet.far)}</small></span></label>
+        </div>
+        <div class="q-opts q-two-up" style="margin-top:8px">
+          <label><input type="radio" name="meetLen" value="std" checked /><span>30 minutes<small>Free</small></span></label>
+          <label><input type="radio" name="meetLen" value="long" /><span>Longer consultation, up to 1.5 hours<small>+{$(P.meet.extended)}</small></span></label>
+        </div>
         <p class="q-note">Public holidays may carry a surcharge. We'll confirm it with your quote.</p>
       </details>
     </form>
@@ -133,7 +155,12 @@ const $ = (n: number) => '$' + n;
   .q-chips input:checked + span, .q-opts input:checked + span, .q-check input:checked + span { background:var(--ink); border-color:var(--ink); color:#fff; }
   .q-chips input:checked + span small, .q-opts input:checked + span small, .q-check input:checked + span small { color:var(--tan); }
   .q-chips input:focus-visible + span, .q-opts input:focus-visible + span, .q-check input:focus-visible + span { outline:2px solid var(--forest); outline-offset:2px; }
-  .q-check { margin-top:8px; }
+  .q-two-up { grid-template-columns:1fr 1fr; }
+  .q-row { padding:14px 0 2px; border-top:1px solid var(--line); margin-top:14px; }
+  .q-q { margin:0 0 10px; display:flex; flex-direction:column; gap:3px; font-size:.9rem; font-weight:600; color:var(--ink); }
+  .q-q small { font-size:.76rem; font-weight:500; color:var(--soft); }
+  .q-nums { grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); }
+  .q-nums span { align-items:center; padding:11px 0; font-size:.95rem; }
   .q-count { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
   .q-count > span:first-child { display:flex; flex-direction:column; gap:3px; font-size:.9rem; font-weight:600; }
   .q-step { flex:none; display:inline-flex; align-items:center; gap:4px; }
@@ -173,12 +200,9 @@ const $ = (n: number) => '$' + n;
   const form = document.querySelector('[data-quote]');
   if (!form) return;
   const q = (s) => form.querySelector(s);
-  const n = {};
-  const MAX = { extraDogs: 4, extraCats: 6, young: 6, walks: 4, longWalks: 3, keyTrips: 4 };
-  form.querySelectorAll('[data-n]').forEach((o) => { n[o.dataset.n] = 0; });
   const money = (v) => '$' + (Math.round(v * 100) / 100).toLocaleString('en-AU', { maximumFractionDigits: 2 });
   const val = (name) => (form.querySelector('input[name="' + name + '"]:checked') || {}).value;
-  const on = (name) => !!form.querySelector('input[name="' + name + '"]').checked;
+  const on = (name) => val(name) === '1';
   // Days to charge: 24-hour blocks from the arrival time. What is left over on
   // the last day is free up to graceHours, half a day up to halfUpToHours,
   // then a full day (the same steps as Rover's extended care rate).
@@ -197,6 +221,8 @@ const $ = (n: number) => '$' + n;
   const hrs = (h) => (h === 1 ? '1 hour' : (Math.round(h * 10) / 10) + ' hours');
   let summary = '';
   const calc = () => {
+    const n = {};
+    ['extraDogs', 'extraCats', 'young', 'walks', 'longWalks'].forEach((k) => { n[k] = Number(val(k)) || 0; });
     const main = val('main');
     const dogs = main === 'dog' || n.extraDogs > 0;
     form.querySelector('[data-dogs-only]').hidden = !dogs;
@@ -216,9 +242,10 @@ const $ = (n: number) => '$' + n;
     const shop = val('shop');
     if (shop === 'essentials') once.push(['Essentials restock (+ receipt)', P.welcomeHome.essentials]);
     if (shop === 'fullShop') once.push(['Full shop (+ receipt)', P.welcomeHome.fullShop]);
-    if (n.keyTrips) once.push([n.keyTrips + ' key trip' + (n.keyTrips > 1 ? 's' : ''), n.keyTrips * (P.keys.trip + (on('keyFar') ? P.keys.far : 0))]);
-    if (on('meetFar')) once.push(['Meet and greet, over 1 hour away', P.meet.far]);
-    if (on('meetLong')) once.push(['Longer consultation', P.meet.extended]);
+    const keys = val('keys');
+    if (keys !== 'none') once.push([keys === 'far' ? 'Key collection, over 1 hour away' : 'Key collection', P.keys.trip + (keys === 'far' ? P.keys.far : 0)]);
+    if (val('meetWhere') === 'far') once.push(['Meet and greet, over 1 hour away', P.meet.far]);
+    if (val('meetLen') === 'long') once.push(['Longer consultation', P.meet.extended]);
     const perNight = daily.reduce((s, x) => s + x[1], 0);
     const extras = once.reduce((s, x) => s + x[1], 0);
     const D = daysOf(), nights = D.days;
@@ -240,11 +267,6 @@ const $ = (n: number) => '$' + n;
     const xDays = (d) => '× ' + (Math.floor(d) || '') + (d % 1 ? '½' : '');
     const lines = daily.map((x) => [x[0], money(x[1]) + (nights ? ' ' + xDays(nights) : '')]).concat(once.map((x) => [x[0], money(x[1])]));
     document.querySelector('[data-q-lines]').innerHTML = lines.map((l) => '<li><span>' + l[0] + '</span><b>' + l[1] + '</b></li>').join('');
-    form.querySelectorAll('[data-n]').forEach((o) => {
-      const k = o.dataset.n; o.textContent = n[k];
-      const [dn, up] = o.parentNode.querySelectorAll('button');
-      dn.disabled = n[k] <= 0; up.disabled = n[k] >= MAX[k];
-    });
     const pets = [main === 'dog' ? '1 dog' : '1 cat'];
     if (n.extraDogs) pets.push(n.extraDogs + ' more dog' + (n.extraDogs > 1 ? 's' : ''));
     if (n.extraCats) pets.push(n.extraCats + ' cat' + (n.extraCats > 1 ? 's' : '') + ' or small pet' + (n.extraCats > 1 ? 's' : ''));
@@ -253,14 +275,9 @@ const $ = (n: number) => '$' + n;
       + 'Pets: ' + pets.join(', ') + (n.young ? ' (' + n.young + ' under 12 months)' : '') + '.\n'
       + lines.map((l) => '- ' + l[0] + ': ' + l[1]).join('\n')
       + (dogs ? '\nToilet: ' + val('toilet') + '.' : '')
+      + '\nMeet and greet: ' + (val('meetWhere') === 'far' ? 'more than 1 hour from Sydney' : 'within 1 hour') + ', ' + (val('meetLen') === 'long' ? 'up to 1.5 hours' : '30 minutes') + '.' 
       + '\n\nAnything else about my pets or home: ';
   };
-  form.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-step]'); if (!b) return;
-    const k = b.parentNode.querySelector('[data-n]').dataset.n;
-    n[k] = Math.max(0, Math.min(MAX[k], n[k] + Number(b.dataset.step)));
-    calc();
-  });
   form.addEventListener('change', calc);
   form.addEventListener('input', calc);
   calc();

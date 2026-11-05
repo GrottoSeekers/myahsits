@@ -6,6 +6,8 @@
 import LaunchSoon from '../pages/_launchsoon.astro';
 import FoundersQuote from './FoundersQuote.astro';
 import { foundersWhy, foundersTrust } from '../data/founders';
+import { quotePrices } from '../data/founders-pricing';
+const fromDay = Math.min(quotePrices.base.dog, quotePrices.base.cat);
 
 interface Pic { src: string; pos?: string; alt?: string; wide?: boolean }
 interface Props {
@@ -165,6 +167,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     .sg-tabs .in { position:relative; max-width:1180px; margin:0 auto; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:12px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px)); }
     .sg-tabs .in::-webkit-scrollbar { display:none; }
     .sg-tabs button { flex:none; display:inline-flex; align-items:center; gap:8px; min-height:42px; padding:0 18px; border-radius:50px; border:1px solid var(--line); background:#fff; color:var(--soft); font:600 .74rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+    .sg-tabs button.sg-tab-quote { border-color:var(--forest); color:var(--forest); background:#e4efe7; }
     .sg-tabs button small { font:700 .62rem 'Lato',sans-serif; letter-spacing:.04em; padding:2px 7px; border-radius:50px; background:var(--cream); color:var(--brown); }
     .sg-tabs button[aria-selected="true"] { background:var(--ink); border-color:var(--ink); color:#fff; }
     .sg-tabs button[aria-selected="true"] small { background:rgba(255,255,255,.16); color:var(--tan); }
@@ -363,7 +366,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
 <body>
   <header class="sg-top" data-top>
     <a class="sg-logo" href="/"><img src="/images/logo-mark-white.png" alt="" data-logo /><span>MYAH<small>Make Yourself At Home</small></span></a>
-    <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>
+    {p.isFounders ? <a class="btn btn-main" href="#prices" data-open="prices">Get a quote</a> : <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>}
   </header>
 
   <section class="sg-hero" data-hero>
@@ -374,7 +377,8 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
       <h1 class="sg-name serif">{p.nameA}{p.nameB && <em> &amp;</em>}{p.nameB && <>{' '}{p.nameB.replace(/^&\s*/, '')}</>}</h1>
       {p.tagline && <p class="sg-tag">{p.tagline}</p>}
       <div class="sg-acts">
-        <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>
+        {p.isFounders && <a class="btn btn-main" href="#prices" data-open="prices">Get a quote</a>}
+        <a class={p.isFounders ? 'btn btn-glass' : 'btn btn-main'} href="#book" data-open="book">Book {us}</a>
         {p.waNum && <a class="btn btn-glass sg-wa" href={p.waHref} target="_blank" rel="noopener" aria-label={`Message ${us} on WhatsApp`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2A9.7 9.7 0 0 0 3.7 16.9L2.4 21.6l4.8-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.2-.2-.2-.4-.3z"/></svg></a>}
       </div>
     </div>
@@ -392,9 +396,9 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     <div class="in" role="tablist">
       <span class="sg-pill" aria-hidden="true"></span>
       <button type="button" role="tab" aria-selected="true" aria-controls="about" data-tab="about">About</button>
+      {p.isFounders && <button type="button" role="tab" aria-selected="false" aria-controls="prices" data-tab="prices" class="sg-tab-quote">Get a quote</button>}
       {p.reviews.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="reviews" data-tab="reviews">Reviews <small>{p.revCount}</small></button>}
       {p.gallery.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="photos" data-tab="photos">Photos <small>{p.gallery.length}</small></button>}
-      {p.isFounders && <button type="button" role="tab" aria-selected="false" aria-controls="prices" data-tab="prices">Prices</button>}
       <button type="button" role="tab" aria-selected="false" aria-controls="book" data-tab="book">Book</button>
     </div>
   </nav>
@@ -512,7 +516,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
 
   <footer class="sg-foot"><div class="in"><span>&copy; 2026 MYAH · {p.name}</span><span><a href="/">MYAH</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span></div></footer>
 
-  <div class="sg-bar" data-bar><span>{p.name}<small>★ {p.rating} · replies within 24h</small></span><a class="btn btn-main" href="#book" data-open="book">Book {us}</a></div>
+  <div class="sg-bar" data-bar><span>{p.name}<small>{p.isFounders ? 'From $' + fromDay + ' a day · replies within 24h' : '★ ' + p.rating + ' · replies within 24h'}</small></span>{p.isFounders ? <a class="btn btn-main" href="#prices" data-open="prices">Get a quote</a> : <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>}</div>
   <div class="sg-lb" data-lb><button type="button" aria-label="Close" data-lb-close>✕</button><img alt="" data-lb-img /></div>
 
   <script is:inline define:vars={{ pageSlug: p.pageSlug, sentMsg: p.joint ? "Email sent. We'll be in touch soon." : "Email sent. I'll be in touch soon." }}>
