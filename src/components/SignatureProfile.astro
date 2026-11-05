@@ -4,6 +4,10 @@
 // with one panel open at a time, so the page stays short on a phone.
 // The founders page uses it (approved 26 Oct 2026); ?layout=classic shows the old one.
 import LaunchSoon from '../pages/_launchsoon.astro';
+import FoundersQuote from './FoundersQuote.astro';
+import { foundersWhy, foundersTrust } from '../data/founders';
+import { quotePrices } from '../data/founders-pricing';
+const fromDay = Math.min(quotePrices.base.dog, quotePrices.base.cat);
 
 interface Pic { src: string; pos?: string; alt?: string; wide?: boolean }
 interface Props {
@@ -163,6 +167,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     .sg-tabs .in { position:relative; max-width:1180px; margin:0 auto; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:12px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px)); }
     .sg-tabs .in::-webkit-scrollbar { display:none; }
     .sg-tabs button { flex:none; display:inline-flex; align-items:center; gap:8px; min-height:42px; padding:0 18px; border-radius:50px; border:1px solid var(--line); background:#fff; color:var(--soft); font:600 .74rem 'Montserrat',sans-serif; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+    .sg-tabs button.sg-tab-quote { border-color:var(--forest); color:var(--forest); background:#e4efe7; }
     .sg-tabs button small { font:700 .62rem 'Lato',sans-serif; letter-spacing:.04em; padding:2px 7px; border-radius:50px; background:var(--cream); color:var(--brown); }
     .sg-tabs button[aria-selected="true"] { background:var(--ink); border-color:var(--ink); color:#fff; }
     .sg-tabs button[aria-selected="true"] small { background:rgba(255,255,255,.16); color:var(--tan); }
@@ -205,6 +210,26 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     .sg-plats { display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 0; }
     .sg-plats a { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:50px; background:#fff; border:1px solid var(--line); text-decoration:none; font-size:.78rem; font-weight:600; color:var(--ink); }
     .sg-plats a::before { content:"✓"; color:#fff; background:var(--forest); width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:.62rem; }
+
+    /* why owners book us (founders) */
+    .sg-why { margin-top:56px; padding-top:44px; border-top:1px solid var(--line); }
+    .sg-why > .lbl { color:var(--brown); display:block; margin:0 0 12px; }
+    .sg-why-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:22px 0 18px; }
+    .sg-why-grid div { background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; }
+    .sg-why-grid i { display:block; font:normal 400 .9rem 'Marcellus',serif; color:var(--tan); margin-bottom:10px; }
+    .sg-why-grid b { display:block; font:400 1.18rem 'Marcellus',serif; color:var(--ink); margin-bottom:6px; }
+    .sg-why-grid p { margin:0; font-size:.88rem; line-height:1.65; color:var(--soft); }
+    .sg-fold { background:var(--cream); border-radius:18px; padding:18px 22px; }
+    .sg-fold summary { cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; font:400 1.2rem 'Marcellus',serif; color:var(--ink); }
+    .sg-fold summary::-webkit-details-marker { display:none; }
+    .sg-fold summary::after { content:"+"; font:400 1.4rem 'Montserrat',sans-serif; color:var(--forest); }
+    .sg-fold[open] summary::after { content:"−"; }
+    .sg-fold > p { color:var(--soft); line-height:1.75; margin:14px 0 0; font-size:.94rem; }
+    .sg-fold .sg-promise { margin:14px 0 4px; }
+    .sg-fold .sg-promise li::before { background:#fff; }
+    .sg-why-acts { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+    .sg-quote-link { margin:0 0 16px; font-size:.9rem; color:var(--soft); }
+    .sg-quote-link a { color:var(--forest); font-weight:600; }
 
     /* reviews */
     .sg-feature { background:var(--ink); color:#fff; border-radius:24px; padding:38px 40px; position:relative; overflow:hidden; margin:24px 0 18px; }
@@ -285,6 +310,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     }
     @media (max-width:900px) {
       .sg-about, .sg-book { grid-template-columns:minmax(0,1fr); gap:28px; }
+      .sg-why-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
       .sg-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
       .sg-bar { display:flex; }
       footer.sg-foot { padding-bottom:calc(110px + env(safe-area-inset-bottom,0px)); }
@@ -310,6 +336,11 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
       .sg-seal img { width:26px; height:26px; }
       .sg-seal::before { inset:15px; }
       .sg-glance { gap:10px; }
+      .sg-why { margin-top:40px; padding-top:32px; }
+      .sg-why-grid { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory; margin-left:-22px; margin-right:-22px; padding:2px 22px 10px; scroll-padding:0 22px; scrollbar-width:none; }
+      .sg-why-grid::-webkit-scrollbar { display:none; }
+      .sg-why-grid div { flex:none; width:76vw; scroll-snap-align:start; padding:18px; }
+      .sg-why-acts .btn { flex:1; }
       .sg-grid .cap { font-size:.6rem; padding:20px 7px 6px; line-height:1.25; }
       .sg-grid button:first-child .cap { font-size:.74rem; padding:28px 10px 9px; }
       .sg-glance div { grid-template-columns:1fr; padding:16px 14px 14px; }
@@ -335,7 +366,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
 <body>
   <header class="sg-top" data-top>
     <a class="sg-logo" href="/"><img src="/images/logo-mark-white.png" alt="" data-logo /><span>MYAH<small>Make Yourself At Home</small></span></a>
-    <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>
+    {p.isFounders ? <a class="btn btn-main" href="#prices" data-open="prices">Get a quote</a> : <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>}
   </header>
 
   <section class="sg-hero" data-hero>
@@ -346,7 +377,8 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
       <h1 class="sg-name serif">{p.nameA}{p.nameB && <em> &amp;</em>}{p.nameB && <>{' '}{p.nameB.replace(/^&\s*/, '')}</>}</h1>
       {p.tagline && <p class="sg-tag">{p.tagline}</p>}
       <div class="sg-acts">
-        <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>
+        {p.isFounders && <a class="btn btn-main" href="#prices" data-open="prices">Get a quote</a>}
+        <a class={p.isFounders ? 'btn btn-glass' : 'btn btn-main'} href="#book" data-open="book">Book {us}</a>
         {p.waNum && <a class="btn btn-glass sg-wa" href={p.waHref} target="_blank" rel="noopener" aria-label={`Message ${us} on WhatsApp`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2A9.7 9.7 0 0 0 3.7 16.9L2.4 21.6l4.8-1.3A9.7 9.7 0 1 0 12 2.2zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-2.8.8.8-2.8-.2-.3A8 8 0 1 1 12 19.9zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.2-.2-.2-.4-.3z"/></svg></a>}
       </div>
     </div>
@@ -364,6 +396,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     <div class="in" role="tablist">
       <span class="sg-pill" aria-hidden="true"></span>
       <button type="button" role="tab" aria-selected="true" aria-controls="about" data-tab="about">About</button>
+      {p.isFounders && <button type="button" role="tab" aria-selected="false" aria-controls="prices" data-tab="prices" class="sg-tab-quote">Get a quote</button>}
       {p.reviews.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="reviews" data-tab="reviews">Reviews <small>{p.revCount}</small></button>}
       {p.gallery.length > 0 && <button type="button" role="tab" aria-selected="false" aria-controls="photos" data-tab="photos">Photos <small>{p.gallery.length}</small></button>}
       <button type="button" role="tab" aria-selected="false" aria-controls="book" data-tab="book">Book</button>
@@ -390,6 +423,19 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
           {p.plats.length > 0 && <div class="sg-plats">{p.plats.map((x: any) => <a href={x.url} target="_blank" rel="noopener noreferrer">{x.name}</a>)}</div>}
         </div>
       </div>
+      {p.isFounders && (
+        <div class="sg-why">
+          <span class="lbl">Why owners book us</span>
+          <h2 class="sg-h serif">Professional care, <em>in your pets' own home.</em></h2>
+          <div class="sg-why-grid">{foundersWhy.map((w, i) => <div><i>{String(i + 1).padStart(2, '0')}</i><b>{w.t}</b><p>{w.d}</p></div>)}</div>
+          <details class="sg-fold">
+            <summary>Trust &amp; peace of mind</summary>
+            <p>{foundersTrust.intro}</p>
+            <ul class="sg-promise">{foundersTrust.points.map((t) => <li>{t}</li>)}</ul>
+          </details>
+          <div class="sg-why-acts"><a class="btn btn-main" href="#prices" data-open="prices">Build your quote</a><a class="btn btn-line" href="#book" data-open="book">Book {us}</a></div>
+        </div>
+      )}
     </section>
 
     {p.reviews.length > 0 && (
@@ -428,6 +474,14 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
       </section>
     )}
 
+    {p.isFounders && (
+      <section class="sg-panel" id="prices" role="tabpanel" hidden>
+        <span class="lbl">Prices</span>
+        <h2 class="sg-h serif">Build your <em>quote</em></h2>
+        <FoundersQuote />
+      </section>
+    )}
+
     <section class="sg-panel" id="book" role="tabpanel" hidden>
       <div class="sg-book">
         <div>
@@ -438,6 +492,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
             <li>Meet {us} before the sit, in person or on a call</li>
             <li>Daily photo updates while you're away</li>
           </ul>
+          {p.isFounders && <p class="sg-quote-link">Want a price first? <a href="#prices" data-open="prices">Build your quote</a></p>}
           {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Text on WhatsApp</a>}
         </div>
         <form class="sg-form" data-enquiry data-go={p.launched ? '/messages' : undefined}>
@@ -461,7 +516,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
 
   <footer class="sg-foot"><div class="in"><span>&copy; 2026 MYAH · {p.name}</span><span><a href="/">MYAH</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span></div></footer>
 
-  <div class="sg-bar" data-bar><span>{p.name}<small>★ {p.rating} · replies within 24h</small></span><a class="btn btn-main" href="#book" data-open="book">Book {us}</a></div>
+  <div class="sg-bar" data-bar><span>{p.name}<small>{p.isFounders ? 'From $' + fromDay + ' a day · replies within 24h' : '★ ' + p.rating + ' · replies within 24h'}</small></span>{p.isFounders ? <a class="btn btn-main" href="#prices" data-open="prices">Get a quote</a> : <a class="btn btn-main" href="#book" data-open="book">Book {us}</a>}</div>
   <div class="sg-lb" data-lb><button type="button" aria-label="Close" data-lb-close>✕</button><img alt="" data-lb-img /></div>
 
   <script is:inline define:vars={{ pageSlug: p.pageSlug, sentMsg: p.joint ? "Email sent. We'll be in touch soon." : "Email sent. I'll be in touch soon." }}>
@@ -470,7 +525,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     // tabs: one panel at a time
     const tabs = qa('[data-tab]');
     // scroll reveal (set up before the first tab opens)
-    const RV = '.sg-panel > .lbl, .sg-panel > .sg-h, .sg-frame-wrap, .sg-about > div:last-child > :not(.sg-glance), .sg-glance > div, .sg-feature, .sg-rev, .sg-hint, .sg-grid button, .sg-book > div:first-child > :not(ul), .sg-promise li, .sg-form';
+    const RV = '.sg-why-grid > div, .sg-panel > .lbl, .sg-panel > .sg-h, .sg-frame-wrap, .sg-about > div:last-child > :not(.sg-glance), .sg-glance > div, .sg-feature, .sg-rev, .sg-hint, .sg-grid button, .sg-book > div:first-child > :not(ul), .sg-promise li, .sg-form';
     const rvs = qa(RV); rvs.forEach(el => el.classList.add('rv'));
     const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
       es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
@@ -521,10 +576,10 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     const tick = () => {
       const past = hero.getBoundingClientRect().bottom < 90;
       top.classList.toggle('solid', past); logo.src = past ? '/images/logo-mark.png' : '/images/logo-mark-white.png';
-      bar.classList.toggle('on', past && q('#book').hidden);
+      bar.classList.toggle('on', past && q('#book').hidden && !(q('#prices') && !q('#prices').hidden));
     };
     window.addEventListener('scroll', tick, { passive: true }); tick();
-    tabs.forEach(t => t.addEventListener('click', tick));
+    tabs.concat(qa('[data-open]')).forEach(t => t.addEventListener('click', tick));
     // hero slideshow
     const slides = qa('[data-slide]'); let si = 0;
     // Put our faces in the clear space between the top bar and the words,

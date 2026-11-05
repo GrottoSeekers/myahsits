@@ -183,3 +183,27 @@ export const foundersGallery = [
     "alt": "Poppy the black Labrador"
   }
 ];
+
+// "Why owners book us" on the founders' About tab (owner, 5 Nov 2026).
+export const foundersWhy = [
+  { t: 'Insured and ID checked', d: 'Fully insured and ID verified, with 40+ five-star reviews from owners in Sydney, Perth, the Blue Mountains and the UK.' },
+  { t: 'Company all day', d: "We work from home, so your pets aren't left alone for a full working day. They have company, in the place they know best." },
+  { t: 'Their walks, their parks', d: 'Same routes, same parks, same times. If they go to the park at 7am, so do we.' },
+  { t: 'A home that looks lived in', d: "Bins out on bin night, post collected, curtains opened in the morning and drawn at night. Nobody can tell you're away." },
+  { t: 'Updates on your terms', d: 'Photos and messages on WhatsApp, daily or weekly. You choose how often you hear from us.' },
+  { t: 'Their routine, kept', d: 'Breakfast at 7, tablets at 6.30pm, bed at 10pm. Whatever the routine is, we keep it.' },
+];
+
+// The "Trust & peace of mind" fold-out under it.
+export const foundersTrust = {
+  intro: "Inviting someone into your home and trusting them with your pets is a big decision. Here's what you can count on from us.",
+  points: [
+    'Photos and messages on WhatsApp, every day or once a week, as you prefer',
+    'Easy to reach for the whole trip, whatever the time difference',
+    "Your pets' routine, house rules and boundaries kept exactly as agreed",
+    'No parties',
+    'No use of your personal belongings',
+    'Plants watered, bins out on bin night and post collected',
+    'Your home left clean and tidy, sheets washed, with fresh bread and milk in the fridge',
+  ],
+};
