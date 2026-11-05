@@ -9,7 +9,13 @@ interface Props { waHref: string; launched: boolean }
 const { waHref, launched } = Astro.props;
 const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
 ---
-<form class="sg-form fe" data-enquiry data-enquiry-rich data-go={launched ? '/messages' : undefined} novalidate>
+<div class="sg-form fe fe-gate" data-fe-gate>
+  <p class="fe-sub">Start with your quote</p>
+  <h3 class="fe-gate-h">Build your quote first</h3>
+  <p class="fe-gate-p">Pick your dates, pets and care to see your price. Then send it to us with your details and photos, by email or WhatsApp.</p>
+  <a class="btn btn-main" href="#prices" data-open="prices">Build your quote</a>
+</div>
+<form class="sg-form fe" data-enquiry data-enquiry-rich data-go={launched ? '/messages' : undefined} novalidate hidden>
   <div class="fe-bar"><span data-fe-label>Step 1 of 3 · You and your dates</span><i><b data-fe-fill style="width:33.3%"></b></i></div>
 
   <fieldset class="fe-step" data-fe-step="1">
@@ -79,6 +85,11 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   .fe .btn-line { background:#fff; color:var(--forest); border-color:rgba(110,84,56,.4); }
   .fe .btn:disabled { opacity:.6; cursor:default; transform:none; }
   .fe .sg-send2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:4px; }
+  .sg-form.fe[hidden] { display:none; }
+  .fe-gate { gap:12px; }
+  .fe-gate .fe-sub { margin:0; }
+  .fe-gate-h { margin:0; font:400 1.5rem 'Marcellus',serif; color:var(--ink); }
+  .fe-gate-p { margin:0 0 6px; font-size:.92rem; line-height:1.65; color:var(--soft); }
   .fe .sg-status { margin:0; min-height:1.2em; text-align:center; font-size:.86rem; font-weight:600; color:var(--forest); }
   .fe .sg-send2.wa-first > :last-child { order:-1; }
   .fe-step { border:0; margin:0; padding:0; min-width:0; display:grid; gap:14px; }
@@ -153,7 +164,11 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   next.addEventListener('click', () => { if (ok(at)) { show(at + 1); top(); } });
   back.addEventListener('click', () => { show(at - 1); top(); });
   // Opened from the quote: start at step 1 with the quote noted.
-  form.addEventListener('fe:reset', () => show(0));
+  // The form only opens from the quote ("Send by email" / "Send on WhatsApp"
+  // under the total); until then the Book tab shows the "Build your quote
+  // first" card (owner, 5 Nov 2026).
+  const gate = document.querySelector('[data-fe-gate]');
+  form.addEventListener('fe:reset', () => { form.hidden = false; if (gate) gate.hidden = true; show(0); });
 
   // Photos: shrunk to 1400px JPEGs in the browser (keeps the upload small).
   const MAX = 4, photos = { pet_photo: [], home_photo: [] };
