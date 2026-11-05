@@ -277,6 +277,9 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     .sg-form input, .sg-form textarea { font:400 .95rem 'Montserrat',sans-serif; color:var(--ink); background:var(--paper); border:1.5px solid rgba(110,84,56,.25); border-radius:12px; padding:12px 14px; width:100%; min-width:0; }
     .sg-form input:focus, .sg-form textarea:focus { outline:none; border-color:var(--forest); box-shadow:0 0 0 3px rgba(47,93,69,.12); }
     .sg-form .btn { width:100%; }
+    .sg-send2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+    .sg-send2 .btn { padding:0 12px; }
+    @media (max-width:560px) { .sg-send2 .btn { font-size:.66rem; letter-spacing:.08em; padding:0 8px; } }
     .sg-status { margin:0; min-height:1.2em; text-align:center; font-size:.86rem; font-weight:600; color:var(--forest); }
     .sg-launch { margin-top:40px; border-radius:22px; overflow:hidden; border:1px solid var(--line); }
     .sg-launch :global(#launch) { padding:40px 28px !important; }
@@ -478,7 +481,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
       <section class="sg-panel" id="prices" role="tabpanel" hidden>
         <span class="lbl">Prices</span>
         <h2 class="sg-h serif">Build your <em>quote</em></h2>
-        <FoundersQuote />
+        <FoundersQuote waHref={p.waNum ? p.waHref : ''} />
       </section>
     )}
 
@@ -506,7 +509,12 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
             <label>To<input type="date" name="date_to" required /></label>
           </div>
           <label>Your pets &amp; home<textarea name="message" rows="3" placeholder="Breed, age, anything we should know"></textarea></label>
-          <button type="submit" class="btn btn-main">Send email</button>
+          {p.isFounders && p.waNum ? (
+            <div class="sg-send2">
+              <button type="submit" class="btn btn-main">Send email</button>
+              <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener" data-form-wa>Send on WhatsApp</a>
+            </div>
+          ) : <button type="submit" class="btn btn-main">Send email</button>}
           <p class="sg-status" data-enquiry-status role="status"></p>
         </form>
       </div>
@@ -652,6 +660,16 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
     document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
     // enquiry (same behaviour as the current page)
     const form = q('[data-enquiry]'), status = q('[data-enquiry-status]');
+    // Send on WhatsApp (founders' page): whatever is in the form goes in the message.
+    const formWa = q('[data-form-wa]');
+    formWa && formWa.addEventListener('click', () => {
+      const fd = new FormData(form), name = String(fd.get('first_name') || '').trim();
+      const from = String(fd.get('date_from') || ''), to = String(fd.get('date_to') || '');
+      const text = 'Hi Callum and Niamh' + (name ? ", it's " + name : '') + '.'
+        + (from && to && !/Arrive /.test(String(fd.get('message') || '')) ? '\nDates: ' + from + ' to ' + to + '.' : '')
+        + (String(fd.get('message') || '').trim() ? '\n\n' + String(fd.get('message')).trim() : '');
+      formWa.href = formWa.href.split('?')[0] + '?text=' + encodeURIComponent(text);
+    });
     form && form.addEventListener('submit', e => {
       e.preventDefault();
       const fd = new FormData(form); fd.append('slug', pageSlug);

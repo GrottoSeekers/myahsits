@@ -4,6 +4,8 @@
 // see an estimate; "Send us this quote" fills the Book form with it.
 import { quotePrices as P, QUOTE_CURRENCY } from '../data/founders-pricing';
 const $ = (n: number) => '$' + n;
+// WhatsApp link for the page (empty if no number is set).
+const { waHref = '' } = Astro.props as { waHref?: string };
 ---
 <div class="q-root">
   <p class="q-intro">Every sit is priced for your pets and your home. Pick what applies and the estimate updates as you go. We confirm the final price with you before anything is booked.</p>
@@ -121,7 +123,8 @@ const $ = (n: number) => '$' + n;
       <span class="q-per" data-q-days hidden></span>
       <ul class="q-lines" data-q-lines></ul>
       <p class="q-small">Rough estimate. Shopping receipts and any holiday surcharge are added separately. We confirm the final price with you before anything is booked.</p>
-      <button type="button" class="q-btn" data-q-send data-open="book">Send us this quote</button>
+      <button type="button" class="q-btn" data-q-send data-open="book">Send by email</button>
+      {waHref && <a class="q-btn q-btn-wa" href={waHref} target="_blank" rel="noopener" data-q-wa>Send on WhatsApp</a>}
     </aside>
   </div>
   <div class="q-strip" data-q-strip><span>Estimate <b data-q-strip-total>$0</b></span><button type="button" class="q-btn" data-q-jump>See total</button></div>
@@ -177,6 +180,8 @@ const $ = (n: number) => '$' + n;
   .q-btn { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 22px; border-radius:50px; border:0; background:var(--forest); color:#fff; font:600 .76rem 'Montserrat',sans-serif; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; transition:transform .15s, background .2s; }
   .q-btn:hover { background:var(--forest2); transform:translateY(-2px); }
   .q-sum .q-btn { width:100%; }
+  .q-sum .q-btn-wa { margin-top:8px; background:transparent; border:1.5px solid rgba(255,255,255,.4); text-decoration:none; }
+  .q-sum .q-btn-wa:hover { background:rgba(255,255,255,.1); }
   .q-sum .q-lbl { font:700 .68rem 'Lato',sans-serif; letter-spacing:.22em; text-transform:uppercase; color:var(--tan); }
   .q-strip { display:none; }
   @media (max-width:900px) {
@@ -278,8 +283,22 @@ const $ = (n: number) => '$' + n;
       + '\nMeet and greet: ' + (val('meetWhere') === 'far' ? 'more than 1 hour from Sydney' : 'within 1 hour') + ', ' + (val('meetLen') === 'long' ? 'up to 1.5 hours' : '30 minutes') + '.' 
       + '\n\nAnything else about my pets or home: ';
   };
-  form.addEventListener('change', calc);
-  form.addEventListener('input', calc);
+  // Once the quote has been touched, every WhatsApp button for this page opens
+  // with the quote already written (like the email). The share-MYAH links
+  // (wa.me/?text=...) are left alone.
+  let touched = false;
+  // Looked up each time: the Book tab's button comes later in the page.
+  const fillWa = () => {
+    if (!touched) return;
+    const text = 'Hi Callum and Niamh, I built a quote on your page.\n\n' + summary;
+    document.querySelectorAll('a[href^="https://wa.me/"]').forEach((a) => {
+      if (!/^https:\/\/wa\.me\/\d+/.test(a.href)) return;
+      a.href = a.href.split('?')[0] + '?text=' + encodeURIComponent(text);
+    });
+  };
+  const changed = () => { touched = true; calc(); fillWa(); };
+  form.addEventListener('change', changed);
+  form.addEventListener('input', changed);
   calc();
   // Send: put the dates and the quote into the Book form (the data-open
   // handler on the page then opens the Book tab).
@@ -289,6 +308,15 @@ const $ = (n: number) => '$' + n;
     if (from) book.querySelector('[name=date_from]').value = from;
     if (to) book.querySelector('[name=date_to]').value = to;
     const msg = book.querySelector('[name=message]'); msg.value = summary; msg.rows = 8;
+    // Land on the form itself (on phones the page could end up at the sign-up
+    // section below it), once the Book tab has opened.
+    setTimeout(() => {
+      // stop below the top bar and the tabs, which stay on screen
+      const bars = (document.querySelector('[data-top]')?.offsetHeight || 0) + (document.querySelector('.sg-tabs')?.offsetHeight || 0);
+      window.scrollTo({ top: book.getBoundingClientRect().top + window.scrollY - bars - 16, behavior: 'smooth' });
+      const first = book.querySelector('[name=first_name]');
+      if (first && !first.value) first.focus({ preventScroll: true });
+    }, 60);
   });
   // Phone: the strip at the bottom jumps to the total, and hides once it shows.
   const sum = document.querySelector('[data-q-sum]'), strip = document.querySelector('[data-q-strip]');
