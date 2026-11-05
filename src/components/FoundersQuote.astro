@@ -1,0 +1,253 @@
+---
+// "Prices" tab on the founders' page: a quote builder (owner, 5 Nov 2026,
+// modelled on the inspiration site's estimate). Owners pick what applies and
+// see an estimate; "Send us this quote" fills the Book form with it.
+import { quotePrices as P, QUOTE_CURRENCY } from '../data/founders-pricing';
+const $ = (n: number) => '$' + n;
+---
+<div class="q-root">
+  <p class="q-intro">Every sit is priced for your pets and your home. Pick what applies and the estimate updates as you go. We confirm the final price with you before anything is booked.</p>
+
+  <div class="q-wrap">
+    <form class="q-form" data-quote onsubmit="return false">
+      <fieldset class="q-card">
+        <legend>Your dates</legend>
+        <div class="q-two">
+          <label>From<input type="date" name="q_from" /></label>
+          <label>To<input type="date" name="q_to" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="q-card">
+        <legend>Your pets</legend>
+        <p class="q-sub">Your first pet</p>
+        <div class="q-chips">
+          <label><input type="radio" name="main" value="dog" checked /><span>Dog<small>{$(P.base.dog)} a night</small></span></label>
+          <label><input type="radio" name="main" value="cat" /><span>Cat<small>{$(P.base.cat)} a night</small></span></label>
+        </div>
+        <div class="q-count"><span>Extra dogs<small>+{$(P.extraPet.dog)} a night each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraDogs">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        <div class="q-count"><span>Extra cats or small pets<small>+{$(P.extraPet.catOrSmall)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraCats">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        <div class="q-count"><span>Puppies or kittens under 12 months<small>+{$(P.extraPet.young)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="young">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+      </fieldset>
+
+      <fieldset class="q-card">
+        <legend>Time alone</legend>
+        <p class="q-sub">How long can your pets be left on their own?</p>
+        <div class="q-opts">
+          <label><input type="radio" name="sup" value="independent" checked /><span>5 hours or more<small>Included</small></span></label>
+          <label><input type="radio" name="sup" value="moderate" /><span>3 to 4 hours<small>+{$(P.supervision.moderate)} a day</small></span></label>
+          <label><input type="radio" name="sup" value="constant" /><span>1 to 2 hours at most, or separation anxiety<small>+{$(P.supervision.constant)} a day</small></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="q-card">
+        <legend>Nights</legend>
+        <div class="q-opts">
+          <label><input type="radio" name="night" value="0" checked /><span>Sleeps through the night<small>Included</small></span></label>
+          <label><input type="radio" name="night" value="1" /><span>Needs a toilet break or wakes in the night<small>+{$(P.nightCare)} a night · puppies, older dogs or medical needs</small></span></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="q-card" data-dogs-only>
+        <legend>Walks</legend>
+        <p class="q-sub">The first walk of the day (30 to 40 minutes) is included.</p>
+        <div class="q-count"><span>Extra walks a day<small>30 to 40 minutes · +{$(P.walks.extra)} each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="walks">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        <div class="q-count"><span>Long walks a day<small>60 minutes or more · +{$(P.walks.long)} each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="longWalks">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        <p class="q-sub" style="margin-top:16px">Where does your dog go to the toilet?</p>
+        <div class="q-opts">
+          <label><input type="radio" name="toilet" value="In the garden on their own" checked /><span>In the garden on their own</span></label>
+          <label><input type="radio" name="toilet" value="On a lead in the day, garden at night" /><span>On a lead in the day, garden at night</span></label>
+          <label><input type="radio" name="toilet" value="Always on a lead" /><span>Always on a lead</span></label>
+        </div>
+        <p class="q-note" data-lead-note hidden>Toilet trips on a lead count as walks, so add them to your walk count above.</p>
+      </fieldset>
+
+      <fieldset class="q-card">
+        <legend>Medication</legend>
+        <label class="q-check"><input type="checkbox" name="med" /><span>Medication at set times, for example 6.30pm every day<small>+{$(P.medication)} a day</small></span></label>
+      </fieldset>
+
+      <details class="q-card q-more">
+        <summary>Extras: welcome home, keys and meeting us</summary>
+        <p class="q-sub">Welcome home</p>
+        <p class="q-note" style="margin-top:0">Fresh bread and milk will be waiting when you get back, as a thank you for choosing us.</p>
+        <div class="q-opts">
+          <label><input type="radio" name="shop" value="none" checked /><span>Just the bread and milk<small>Included</small></span></label>
+          <label><input type="radio" name="shop" value="essentials" /><span>Essentials restock: send us a short list before your flight<small>{$(P.welcomeHome.essentials)} + the receipt</small></span></label>
+          <label><input type="radio" name="shop" value="fullShop" /><span>Your full weekly shop, or more than one shop<small>{$(P.welcomeHome.fullShop)} + the receipt</small></span></label>
+        </div>
+        <p class="q-sub" style="margin-top:18px">Key collection</p>
+        <div class="q-count"><span>Trips to collect or drop off keys<small>{$(P.keys.trip)} a trip</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="keyTrips">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        <label class="q-check"><input type="checkbox" name="keyFar" /><span>More than 1 hour from central Sydney<small>+{$(P.keys.far)} a trip</small></span></label>
+        <p class="q-sub" style="margin-top:18px">Meet and greet</p>
+        <p class="q-note" style="margin-top:0">A 30-minute meet and greet is free within an hour of us.</p>
+        <label class="q-check"><input type="checkbox" name="meetFar" /><span>More than 1 hour from Sydney<small>+{$(P.meet.far)}</small></span></label>
+        <label class="q-check"><input type="checkbox" name="meetLong" /><span>Longer consultation, up to 1.5 hours<small>+{$(P.meet.extended)}</small></span></label>
+        <p class="q-note">Public holidays may carry a surcharge. We'll confirm it with your quote.</p>
+      </details>
+    </form>
+
+    <aside class="q-sum" data-q-sum>
+      <span class="q-lbl">Estimated total</span>
+      <b class="q-total serif" data-q-total>$0</b>
+      <span class="q-per" data-q-per>{QUOTE_CURRENCY}</span>
+      <ul class="q-lines" data-q-lines></ul>
+      <p class="q-small">Rough estimate. Shopping receipts and any holiday surcharge are added separately. We confirm the final price with you before anything is booked.</p>
+      <button type="button" class="q-btn" data-q-send data-open="book">Send us this quote</button>
+    </aside>
+  </div>
+  <div class="q-strip" data-q-strip><span>Estimate <b data-q-strip-total>$0</b></span><button type="button" class="q-btn" data-q-jump>See total</button></div>
+</div>
+
+<style is:global>
+  .q-root, .q-root * { box-sizing:border-box; }
+  .q-intro { color:var(--soft); line-height:1.75; max-width:640px; margin:0 0 24px; font-size:.96rem; }
+  .q-wrap { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,.9fr); gap:28px; align-items:start; }
+  .q-form { display:grid; gap:14px; margin:0; }
+  .q-card { margin:0; min-width:0; background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px 20px 20px; }
+  .q-card legend, .q-more summary { float:left; width:100%; padding:0; margin:0 0 12px; font:400 1.2rem 'Marcellus',serif; color:var(--ink); }
+  .q-card legend + * { clear:both; }
+  .q-more summary { float:none; margin:0; cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .q-more summary::-webkit-details-marker { display:none; }
+  .q-more summary::after { content:"+"; font:400 1.4rem 'Montserrat',sans-serif; color:var(--forest); }
+  .q-more[open] summary { margin-bottom:14px; }
+  .q-more[open] summary::after { content:"−"; }
+  .q-sub { margin:0 0 10px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
+  .q-note { margin:12px 0 0; font-size:.84rem; line-height:1.55; color:var(--soft); }
+  .q-two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+  .q-two label { display:grid; gap:6px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
+  .q-two label { min-width:0; }
+  .q-two input { -webkit-appearance:none; appearance:none; min-height:48px; max-width:100%; font:400 .95rem 'Montserrat',sans-serif; color:var(--ink); background:var(--paper); border:1.5px solid rgba(110,84,56,.25); border-radius:12px; padding:12px 14px; width:100%; min-width:0; }
+  .q-chips { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px; }
+  .q-opts { display:grid; gap:8px; }
+  .q-chips label, .q-opts label, .q-check { position:relative; display:block; cursor:pointer; }
+  .q-chips input, .q-opts input, .q-check input { position:absolute; opacity:0; pointer-events:none; }
+  .q-chips span, .q-opts span, .q-check span { display:flex; flex-direction:column; gap:3px; padding:12px 14px; border-radius:12px; border:1.5px solid rgba(110,84,56,.22); background:var(--paper); font-size:.9rem; font-weight:600; color:var(--ink); line-height:1.35; transition:background .2s, border-color .2s, color .2s; }
+  .q-chips small, .q-opts small, .q-check small, .q-count small { font-size:.76rem; font-weight:500; color:var(--soft); }
+  .q-chips input:checked + span, .q-opts input:checked + span, .q-check input:checked + span { background:var(--ink); border-color:var(--ink); color:#fff; }
+  .q-chips input:checked + span small, .q-opts input:checked + span small, .q-check input:checked + span small { color:var(--tan); }
+  .q-chips input:focus-visible + span, .q-opts input:focus-visible + span, .q-check input:focus-visible + span { outline:2px solid var(--forest); outline-offset:2px; }
+  .q-check { margin-top:8px; }
+  .q-count { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+  .q-count > span:first-child { display:flex; flex-direction:column; gap:3px; font-size:.9rem; font-weight:600; }
+  .q-step { flex:none; display:inline-flex; align-items:center; gap:4px; }
+  .q-step button { width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(110,84,56,.3); background:#fff; color:var(--forest); font-size:1.1rem; cursor:pointer; }
+  .q-step button:disabled { opacity:.35; cursor:default; }
+  .q-step output { min-width:28px; text-align:center; font:400 1.2rem 'Marcellus',serif; }
+  .q-sum { position:sticky; top:150px; background:var(--ink); color:#fff; border-radius:22px; padding:26px 24px; display:grid; gap:4px; }
+  .q-total { font-size:clamp(2.4rem,5vw,3.2rem); line-height:1.05; margin-top:6px; }
+  .q-per { font-size:.82rem; color:rgba(255,255,255,.7); }
+  .q-lines { list-style:none; padding:0; margin:16px 0 4px; display:grid; gap:8px; border-top:1px solid rgba(196,171,138,.3); padding-top:14px; }
+  .q-lines li { display:flex; justify-content:space-between; gap:12px; font-size:.84rem; color:rgba(255,255,255,.86); }
+  .q-lines li b { font-weight:600; white-space:nowrap; }
+  .q-small { margin:10px 0 16px; font-size:.76rem; line-height:1.55; color:rgba(255,255,255,.62); }
+  .q-btn { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 22px; border-radius:50px; border:0; background:var(--forest); color:#fff; font:600 .76rem 'Montserrat',sans-serif; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; transition:transform .15s, background .2s; }
+  .q-btn:hover { background:var(--forest2); transform:translateY(-2px); }
+  .q-sum .q-btn { width:100%; }
+  .q-sum .q-lbl { font:700 .68rem 'Lato',sans-serif; letter-spacing:.22em; text-transform:uppercase; color:var(--tan); }
+  .q-strip { display:none; }
+  @media (max-width:900px) {
+    .q-wrap { grid-template-columns:minmax(0,1fr); }
+    .q-sum { position:static; }
+    .q-strip { position:sticky; bottom:calc(12px + env(safe-area-inset-bottom,0px)); z-index:20; margin-top:16px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 7px 7px 20px; border-radius:50px; background:rgba(44,26,14,.95); color:#fff; font-size:.86rem; box-shadow:0 14px 34px rgba(20,13,7,.3); }
+    .q-strip b { font:400 1.15rem 'Marcellus',serif; margin-left:4px; }
+    .q-strip .q-btn { min-height:42px; padding:0 18px; }
+    .q-strip.gone { visibility:hidden; }
+  }
+  @media (max-width:560px) {
+    .q-two { grid-template-columns:minmax(0,1fr); }
+    .q-card { padding:16px 16px 18px; }
+    .q-sum { padding:22px 20px; }
+  }
+</style>
+
+<script is:inline define:vars={{ P, CUR: QUOTE_CURRENCY }}>
+(() => {
+  const form = document.querySelector('[data-quote]');
+  if (!form) return;
+  const q = (s) => form.querySelector(s);
+  const n = {};
+  const MAX = { extraDogs: 4, extraCats: 6, young: 6, walks: 4, longWalks: 3, keyTrips: 4 };
+  form.querySelectorAll('[data-n]').forEach((o) => { n[o.dataset.n] = 0; });
+  const money = (v) => '$' + (Math.round(v * 100) / 100).toLocaleString('en-AU', { maximumFractionDigits: 2 });
+  const val = (name) => (form.querySelector('input[name="' + name + '"]:checked') || {}).value;
+  const on = (name) => !!form.querySelector('input[name="' + name + '"]').checked;
+  const nightsOf = () => {
+    const a = q('[name=q_from]').value, b = q('[name=q_to]').value;
+    if (!a || !b) return 0;
+    return Math.max(0, Math.round((new Date(b) - new Date(a)) / 864e5));
+  };
+  let summary = '';
+  const calc = () => {
+    const main = val('main');
+    const dogs = main === 'dog' || n.extraDogs > 0;
+    form.querySelector('[data-dogs-only]').hidden = !dogs;
+    form.querySelector('[data-lead-note]').hidden = !dogs || val('toilet') === 'In the garden on their own';
+    const daily = [];
+    daily.push([main === 'dog' ? 'First dog' : 'First cat', P.base[main]]);
+    if (n.extraDogs) daily.push([n.extraDogs + ' extra dog' + (n.extraDogs > 1 ? 's' : ''), n.extraDogs * P.extraPet.dog]);
+    if (n.extraCats) daily.push([n.extraCats + ' extra cat' + (n.extraCats > 1 ? 's' : '') + ' or small pet' + (n.extraCats > 1 ? 's' : ''), n.extraCats * P.extraPet.catOrSmall]);
+    if (n.young) daily.push([n.young + ' under 12 months', n.young * P.extraPet.young]);
+    const sup = val('sup');
+    if (sup !== 'independent') daily.push([sup === 'moderate' ? 'Time alone: 3 to 4 hours' : 'Time alone: 1 to 2 hours', P.supervision[sup]]);
+    if (val('night') === '1') daily.push(['Night-time care', P.nightCare]);
+    if (dogs && n.walks) daily.push([n.walks + ' extra walk' + (n.walks > 1 ? 's' : '') + ' a day', n.walks * P.walks.extra]);
+    if (dogs && n.longWalks) daily.push([n.longWalks + ' long walk' + (n.longWalks > 1 ? 's' : '') + ' a day', n.longWalks * P.walks.long]);
+    if (on('med')) daily.push(['Medication at set times', P.medication]);
+    const once = [];
+    const shop = val('shop');
+    if (shop === 'essentials') once.push(['Essentials restock (+ receipt)', P.welcomeHome.essentials]);
+    if (shop === 'fullShop') once.push(['Full shop (+ receipt)', P.welcomeHome.fullShop]);
+    if (n.keyTrips) once.push([n.keyTrips + ' key trip' + (n.keyTrips > 1 ? 's' : ''), n.keyTrips * (P.keys.trip + (on('keyFar') ? P.keys.far : 0))]);
+    if (on('meetFar')) once.push(['Meet and greet, over 1 hour away', P.meet.far]);
+    if (on('meetLong')) once.push(['Longer consultation', P.meet.extended]);
+    const perNight = daily.reduce((s, x) => s + x[1], 0);
+    const extras = once.reduce((s, x) => s + x[1], 0);
+    const nights = nightsOf();
+    const total = nights ? perNight * nights + extras : perNight;
+    const totalTxt = money(total);
+    document.querySelector('[data-q-total]').textContent = totalTxt;
+    document.querySelector('[data-q-strip-total]').textContent = nights ? totalTxt : totalTxt + ' a night';
+    document.querySelector('[data-q-per]').textContent = nights
+      ? CUR + ' · ' + nights + ' night' + (nights > 1 ? 's' : '') + ' at ' + money(perNight) + ' a night' + (extras ? ', plus extras' : '')
+      : CUR + ' a night. Pick your dates to see a total.';
+    const lines = daily.map((x) => [x[0], money(x[1]) + (nights ? ' × ' + nights : '')]).concat(once.map((x) => [x[0], money(x[1])]));
+    document.querySelector('[data-q-lines]').innerHTML = lines.map((l) => '<li><span>' + l[0] + '</span><b>' + l[1] + '</b></li>').join('');
+    form.querySelectorAll('[data-n]').forEach((o) => {
+      const k = o.dataset.n; o.textContent = n[k];
+      const [dn, up] = o.parentNode.querySelectorAll('button');
+      dn.disabled = n[k] <= 0; up.disabled = n[k] >= MAX[k];
+    });
+    const pets = [main === 'dog' ? '1 dog' : '1 cat'];
+    if (n.extraDogs) pets.push(n.extraDogs + ' more dog' + (n.extraDogs > 1 ? 's' : ''));
+    if (n.extraCats) pets.push(n.extraCats + ' cat' + (n.extraCats > 1 ? 's' : '') + ' or small pet' + (n.extraCats > 1 ? 's' : ''));
+    summary = 'From the price builder: about ' + totalTxt + ' ' + CUR + (nights ? ' for ' + nights + ' night' + (nights > 1 ? 's' : '') : ' a night') + '.\n'
+      + 'Pets: ' + pets.join(', ') + (n.young ? ' (' + n.young + ' under 12 months)' : '') + '.\n'
+      + lines.map((l) => '- ' + l[0] + ': ' + l[1]).join('\n')
+      + (dogs ? '\nToilet: ' + val('toilet') + '.' : '')
+      + '\n\nAnything else about my pets or home: ';
+  };
+  form.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-step]'); if (!b) return;
+    const k = b.parentNode.querySelector('[data-n]').dataset.n;
+    n[k] = Math.max(0, Math.min(MAX[k], n[k] + Number(b.dataset.step)));
+    calc();
+  });
+  form.addEventListener('change', calc);
+  form.addEventListener('input', calc);
+  calc();
+  // Send: put the dates and the quote into the Book form (the data-open
+  // handler on the page then opens the Book tab).
+  document.querySelector('[data-q-send]').addEventListener('click', () => {
+    const book = document.querySelector('[data-enquiry]'); if (!book) return;
+    const from = q('[name=q_from]').value, to = q('[name=q_to]').value;
+    if (from) book.querySelector('[name=date_from]').value = from;
+    if (to) book.querySelector('[name=date_to]').value = to;
+    const msg = book.querySelector('[name=message]'); msg.value = summary; msg.rows = 8;
+  });
+  // Phone: the strip at the bottom jumps to the total, and hides once it shows.
+  const sum = document.querySelector('[data-q-sum]'), strip = document.querySelector('[data-q-strip]');
+  document.querySelector('[data-q-jump]').addEventListener('click', () => sum.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => strip.classList.toggle('gone', es[0].isIntersecting)).observe(sum);
+})();
+</script>
