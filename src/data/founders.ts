@@ -201,7 +201,7 @@ export const foundersTrust = {
     'Photos and messages on WhatsApp, every day or once a week, as you prefer',
     'Easy to reach for the whole trip, whatever the time difference',
     "Your pets' routine, house rules and boundaries kept exactly as agreed",
-    'No parties and no visitors',
+    'No parties',
     'No use of your personal belongings',
     'Plants watered, bins out on bin night and post collected',
     'Your home left clean and tidy, sheets washed, with fresh bread and milk in the fridge',

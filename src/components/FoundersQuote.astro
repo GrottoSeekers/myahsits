@@ -13,19 +13,24 @@ const $ = (n: number) => '$' + n;
       <fieldset class="q-card">
         <legend>Your dates</legend>
         <div class="q-two">
-          <label>From<input type="date" name="q_from" /></label>
-          <label>To<input type="date" name="q_to" /></label>
+          <label>Arrival date<input type="date" name="q_from" /></label>
+          <label>Arrival time<input type="time" name="q_from_t" value="12:00" step="1800" /></label>
         </div>
+        <div class="q-two" style="margin-top:10px">
+          <label>Departure date<input type="date" name="q_to" /></label>
+          <label>Departure time<input type="time" name="q_to_t" value="12:00" step="1800" /></label>
+        </div>
+        <p class="q-note">Priced per day, counted in 24-hour blocks from when we arrive. On your last day, up to {P.days.graceHours} hours past our arrival time is free, up to {P.days.halfUpToHours} hours adds half a day, and more than {P.days.halfUpToHours} hours adds a full day.</p>
       </fieldset>
 
       <fieldset class="q-card">
         <legend>Your pets</legend>
         <p class="q-sub">Your first pet</p>
         <div class="q-chips">
-          <label><input type="radio" name="main" value="dog" checked /><span>Dog<small>{$(P.base.dog)} a night</small></span></label>
-          <label><input type="radio" name="main" value="cat" /><span>Cat<small>{$(P.base.cat)} a night</small></span></label>
+          <label><input type="radio" name="main" value="dog" checked /><span>Dog<small>{$(P.base.dog)} a day</small></span></label>
+          <label><input type="radio" name="main" value="cat" /><span>Cat<small>{$(P.base.cat)} a day</small></span></label>
         </div>
-        <div class="q-count"><span>Extra dogs<small>+{$(P.extraPet.dog)} a night each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraDogs">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
+        <div class="q-count"><span>Extra dogs<small>+{$(P.extraPet.dog)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraDogs">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
         <div class="q-count"><span>Extra cats or small pets<small>+{$(P.extraPet.catOrSmall)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="extraCats">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
         <div class="q-count"><span>Puppies or kittens under 12 months<small>+{$(P.extraPet.young)} a day each</small></span><span class="q-step"><button type="button" data-step="-1" aria-label="One fewer">−</button><output data-n="young">0</output><button type="button" data-step="1" aria-label="One more">+</button></span></div>
       </fieldset>
@@ -44,7 +49,7 @@ const $ = (n: number) => '$' + n;
         <legend>Nights</legend>
         <div class="q-opts">
           <label><input type="radio" name="night" value="0" checked /><span>Sleeps through the night<small>Included</small></span></label>
-          <label><input type="radio" name="night" value="1" /><span>Needs a toilet break or wakes in the night<small>+{$(P.nightCare)} a night · puppies, older dogs or medical needs</small></span></label>
+          <label><input type="radio" name="night" value="1" /><span>Needs a toilet break or wakes in the night<small>+{$(P.nightCare)} a day · puppies, older dogs or medical needs</small></span></label>
         </div>
       </fieldset>
 
@@ -91,6 +96,7 @@ const $ = (n: number) => '$' + n;
       <span class="q-lbl">Estimated total</span>
       <b class="q-total serif" data-q-total>$0</b>
       <span class="q-per" data-q-per>{QUOTE_CURRENCY}</span>
+      <span class="q-per" data-q-days hidden></span>
       <ul class="q-lines" data-q-lines></ul>
       <p class="q-small">Rough estimate. Shopping receipts and any holiday surcharge are added separately. We confirm the final price with you before anything is booked.</p>
       <button type="button" class="q-btn" data-q-send data-open="book">Send us this quote</button>
@@ -155,7 +161,8 @@ const $ = (n: number) => '$' + n;
     .q-strip.gone { visibility:hidden; }
   }
   @media (max-width:560px) {
-    .q-two { grid-template-columns:minmax(0,1fr); }
+    .q-two { grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:8px; }
+    .q-two input { padding:12px 10px; font-size:.9rem; }
     .q-card { padding:16px 16px 18px; }
     .q-sum { padding:22px 20px; }
   }
@@ -172,11 +179,22 @@ const $ = (n: number) => '$' + n;
   const money = (v) => '$' + (Math.round(v * 100) / 100).toLocaleString('en-AU', { maximumFractionDigits: 2 });
   const val = (name) => (form.querySelector('input[name="' + name + '"]:checked') || {}).value;
   const on = (name) => !!form.querySelector('input[name="' + name + '"]').checked;
-  const nightsOf = () => {
+  // Days to charge: 24-hour blocks from the arrival time. What is left over on
+  // the last day is free up to graceHours, half a day up to halfUpToHours,
+  // then a full day (the same steps as Rover's extended care rate).
+  const stamp = (d, t) => new Date(d + 'T' + (t || '12:00'));
+  const daysOf = () => {
     const a = q('[name=q_from]').value, b = q('[name=q_to]').value;
-    if (!a || !b) return 0;
-    return Math.max(0, Math.round((new Date(b) - new Date(a)) / 864e5));
+    if (!a || !b) return { days: 0 };
+    const hours = (stamp(b, q('[name=q_to_t]').value) - stamp(a, q('[name=q_from_t]').value)) / 36e5;
+    if (!(hours > 0)) return { days: 0 };
+    const full = Math.floor(hours / 24), over = Math.round((hours - full * 24) * 100) / 100;
+    const part = over > P.days.halfUpToHours ? 1 : over > P.days.graceHours ? 0.5 : 0;
+    return { days: Math.max(1, full + part), full, over, part };
   };
+  const dayTxt = (d) => (Math.floor(d) || '') + (d % 1 ? '½' : '') + ' day' + (d > 1 ? 's' : '');
+  const when = (d, t) => stamp(d, t).toLocaleString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  const hrs = (h) => (h === 1 ? '1 hour' : (Math.round(h * 10) / 10) + ' hours');
   let summary = '';
   const calc = () => {
     const main = val('main');
@@ -203,15 +221,24 @@ const $ = (n: number) => '$' + n;
     if (on('meetLong')) once.push(['Longer consultation', P.meet.extended]);
     const perNight = daily.reduce((s, x) => s + x[1], 0);
     const extras = once.reduce((s, x) => s + x[1], 0);
-    const nights = nightsOf();
+    const D = daysOf(), nights = D.days;
     const total = nights ? perNight * nights + extras : perNight;
     const totalTxt = money(total);
     document.querySelector('[data-q-total]').textContent = totalTxt;
-    document.querySelector('[data-q-strip-total]').textContent = nights ? totalTxt : totalTxt + ' a night';
+    document.querySelector('[data-q-strip-total]').textContent = nights ? totalTxt : totalTxt + ' a day';
     document.querySelector('[data-q-per]').textContent = nights
-      ? CUR + ' · ' + nights + ' night' + (nights > 1 ? 's' : '') + ' at ' + money(perNight) + ' a night' + (extras ? ', plus extras' : '')
-      : CUR + ' a night. Pick your dates to see a total.';
-    const lines = daily.map((x) => [x[0], money(x[1]) + (nights ? ' × ' + nights : '')]).concat(once.map((x) => [x[0], money(x[1])]));
+      ? CUR + ' · ' + dayTxt(nights) + ' at ' + money(perNight) + ' a day' + (extras ? ', plus extras' : '')
+      : CUR + ' a day. Pick your dates and times to see a total.';
+    const fromD = q('[name=q_from]').value, toD = q('[name=q_to]').value, fromT = q('[name=q_from_t]').value, toT = q('[name=q_to_t]').value;
+    const lastDay = !nights ? '' : D.full < 1 ? 'Under 24 hours: charged as 1 day.'
+      : D.over <= 0 ? 'Leaving at our arrival time: whole days only.'
+      : D.part === 0 ? hrs(D.over) + ' past our arrival time on your last day: free.'
+      : hrs(D.over) + ' past our arrival time on your last day: ' + (D.part === 1 ? 'a full day' : 'half a day') + '.';
+    const daysEl = document.querySelector('[data-q-days]');
+    daysEl.hidden = !nights;
+    daysEl.textContent = nights ? 'Arrive ' + when(fromD, fromT) + ', leave ' + when(toD, toT) + '. ' + lastDay : '';
+    const xDays = (d) => '× ' + (Math.floor(d) || '') + (d % 1 ? '½' : '');
+    const lines = daily.map((x) => [x[0], money(x[1]) + (nights ? ' ' + xDays(nights) : '')]).concat(once.map((x) => [x[0], money(x[1])]));
     document.querySelector('[data-q-lines]').innerHTML = lines.map((l) => '<li><span>' + l[0] + '</span><b>' + l[1] + '</b></li>').join('');
     form.querySelectorAll('[data-n]').forEach((o) => {
       const k = o.dataset.n; o.textContent = n[k];
@@ -221,7 +248,8 @@ const $ = (n: number) => '$' + n;
     const pets = [main === 'dog' ? '1 dog' : '1 cat'];
     if (n.extraDogs) pets.push(n.extraDogs + ' more dog' + (n.extraDogs > 1 ? 's' : ''));
     if (n.extraCats) pets.push(n.extraCats + ' cat' + (n.extraCats > 1 ? 's' : '') + ' or small pet' + (n.extraCats > 1 ? 's' : ''));
-    summary = 'From the price builder: about ' + totalTxt + ' ' + CUR + (nights ? ' for ' + nights + ' night' + (nights > 1 ? 's' : '') : ' a night') + '.\n'
+    summary = 'From the price builder: about ' + totalTxt + ' ' + CUR + (nights ? ' for ' + dayTxt(nights) : ' a day') + '.\n'
+      + (nights ? 'Arrive ' + when(fromD, fromT) + ', leave ' + when(toD, toT) + '. ' + lastDay + '\n' : '')
       + 'Pets: ' + pets.join(', ') + (n.young ? ' (' + n.young + ' under 12 months)' : '') + '.\n'
       + lines.map((l) => '- ' + l[0] + ': ' + l[1]).join('\n')
       + (dogs ? '\nToilet: ' + val('toilet') + '.' : '')
