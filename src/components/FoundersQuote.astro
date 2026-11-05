@@ -104,13 +104,12 @@ const { waHref = '' } = Astro.props as { waHref?: string };
           <label><input type="radio" name="keys" value="far" /><span>We collect your keys, more than 1 hour from central Sydney<small>One trip · {$(P.keys.trip + P.keys.far)}</small></span></label>
         </div>
         <p class="q-sub" style="margin-top:18px">Meet and greet</p>
-        <div class="q-opts q-two-up">
-          <label><input type="radio" name="meetWhere" value="near" checked /><span>Within 1 hour of us<small>Free</small></span></label>
-          <label><input type="radio" name="meetWhere" value="far" /><span>More than 1 hour from Sydney<small>+{$(P.meet.far)}</small></span></label>
-        </div>
-        <div class="q-opts q-two-up" style="margin-top:8px">
-          <label><input type="radio" name="meetLen" value="std" checked /><span>30 minutes<small>Free</small></span></label>
-          <label><input type="radio" name="meetLen" value="long" /><span>Longer consultation, up to 1.5 hours<small>+{$(P.meet.extended)}</small></span></label>
+        <p class="q-note" style="margin-top:0">We meet you and your pets at home before the sit. Pick one.</p>
+        <div class="q-opts">
+          <label><input type="radio" name="meet" value="std-near" checked /><span>Standard: 30 minutes, within 1 hour of Sydney<small>Free</small></span></label>
+          <label><input type="radio" name="meet" value="long-near" /><span>Extended: up to 1.5 hours, within 1 hour of Sydney<small>{$(P.meet.extended)}</small></span></label>
+          <label><input type="radio" name="meet" value="std-far" /><span>Standard: 30 minutes, more than 1 hour from Sydney<small>{$(P.meet.far)} travel</small></span></label>
+          <label><input type="radio" name="meet" value="long-far" /><span>Extended: up to 1.5 hours, more than 1 hour from Sydney<small>{$(P.meet.extended + P.meet.far)} ({$(P.meet.extended)} + {$(P.meet.far)} travel)</small></span></label>
         </div>
         <p class="q-note">Public holidays may carry a surcharge. We'll confirm it with your quote.</p>
       </details>
@@ -249,8 +248,9 @@ const { waHref = '' } = Astro.props as { waHref?: string };
     if (shop === 'fullShop') once.push(['Full shop (+ receipt)', P.welcomeHome.fullShop]);
     const keys = val('keys');
     if (keys !== 'none') once.push([keys === 'far' ? 'Key collection, over 1 hour away' : 'Key collection', P.keys.trip + (keys === 'far' ? P.keys.far : 0)]);
-    if (val('meetWhere') === 'far') once.push(['Meet and greet, over 1 hour away', P.meet.far]);
-    if (val('meetLen') === 'long') once.push(['Longer consultation', P.meet.extended]);
+    const meet = val('meet') || 'std-near', meetLong = meet.startsWith('long'), meetFar = meet.endsWith('far');
+    if (meetLong) once.push(['Extended meet and greet', P.meet.extended]);
+    if (meetFar) once.push(['Meet and greet travel, over 1 hour away', P.meet.far]);
     const perNight = daily.reduce((s, x) => s + x[1], 0);
     const extras = once.reduce((s, x) => s + x[1], 0);
     const D = daysOf(), nights = D.days;
@@ -280,7 +280,7 @@ const { waHref = '' } = Astro.props as { waHref?: string };
       + 'Pets: ' + pets.join(', ') + (n.young ? ' (' + n.young + ' under 12 months)' : '') + '.\n'
       + lines.map((l) => '- ' + l[0] + ': ' + l[1]).join('\n')
       + (dogs ? '\nToilet: ' + val('toilet') + '.' : '')
-      + '\nMeet and greet: ' + (val('meetWhere') === 'far' ? 'more than 1 hour from Sydney' : 'within 1 hour') + ', ' + (val('meetLen') === 'long' ? 'up to 1.5 hours' : '30 minutes') + '.' 
+      + '\nMeet and greet: ' + (meetLong ? 'extended, up to 1.5 hours' : 'standard, 30 minutes') + ', ' + (meetFar ? 'more than 1 hour from Sydney' : 'within 1 hour of Sydney') + '.' 
       + '\n\nAnything else about my pets or home: ';
   };
   // Once the quote has been touched, every WhatsApp button for this page opens
