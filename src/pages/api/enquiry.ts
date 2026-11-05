@@ -3,6 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 import { supabase } from '../../lib/supabase';
+import { enquiryEmail } from '../../lib/enquiry-email';
 
 const resend = new Resend(import.meta.env.RESEND_API_KEY);
 
@@ -26,15 +27,14 @@ export const POST: APIRoute = async ({ request }) => {
       .filter((v): v is File => typeof v === 'object' && v !== null && 'arrayBuffer' in v && /^image\//.test((v as File).type))
       .slice(0, MAX_FILES);
     let total = 0;
-    const attachments: { filename: string; content: Buffer }[] = [];
-    for (const f of files) {
+    // contentId: the photos show inside the email (cid:...) as well as attached.
+    const attachments: { filename: string; content: Buffer; contentId: string }[] = [];
+    for (const [i, f] of files.entries()) {
       total += f.size;
       if (total > MAX_TOTAL) break;
       const name = String(f.name || 'photo.jpg').replace(/[^\w.-]+/g, '-').slice(0, 60);
-      attachments.push({ filename: name, content: Buffer.from(await f.arrayBuffer()) });
+      attachments.push({ filename: name, content: Buffer.from(await f.arrayBuffer()), contentId: 'photo' + (i + 1) });
     }
-    const petPhotos = attachments.filter((a) => a.filename.startsWith('pet')).length;
-    const homePhotos = attachments.length - petPhotos;
 
     if (!slug || !firstName || !email) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -62,40 +62,20 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
-    const fullName = esc(`${firstName} ${lastName ?? ''}`.trim());
-    const dates = dateFrom && dateTo ? esc(`${dateFrom} to ${dateTo}`) : 'Not specified';
-    const row = (label: string, value: string) =>
-      value ? `<tr><td style="padding:8px 0;color:#6b4e35;font-weight:bold;vertical-align:top;">${label}</td><td style="padding:8px 0;">${esc(value).replace(/\n/g, '<br>')}</td></tr>` : '';
-    const where = [suburb, city].filter(Boolean).join(', ');
-    const photoNote = attachments.length
-      ? `${petPhotos} of pets, ${homePhotos} of the home (attached)`
-      : '';
+    const mail = enquiryEmail({
+      sitterName: String(profile?.name || 'us'),
+      firstName, lastName, email, phone,
+      dateFrom, dateTo, city, suburb, homeType, about, message,
+      photos: attachments.map((a) => ({ cid: a.contentId, kind: a.filename.startsWith('home') ? 'home' : 'pet' })),
+    });
 
     await resend.emails.send({
       from: 'MYAH <enquiries@myahsits.com>',
       to,
       replyTo: email,
-      subject: `New enquiry from ${fullName}${city ? ' · ' + esc(city) : ''}`,
+      subject: mail.subject,
       ...(attachments.length ? { attachments } : {}),
-      html: `
-        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;">
-          <h2 style="color:#2c1a0e;">New Enquiry</h2>
-          <p>You've received a new enquiry through your MYAH page.</p>
-          <table style="width:100%;border-collapse:collapse;margin:20px 0;">
-            <tr><td style="padding:8px 0;color:#6b4e35;font-weight:bold;">Name</td><td style="padding:8px 0;">${fullName}</td></tr>
-            <tr><td style="padding:8px 0;color:#6b4e35;font-weight:bold;">Email</td><td style="padding:8px 0;"><a href="mailto:${esc(email)}">${esc(email)}</a></td></tr>
-            ${row('Phone', phone)}
-            <tr><td style="padding:8px 0;color:#6b4e35;font-weight:bold;">Dates</td><td style="padding:8px 0;">${dates}</td></tr>
-            ${row('Lives in', where)}
-            ${row('Home', homeType)}
-            ${row('About them', about)}
-            ${message ? `<tr><td style="padding:8px 0;color:#6b4e35;font-weight:bold;vertical-align:top;">Message</td><td style="padding:8px 0;">${esc(message).replace(/\n/g, '<br>')}</td></tr>` : ''}
-            ${row('Photos', photoNote)}
-          </table>
-          <p style="color:#6b4e35;font-size:0.85em;">Reply directly to this email to respond to ${esc(firstName)}.</p>
-        </div>
-      `,
+      html: mail.html,
     });
 
     return new Response(JSON.stringify({ ok: true }), {
