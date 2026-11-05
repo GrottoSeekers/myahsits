@@ -496,7 +496,6 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
             <li>Meet {us} before the sit, in person or on a call</li>
             <li>Daily photo updates while you're away</li>
           </ul>
-          {p.isFounders && <p class="sg-quote-link">Want a price first? <a href="#prices" data-open="prices">Build your quote</a></p>}
           {p.waNum && <a class="btn btn-line" href={p.waHref} target="_blank" rel="noopener">Text on WhatsApp</a>}
         </div>
         {p.isFounders ? <FoundersEnquiry waHref={p.waNum ? p.waHref : ''} launched={p.launched} /> : (
