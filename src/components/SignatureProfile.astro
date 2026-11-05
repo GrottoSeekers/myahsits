@@ -547,7 +547,10 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
         if (!on && !panel.hidden && window.replay) window.replay(panel);
         panel.hidden = !on; panel.classList.toggle('show', on); });
       movePill(); counts();
-      if (scroll) { const top = q('.sg-tabs').getBoundingClientRect().top + window.scrollY - (q('[data-top]').offsetHeight - 2); window.scrollTo({ top, behavior: 'smooth' }); }
+      // Scroll to the start of the panel just opened, below the top bar and the
+      // tabs. (The tabs stick to the top, so their own position can't be used:
+      // from far down the page it pointed half way into the panel.)
+      if (scroll) { const panel = q('#' + id), bars = q('[data-top]').offsetHeight + q('.sg-tabs').offsetHeight; const top = panel.getBoundingClientRect().top + window.scrollY - bars + 2; window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' }); }
     };
     tabs.forEach(t => t.addEventListener('click', () => open(t.dataset.tab, window.scrollY > q('[data-hero]').offsetHeight - 200)));
     qa('[data-open]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); open(a.dataset.open, true); }));
