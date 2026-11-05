@@ -478,7 +478,7 @@ const themeVars = `--paper:${p.theme.bg};--forest:${p.theme.accent};--forest2:co
       <section class="sg-panel" id="prices" role="tabpanel" hidden>
         <span class="lbl">Prices</span>
         <h2 class="sg-h serif">Build your <em>quote</em></h2>
-        <FoundersQuote />
+        <FoundersQuote waHref={p.waNum ? p.waHref : ''} />
       </section>
     )}
 
