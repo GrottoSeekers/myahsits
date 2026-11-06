@@ -117,7 +117,7 @@ const { waHref = '' } = Astro.props as { waHref?: string };
 
     <aside class="q-sum" data-q-sum>
       <span class="q-lbl">Estimated total</span>
-      <b class="q-total serif" data-q-total>$0</b>
+      <b class="q-total" data-q-total>$0</b>
       <span class="q-per" data-q-per>{QUOTE_CURRENCY}</span>
       <span class="q-per" data-q-days hidden></span>
       <ul class="q-lines" data-q-lines></ul>
@@ -170,7 +170,8 @@ const { waHref = '' } = Astro.props as { waHref?: string };
   .q-step button:disabled { opacity:.35; cursor:default; }
   .q-step output { min-width:28px; text-align:center; font:400 1.2rem 'Marcellus',serif; }
   .q-sum { position:sticky; top:150px; background:var(--ink); color:#fff; border-radius:22px; padding:26px 24px; display:grid; gap:4px; }
-  .q-total { font-size:clamp(2.4rem,5vw,3.2rem); line-height:1.05; margin-top:6px; }
+  /* Prices in Montserrat with even digits: Marcellus' narrow 0 read like a C on phones (owner, 6 Nov 2026). */
+  .q-total { font:600 clamp(2.2rem,5vw,3rem)/1.1 'Montserrat',sans-serif; font-variant-numeric:tabular-nums lining-nums; letter-spacing:-.01em; margin-top:6px; white-space:nowrap; }
   .q-per { font-size:.82rem; color:rgba(255,255,255,.7); }
   .q-lines { list-style:none; padding:0; margin:16px 0 4px; display:grid; gap:8px; border-top:1px solid rgba(196,171,138,.3); padding-top:14px; }
   .q-lines li { display:flex; justify-content:space-between; gap:12px; font-size:.84rem; color:rgba(255,255,255,.86); }
@@ -187,7 +188,9 @@ const { waHref = '' } = Astro.props as { waHref?: string };
     .q-wrap { grid-template-columns:minmax(0,1fr); }
     .q-sum { position:static; }
     .q-strip { position:sticky; bottom:calc(12px + env(safe-area-inset-bottom,0px)); z-index:20; margin-top:16px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:7px 7px 7px 20px; border-radius:50px; background:rgba(44,26,14,.95); color:#fff; font-size:.86rem; box-shadow:0 14px 34px rgba(20,13,7,.3); }
-    .q-strip b { font:400 1.15rem 'Marcellus',serif; margin-left:4px; }
+    .q-strip > span { min-width:0; white-space:nowrap; }
+    .q-strip b { font:600 1.05rem 'Montserrat',sans-serif; font-variant-numeric:tabular-nums lining-nums; margin-left:4px; }
+    .q-strip .q-btn { flex:none; }
     .q-strip .q-btn { min-height:42px; padding:0 18px; }
     .q-strip.gone { visibility:hidden; }
   }

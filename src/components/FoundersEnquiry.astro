@@ -67,6 +67,27 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   <p class="sg-status" data-enquiry-status role="status"></p>
 </form>
 
+<div class="sg-form fe fe-done" data-fe-done hidden role="status" tabindex="-1">
+  <div class="fe-tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" /></svg></div>
+  <p class="fe-sub">Request sent</p>
+  <h3 class="fe-done-h">Thanks, <span data-fe-done-name>there</span>. Your request is with us.</h3>
+  <p class="fe-done-p">We've got your quote, your details and your photos. A copy of what you sent is in your email to us.</p>
+  <div class="fe-done-sum" data-fe-done-sum hidden>
+    <div data-fe-done-dates-row><span>Dates</span><b data-fe-done-dates></b></div>
+    <div data-fe-done-total-row><span>Your quote</span><b data-fe-done-total></b></div>
+  </div>
+  <p class="fe-sub" style="margin-top:6px">What happens next</p>
+  <ol class="fe-next">
+    <li><b>We read it and check our dates</b><span>Usually the same day.</span></li>
+    <li><b>We reply within 24 hours</b><span>By email, or a call if you left your number.</span></li>
+    <li><b>We meet you and your pets</b><span>At your home, before the sit, so everyone is comfortable.</span></li>
+  </ol>
+  <div class="sg-send2">
+    {waHref && <a class="btn btn-main" href={waHref} target="_blank" rel="noopener" data-fe-done-wa>Message us on WhatsApp</a>}
+    <a class="btn btn-line" href="#reviews" data-open="reviews">Read our reviews</a>
+  </div>
+</div>
+
 
 <style is:global>
   /* Global because the photo thumbnails are added by script. Mirrors .sg-form
@@ -90,6 +111,32 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   .fe-gate .fe-sub { margin:0; }
   .fe-gate-h { margin:0; font:400 1.5rem 'Marcellus',serif; color:var(--ink); }
   .fe-gate-p { margin:0 0 6px; font-size:.92rem; line-height:1.65; color:var(--soft); }
+  .fe-done { gap:14px; text-align:left; }
+  .fe-done[hidden] { display:none; }
+  .fe-tick { width:56px; height:56px; border-radius:50%; background:#e4efe7; display:flex; align-items:center; justify-content:center; animation:fe-pop .5s cubic-bezier(.2,.8,.2,1.2) both; }
+  .fe-tick svg { width:28px; height:28px; fill:none; stroke:var(--forest); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:24; stroke-dashoffset:24; animation:fe-draw .5s .25s ease forwards; }
+  @keyframes fe-pop { from { transform:scale(.6); opacity:0; } to { transform:none; opacity:1; } }
+  @keyframes fe-draw { to { stroke-dashoffset:0; } }
+  .fe-done .fe-sub { margin:0; }
+  .fe-done-h { margin:0; font:400 1.6rem/1.25 'Marcellus',serif; color:var(--ink); }
+  .fe-done-p { margin:0; font-size:.92rem; line-height:1.65; color:var(--soft); }
+  .fe-done-sum { display:grid; gap:0; border-radius:14px; background:var(--paper); border:1px solid var(--line); padding:4px 16px; }
+  .fe-done-sum[hidden] { display:none; }
+  .fe-done-sum > div { display:flex; justify-content:space-between; gap:12px; padding:11px 0; font-size:.9rem; }
+  .fe-done-sum > div + div { border-top:1px solid var(--line); }
+  .fe-done-sum > div[hidden] { display:none; }
+  .fe-done-sum span { color:var(--soft); }
+  .fe-done-sum b { color:var(--ink); font-weight:600; text-align:right; }
+  .fe-next { list-style:none; margin:0; padding:0; display:grid; gap:12px; counter-reset:fe; }
+  .fe-next li { display:grid; grid-template-columns:30px 1fr; column-gap:12px; counter-increment:fe; }
+  .fe-next li::before { content:counter(fe); grid-row:1 / 3; width:30px; height:30px; border-radius:50%; background:var(--cream); color:var(--forest); font:600 .82rem/30px 'Montserrat',sans-serif; text-align:center; }
+  .fe-next b { font-size:.92rem; font-weight:600; color:var(--ink); }
+  .fe-next span { font-size:.84rem; line-height:1.5; color:var(--soft); }
+  .fe .btn.is-sending { opacity:1; }
+  .fe .btn .fe-spin { width:15px; height:15px; border-radius:50%; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; animation:fe-spin .8s linear infinite; }
+  .fe .btn-line .fe-spin { border-color:rgba(47,93,69,.25); border-top-color:var(--forest); }
+  @keyframes fe-spin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion:reduce) { .fe-tick, .fe-tick svg, .fe .btn .fe-spin { animation:none; stroke-dashoffset:0; } }
   .fe .sg-status { margin:0; min-height:1.2em; text-align:center; font-size:.86rem; font-weight:600; color:var(--forest); }
   .fe .sg-send2.wa-first > :last-child { order:-1; }
   .fe-step { border:0; margin:0; padding:0; min-width:0; display:grid; gap:14px; }
@@ -168,7 +215,7 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   // under the total); until then the Book tab shows the "Build your quote
   // first" card (owner, 5 Nov 2026).
   const gate = document.querySelector('[data-fe-gate]');
-  form.addEventListener('fe:reset', () => { form.hidden = false; if (gate) gate.hidden = true; show(0); });
+  form.addEventListener('fe:reset', () => { form.hidden = false; if (gate) gate.hidden = true; const d = document.querySelector('[data-fe-done]'); if (d) d.hidden = true; show(0); });
 
   // Photos: shrunk to 1400px JPEGs in the browser (keeps the upload small).
   const MAX = 4, photos = { pet_photo: [], home_photo: [] };
@@ -213,20 +260,53 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   const val = (n) => String(new FormData(form).get(n) || '').trim();
   // WhatsApp: everything in the form goes in the message (photos can't go in a link).
   const wa = $('[data-form-wa]');
-  wa && wa.addEventListener('click', (e) => {
-    if (!ok(0) || !ok(1)) { e.preventDefault(); return; }
+  // A WhatsApp link only carries text, so photos are uploaded first and the
+  // message carries links to them (owner, 6 Nov 2026).
+  const waText = (links) => {
     const where = [val('suburb'), val('city')].filter(Boolean).join(', ');
     const n = photos.pet_photo.length + photos.home_photo.length;
+    const pics = (kind, title) => {
+      const l = (links || []).filter((p) => p.kind === kind).map((p) => p.url);
+      return l.length ? '\n' + title + ':\n' + l.join('\n') : '';
+    };
     const lines = [
       'Hi Callum and Niamh, it’s ' + val('first_name') + (val('last_name') ? ' ' + val('last_name') : '') + '.',
       /Arrive /.test(val('message')) ? '' : 'Dates: ' + val('date_from') + ' to ' + val('date_to') + '.',
       'Home: ' + val('home_type') + (where ? ' in ' + where : '') + '.',
       val('about') ? '\nAbout me: ' + val('about') : '',
       val('message') ? '\n' + val('message') : '',
-      n ? '\nI’ll send ' + n + ' photo' + (n > 1 ? 's' : '') + ' of my pets and home here next.' : '',
+      links && links.length ? pics('pet', 'Photos of my pets') + pics('home', 'Photos of my home')
+        : n ? '\nI’ll send ' + n + ' photo' + (n > 1 ? 's' : '') + ' of my pets and home here next.' : '',
       '\nEmail: ' + val('email') + (val('phone') ? ' · Phone: ' + val('phone') : ''),
     ].filter(Boolean);
-    wa.href = wa.href.split('?')[0] + '?text=' + encodeURIComponent(lines.join('\n'));
+    return wa.href.split('?')[0] + '?text=' + encodeURIComponent(lines.join('\n'));
+  };
+  let waBusy = false;
+  wa && wa.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (waBusy || !ok(0) || !ok(1)) return;
+    const n = photos.pet_photo.length + photos.home_photo.length;
+    if (!n) { const url = waText(null), w = window.open(url, '_blank'); if (!w) location.href = url; return; }
+    // Open the new tab now (phones only allow it straight from the tap), then
+    // point it at WhatsApp once the photos are up.
+    const win = window.open('', '_blank');
+    waBusy = true;
+    const label = wa.textContent;
+    wa.innerHTML = '<i class="fe-spin" aria-hidden="true"></i>Adding photos…';
+    status.textContent = 'Adding your ' + n + ' photo' + (n > 1 ? 's' : '') + ' to the message. This can take a few seconds.';
+    let links = null;
+    try {
+      const fd = new FormData();
+      fd.append('slug', location.pathname.replace(/^\/|\/$/g, ''));
+      Object.keys(photos).forEach((k) => photos[k].forEach((p, i) => fd.append(k, p.blob, k.replace('_photo', '') + '-' + (i + 1) + '.jpg')));
+      const r = await fetch('/api/enquiry-photos', { method: 'POST', body: fd });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.photos) links = j.photos;
+    } catch {}
+    const url = waText(links);
+    status.textContent = links ? '' : "The photos couldn't be added, so the message says you'll send them in the chat.";
+    wa.textContent = label; waBusy = false;
+    if (win) win.location.href = url; else location.href = url;
   });
 
   form.addEventListener('submit', async (e) => {
@@ -237,8 +317,13 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
     const fd = new FormData(form);
     fd.append('slug', location.pathname.replace(/^\/|\/$/g, ''));
     Object.keys(photos).forEach((k) => photos[k].forEach((p, i) => fd.append(k, p.blob, k.replace('_photo', '') + '-' + (i + 1) + '.jpg')));
-    status.textContent = 'Sending…';
-    const btn = $('[data-fe-email]'); btn.disabled = true;
+    const nPhotos = photos.pet_photo.length + photos.home_photo.length;
+    const btn = $('[data-fe-email]'), label = btn.textContent;
+    btn.disabled = true; btn.classList.add('is-sending');
+    btn.innerHTML = '<i class="fe-spin" aria-hidden="true"></i>Sending…';
+    status.textContent = nPhotos ? 'Sending your details and ' + nPhotos + ' photo' + (nPhotos > 1 ? 's' : '') + '. This can take a few seconds.' : '';
+    // Kept for the thank-you card (the form is cleared once it has sent).
+    const sent = { name: val('first_name'), from: val('date_from'), to: val('date_to'), total: (/about (\$[\d,.]+ \w+)/.exec(val('message')) || [])[1] || '' };
     try {
       const r = await fetch('/api/enquiry', { method: 'POST', body: fd });
       const j = await r.json().catch(() => ({}));
@@ -248,12 +333,33 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
       Object.keys(photos).forEach((k) => { photos[k].forEach((p) => URL.revokeObjectURL(p.url)); photos[k] = []; draw(k); });
       delete form.dataset.prefer;
       show(0);
-      status.textContent = "Email sent. We'll be in touch soon.";
+      status.textContent = '';
+      done(sent);
     } catch (err) {
       status.textContent = (err && err.message) || 'That did not send. Please try again.';
     }
-    btn.disabled = false;
+    btn.disabled = false; btn.classList.remove('is-sending'); btn.textContent = label;
   });
+
+  // The thank-you card: who, when, the quote, what happens next.
+  const card = document.querySelector('[data-fe-done]');
+  const nice = (iso) => iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/,/g, '') : '';
+  function done(sent) {
+    if (!card) return;
+    card.querySelector('[data-fe-done-name]').textContent = sent.name || 'there';
+    const dates = sent.from && sent.to ? nice(sent.from) + ' to ' + nice(sent.to) : '';
+    card.querySelector('[data-fe-done-dates]').textContent = dates;
+    card.querySelector('[data-fe-done-dates-row]').hidden = !dates;
+    card.querySelector('[data-fe-done-total]').textContent = sent.total;
+    card.querySelector('[data-fe-done-total-row]').hidden = !sent.total;
+    card.querySelector('[data-fe-done-sum]').hidden = !dates && !sent.total;
+    const wa = card.querySelector('[data-fe-done-wa]');
+    if (wa) wa.href = wa.href.split('?')[0] + '?text=' + encodeURIComponent('Hi Callum and Niamh, it\u2019s ' + (sent.name || '') + '. I\u2019ve just sent you a booking request by email' + (dates ? ' for ' + dates : '') + '.');
+    form.hidden = true; card.hidden = false;
+    const bars = (document.querySelector('[data-top]')?.offsetHeight || 0) + (document.querySelector('.sg-tabs')?.offsetHeight || 0);
+    window.scrollTo({ top: Math.max(0, card.getBoundingClientRect().top + window.scrollY - bars - 16), behavior: 'smooth' });
+    card.focus({ preventScroll: true });
+  }
   show(0);
 })();
 </script>
