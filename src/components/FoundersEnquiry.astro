@@ -260,20 +260,53 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   const val = (n) => String(new FormData(form).get(n) || '').trim();
   // WhatsApp: everything in the form goes in the message (photos can't go in a link).
   const wa = $('[data-form-wa]');
-  wa && wa.addEventListener('click', (e) => {
-    if (!ok(0) || !ok(1)) { e.preventDefault(); return; }
+  // A WhatsApp link only carries text, so photos are uploaded first and the
+  // message carries links to them (owner, 6 Nov 2026).
+  const waText = (links) => {
     const where = [val('suburb'), val('city')].filter(Boolean).join(', ');
     const n = photos.pet_photo.length + photos.home_photo.length;
+    const pics = (kind, title) => {
+      const l = (links || []).filter((p) => p.kind === kind).map((p) => p.url);
+      return l.length ? '\n' + title + ':\n' + l.join('\n') : '';
+    };
     const lines = [
       'Hi Callum and Niamh, it’s ' + val('first_name') + (val('last_name') ? ' ' + val('last_name') : '') + '.',
       /Arrive /.test(val('message')) ? '' : 'Dates: ' + val('date_from') + ' to ' + val('date_to') + '.',
       'Home: ' + val('home_type') + (where ? ' in ' + where : '') + '.',
       val('about') ? '\nAbout me: ' + val('about') : '',
       val('message') ? '\n' + val('message') : '',
-      n ? '\nI’ll send ' + n + ' photo' + (n > 1 ? 's' : '') + ' of my pets and home here next.' : '',
+      links && links.length ? pics('pet', 'Photos of my pets') + pics('home', 'Photos of my home')
+        : n ? '\nI’ll send ' + n + ' photo' + (n > 1 ? 's' : '') + ' of my pets and home here next.' : '',
       '\nEmail: ' + val('email') + (val('phone') ? ' · Phone: ' + val('phone') : ''),
     ].filter(Boolean);
-    wa.href = wa.href.split('?')[0] + '?text=' + encodeURIComponent(lines.join('\n'));
+    return wa.href.split('?')[0] + '?text=' + encodeURIComponent(lines.join('\n'));
+  };
+  let waBusy = false;
+  wa && wa.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (waBusy || !ok(0) || !ok(1)) return;
+    const n = photos.pet_photo.length + photos.home_photo.length;
+    if (!n) { const url = waText(null), w = window.open(url, '_blank'); if (!w) location.href = url; return; }
+    // Open the new tab now (phones only allow it straight from the tap), then
+    // point it at WhatsApp once the photos are up.
+    const win = window.open('', '_blank');
+    waBusy = true;
+    const label = wa.textContent;
+    wa.innerHTML = '<i class="fe-spin" aria-hidden="true"></i>Adding photos…';
+    status.textContent = 'Adding your ' + n + ' photo' + (n > 1 ? 's' : '') + ' to the message. This can take a few seconds.';
+    let links = null;
+    try {
+      const fd = new FormData();
+      fd.append('slug', location.pathname.replace(/^\/|\/$/g, ''));
+      Object.keys(photos).forEach((k) => photos[k].forEach((p, i) => fd.append(k, p.blob, k.replace('_photo', '') + '-' + (i + 1) + '.jpg')));
+      const r = await fetch('/api/enquiry-photos', { method: 'POST', body: fd });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.photos) links = j.photos;
+    } catch {}
+    const url = waText(links);
+    status.textContent = links ? '' : "The photos couldn't be added, so the message says you'll send them in the chat.";
+    wa.textContent = label; waBusy = false;
+    if (win) win.location.href = url; else location.href = url;
   });
 
   form.addEventListener('submit', async (e) => {
