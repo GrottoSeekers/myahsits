@@ -78,6 +78,9 @@ export const POST: APIRoute = async ({ request }) => {
       html: mail.html,
     });
 
+    // They have booked: no "your quote is saved" reminder (saved_quotes).
+    try { await supabase.from('saved_quotes').update({ booked_at: new Date().toISOString() }).eq('slug', slug).eq('email', email.toLowerCase()).is('booked_at', null); } catch {}
+
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

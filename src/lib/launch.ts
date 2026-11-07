@@ -10,7 +10,7 @@ export const LAUNCHED = flag.trim().toLowerCase() === 'true';
 const OPEN = new Set([
   '/', '/coming-soon', '/' + FOUNDERS_SLUG, '/privacy', '/terms', '/login', '/admin',
   '/sitemap.xml', '/robots.txt',
-  '/api/enquiry', '/api/enquiry-photos', '/api/interest', '/api/auth/login', '/api/auth/logout',
+  '/api/enquiry', '/api/enquiry-photos', '/api/quote-save', '/api/quote-unsubscribe', '/api/cron/quote-reminders', '/api/interest', '/api/auth/login', '/api/auth/logout',
   '/api/billing/webhook', // Stripe calls it; every request is signature-checked
 ]);
 
