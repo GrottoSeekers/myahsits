@@ -2,12 +2,13 @@
 // 5 Nov 2026). Australian dollars. Change a number here and the page follows.
 // Every daily charge is per day of the sit. Days are 24-hour blocks from the
 // arrival time; the last day's extra hours follow `days` (owner, 5 Nov 2026,
-// "like Rover": up to 2 hours free, up to 8 hours half a day, then a full day).
+// "like Rover": up to 2 hours free, 2 to 4 hours half a day (owner, 7 Nov 2026),
+// then a full day).
 
 export const QUOTE_CURRENCY = 'AUD';
 
 export const quotePrices = {
-  days: { graceHours: 2, halfUpToHours: 8 },
+  days: { graceHours: 2, halfUpToHours: 4 },
   base: { dog: 110, cat: 95 },
   extraPet: {
     dog: 40, // per day (owner confirmed 5 Nov 2026)

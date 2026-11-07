@@ -22,12 +22,13 @@ const { waHref = '' } = Astro.props as { waHref?: string };
           <label>Departure date<input type="date" name="q_to" /></label>
           <label>Departure time<input type="time" name="q_to_t" value="12:00" step="1800" /></label>
         </div>
-        <p class="q-note">Priced per day, counted in 24-hour blocks from when we arrive. On your last day, up to {P.days.graceHours} hours past our arrival time is free, up to {P.days.halfUpToHours} hours adds half a day, and more than {P.days.halfUpToHours} hours adds a full day.</p>
+        <p class="q-note">Priced per day, counted in 24-hour blocks from when we arrive. On your last day, up to {P.days.graceHours} hours past our arrival time is free, {P.days.graceHours} to {P.days.halfUpToHours} hours adds half a day, and more than {P.days.halfUpToHours} hours adds a full day.</p>
       </fieldset>
 
       <fieldset class="q-card">
         <legend>Your pets</legend>
         <p class="q-sub">Your first pet</p>
+        <p class="q-note" style="margin:-4px 0 10px">Got dogs and cats? Pick Dog here and add your cats below. Only pick Cat if cats are all you have.</p>
         <div class="q-opts q-two-up">
           <label><input type="radio" name="main" value="dog" checked /><span>Dog<small>{$(P.base.dog)} a day</small></span></label>
           <label><input type="radio" name="main" value="cat" /><span>Cat<small>{$(P.base.cat)} a day</small></span></label>
@@ -89,7 +90,7 @@ const { waHref = '' } = Astro.props as { waHref?: string };
         </div>
       </fieldset>
 
-      <details class="q-card q-more">
+      <details class="q-card q-more" open>
         <summary>Extras: welcome home, keys and meeting us</summary>
         <p class="q-sub">Welcome home</p>
         <div class="q-opts">
@@ -145,11 +146,15 @@ const { waHref = '' } = Astro.props as { waHref?: string };
   .q-card { margin:0; min-width:0; background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px 20px 20px; }
   .q-card legend, .q-more summary { float:left; width:100%; padding:0; margin:0 0 12px; font:400 1.2rem 'Marcellus',serif; color:var(--ink); }
   .q-card legend + * { clear:both; }
-  .q-more summary { float:none; margin:0; cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .q-more summary { float:none; margin:0; cursor:default; pointer-events:none; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  /* Extras: always open and tinted so they stand out (owner, 7 Nov 2026). */
+  .q-card.q-more { background:#eef4ef; border-color:rgba(47,93,69,.35); }
+  .q-more .q-opts span, .q-more .q-check span { background:#fff; }
+  .q-more .q-opts input:checked + span { background:var(--ink); }
   .q-more summary::-webkit-details-marker { display:none; }
-  .q-more summary::after { content:"+"; font:400 1.4rem 'Montserrat',sans-serif; color:var(--forest); }
+  .q-more summary::after { content:"Optional"; font:700 .62rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--forest); background:#fff; border:1px solid rgba(47,93,69,.3); border-radius:50px; padding:4px 10px; }
   .q-more[open] summary { margin-bottom:14px; }
-  .q-more[open] summary::after { content:"−"; }
+
   .q-sub { margin:0 0 10px; font:700 .64rem 'Lato',sans-serif; letter-spacing:.16em; text-transform:uppercase; color:var(--brown); }
   .q-note { margin:12px 0 0; font-size:.84rem; line-height:1.55; color:var(--soft); }
   .q-two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
