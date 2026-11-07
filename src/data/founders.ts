@@ -186,7 +186,7 @@ export const foundersGallery = [
 
 // "Why owners book us" on the founders' About tab (owner, 5 Nov 2026).
 export const foundersWhy = [
-  { t: 'Insured and ID checked', d: 'Fully insured and ID verified, with 40+ five-star reviews from owners in Sydney, Perth, the Blue Mountains and the UK.' },
+  { t: 'Fully insured', d: 'Insured for every sit, with 40+ five-star reviews from owners in Sydney, Perth, the Blue Mountains and the UK.' },
   { t: 'Company all day', d: "We work from home, so your pets aren't left alone for a full working day. They have company, in the place they know best." },
   { t: 'Their walks, their parks', d: 'Same routes, same parks, same times. If they go to the park at 7am, so do we.' },
   { t: 'A home that looks lived in', d: "Bins out on bin night, post collected, curtains opened in the morning and drawn at night. Nobody can tell you're away." },

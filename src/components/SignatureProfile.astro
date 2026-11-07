@@ -51,7 +51,7 @@ const glance = [
 const ribbon = [
   p.reviews.length ? `${p.rating} average rating` : '',
   p.reviews.length ? `${p.revCount} five-star reviews` : '',
-  'ID verified',
+  p.isFounders ? 'Fully insured' : 'ID verified',
   p.isFounders ? '30+ pets cared for' : '',
   p.location || '',
 ].filter(Boolean);
