@@ -25,6 +25,7 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
       <label>Last name<input name="last_name" autocomplete="family-name" /></label>
     </div>
     <label>Email<input type="email" name="email" required autocomplete="email" /></label>
+    <label class="fe-check"><input type="checkbox" name="remind_me" /><span>Remind me by email if I don't finish</span></label>
     <label>Phone (optional)<input type="tel" name="phone" autocomplete="tel" /></label>
     <div class="two">
       <label>From<input type="date" name="date_from" required /></label>
@@ -137,6 +138,8 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   .fe .btn-line .fe-spin { border-color:rgba(47,93,69,.25); border-top-color:var(--forest); }
   @keyframes fe-spin { to { transform:rotate(360deg); } }
   @media (prefers-reduced-motion:reduce) { .fe-tick, .fe-tick svg, .fe .btn .fe-spin { animation:none; stroke-dashoffset:0; } }
+  .fe .fe-check { display:flex; gap:10px; align-items:flex-start; margin-top:-4px; font:500 .82rem/1.45 'Montserrat',sans-serif; letter-spacing:0; text-transform:none; color:var(--soft); cursor:pointer; }
+  .fe .fe-check input { flex:none; width:18px; height:18px; margin:1px 0 0; accent-color:var(--forest); }
   .fe .sg-status { margin:0; min-height:1.2em; text-align:center; font-size:.86rem; font-weight:600; color:var(--forest); }
   .fe .sg-send2.wa-first > :last-child { order:-1; }
   .fe-step { border:0; margin:0; padding:0; min-width:0; display:grid; gap:14px; }
@@ -208,7 +211,20 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
     if (bad) { bad.reportValidity(); bad.focus(); return false; }
     return true;
   };
-  next.addEventListener('click', () => { if (ok(at)) { show(at + 1); top(); } });
+  // "Remind me": save the quote so the daily job can send one reminder if
+  // they don't send the request (owner, 7 Nov 2026).
+  let remindSaved = '';
+  const saveForReminder = () => {
+    const box = $('[name=remind_me]'), Q = window.myahQuote;
+    if (!box || !box.checked || !Q || remindSaved === val('email')) return;
+    remindSaved = val('email');
+    fetch('/api/quote-save', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+      slug: location.pathname.replace(/^\/|\/$/g, ''), email: val('email'), first_name: val('first_name'),
+      summary: Q.summary(), state: Q.state(), date_from: Q.from(), date_to: Q.to(), remind: true, send: false }) }).catch(() => {});
+  };
+  const markBooked = () => fetch('/api/quote-save', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'booked', slug: location.pathname.replace(/^\/|\/$/g, ''), email: val('email') }) }).catch(() => {});
+  next.addEventListener('click', () => { if (ok(at)) { if (at === 0) saveForReminder(); show(at + 1); top(); } });
   back.addEventListener('click', () => { show(at - 1); top(); });
   // Opened from the quote: start at step 1 with the quote noted.
   // The form only opens from the quote ("Send by email" / "Send on WhatsApp"
@@ -285,6 +301,7 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
   wa && wa.addEventListener('click', async (e) => {
     e.preventDefault();
     if (waBusy || !ok(0) || !ok(1)) return;
+    markBooked();
     const n = photos.pet_photo.length + photos.home_photo.length;
     if (!n) { const url = waText(null), w = window.open(url, '_blank'); if (!w) location.href = url; return; }
     // Open the new tab now (phones only allow it straight from the tap), then

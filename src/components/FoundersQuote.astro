@@ -124,6 +124,14 @@ const { waHref = '' } = Astro.props as { waHref?: string };
       <p class="q-small">Rough estimate. Shopping receipts and any holiday surcharge are added separately. We confirm the final price with you before anything is booked.</p>
       <button type="button" class="q-btn" data-q-send data-open="book">Send by email</button>
       {waHref && <button type="button" class="q-btn q-btn-wa" data-q-send data-pref="wa" data-open="book">Send on WhatsApp</button>}
+      <div class="q-save" data-q-save>
+        <p class="q-save-h">Not ready to book?</p>
+        <p class="q-save-p">We'll email you this quote, with a link back to your choices.</p>
+        <input type="email" placeholder="Your email" autocomplete="email" aria-label="Your email" data-q-save-email />
+        <label class="q-save-check"><input type="checkbox" data-q-save-remind /><span>Send me one reminder in 2 days if I haven't booked</span></label>
+        <button type="button" class="q-btn q-btn-wa" data-q-save-btn>Email me my quote</button>
+        <p class="q-save-status" data-q-save-status role="status"></p>
+      </div>
     </aside>
   </div>
   <div class="q-strip" data-q-strip><span>Estimate <b data-q-strip-total>$0</b></span><button type="button" class="q-btn" data-q-jump>See total</button></div>
@@ -182,6 +190,17 @@ const { waHref = '' } = Astro.props as { waHref?: string };
   .q-sum .q-btn { width:100%; }
   .q-sum .q-btn-wa { margin-top:8px; background:transparent; border:1.5px solid rgba(255,255,255,.4); text-decoration:none; }
   .q-sum .q-btn-wa:hover { background:rgba(255,255,255,.1); }
+  /* "Email me my quote" (owner, 7 Nov 2026) */
+  .q-save { margin-top:18px; padding-top:16px; border-top:1px solid rgba(196,171,138,.3); display:grid; gap:10px; }
+  .q-save-h { margin:0; font:400 1.15rem 'Marcellus',serif; color:#fff; }
+  .q-save-p { margin:-4px 0 0; font-size:.8rem; line-height:1.5; color:rgba(255,255,255,.7); }
+  .q-save input[type=email] { width:100%; min-width:0; box-sizing:border-box; font:400 .92rem 'Montserrat',sans-serif; color:var(--ink); background:#fff; border:0; border-radius:12px; padding:12px 14px; }
+  .q-save input[type=email]:focus { outline:2px solid var(--tan); outline-offset:1px; }
+  .q-save-check { display:flex; gap:10px; align-items:flex-start; font-size:.8rem; line-height:1.45; color:rgba(255,255,255,.85); cursor:pointer; }
+  .q-save-check input { flex:none; width:18px; height:18px; margin:1px 0 0; accent-color:var(--forest); }
+  .q-save .q-btn-wa { margin-top:0; }
+  .q-save-status { margin:0; min-height:1.1em; font-size:.8rem; line-height:1.5; color:#c9dccf; }
+  .q-save-status:empty { display:none; }
   .q-sum .q-lbl { font:700 .68rem 'Lato',sans-serif; letter-spacing:.22em; text-transform:uppercase; color:var(--tan); }
   .q-strip { display:none; }
   @media (max-width:900px) {
@@ -300,9 +319,53 @@ const { waHref = '' } = Astro.props as { waHref?: string };
     });
   };
   const changed = () => { touched = true; calc(); fillWa(); };
+  // Choices as a short query string, for the "Carry on booking" link in the
+  // quote emails (owner, 7 Nov 2026).
+  const stateOf = () => {
+    const out = new URLSearchParams();
+    form.querySelectorAll('input[name]').forEach((el) => {
+      if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) return;
+      if (el.value !== '') out.set(el.name, el.value);
+    });
+    return out.toString();
+  };
+  const restore = (qs) => {
+    const p = new URLSearchParams(qs);
+    form.querySelectorAll('input[name]').forEach((el) => {
+      if (!p.has(el.name)) return;
+      if (el.type === 'radio' || el.type === 'checkbox') el.checked = el.value === p.get(el.name);
+      else el.value = p.get(el.name);
+    });
+    if (['shop', 'keys', 'meet'].some((k) => p.has(k) && !/^(none|std-near)$/.test(p.get(k)))) { const x = form.querySelector('.q-more'); if (x) x.open = true; }
+  };
+  window.myahQuote = { state: stateOf, summary: () => summary, from: () => q('[name=q_from]').value, to: () => q('[name=q_to]').value };
   form.addEventListener('change', changed);
   form.addEventListener('input', changed);
+  const saved = new URLSearchParams(location.search).get('quote');
+  if (saved) { restore(saved); touched = true; }
   calc();
+  if (saved) fillWa();
+
+  // "Email me my quote": saved, emailed now, and one reminder if they tick it.
+  const sv = document.querySelector('[data-q-save]');
+  if (sv) {
+    const em = sv.querySelector('[data-q-save-email]'), rm = sv.querySelector('[data-q-save-remind]');
+    const go = sv.querySelector('[data-q-save-btn]'), st = sv.querySelector('[data-q-save-status]');
+    go.addEventListener('click', async () => {
+      if (!em.value || !em.checkValidity()) { st.textContent = 'Please enter your email.'; em.focus(); return; }
+      if (!q('[name=q_from]').value || !q('[name=q_to]').value) { st.textContent = 'Pick your dates first, so the quote has a total.'; q('[name=q_from]').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+      go.disabled = true; st.textContent = 'Sending…';
+      try {
+        const r = await fetch('/api/quote-save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+          slug: location.pathname.replace(/^\/|\/$/g, ''), email: em.value.trim(), summary, state: stateOf(),
+          date_from: q('[name=q_from]').value, date_to: q('[name=q_to]').value, remind: rm.checked, send: true }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || '');
+        st.textContent = 'Sent to ' + em.value.trim() + '. If it isn\u2019t there in a few minutes, check your junk folder.' + (rm.checked ? ' We\u2019ll send one reminder in 2 days unless you book.' : '');
+      } catch (err) { st.textContent = (err && err.message) || 'That did not send. Please try again.'; }
+      go.disabled = false;
+    });
+  }
   // Send: put the dates and the quote into the Book form (the data-open
   // handler on the page then opens the Book tab).
   // Both buttons under the total open the booking form with the quote in it;

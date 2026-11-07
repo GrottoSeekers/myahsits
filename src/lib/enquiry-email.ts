@@ -4,15 +4,15 @@
 // mark, Marcellus headings, Montserrat copy, Lato labels, paper background.
 // Photos show in the email itself (inline attachments, "cid:").
 
-const SITE = 'https://www.myahsits.com';
-const IMG = SITE + '/images/email';
-const F_HEAD = "'Marcellus',Georgia,'Times New Roman',serif";
-const F_BODY = "'Montserrat','Helvetica Neue',Arial,sans-serif";
-const F_LABEL = "'Lato','Helvetica Neue',Arial,sans-serif";
-const C = { ink: '#2c1a0e', soft: '#6b4e35', tan: '#8a6a4f', forest: '#2f5d45', paper: '#faf6ee', cream: '#f3ece0', line: '#efe7da' };
+export const SITE = 'https://www.myahsits.com';
+export const IMG = SITE + '/images/email';
+export const F_HEAD = "'Marcellus',Georgia,'Times New Roman',serif";
+export const F_BODY = "'Montserrat','Helvetica Neue',Arial,sans-serif";
+export const F_LABEL = "'Lato','Helvetica Neue',Arial,sans-serif";
+export const C = { ink: '#2c1a0e', soft: '#6b4e35', tan: '#8a6a4f', forest: '#2f5d45', paper: '#faf6ee', cream: '#f3ece0', line: '#efe7da' };
 
-const esc = (s: unknown) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
-const br = (s: string) => esc(s).replace(/\n/g, '<br>');
+export const esc = (s: unknown) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+export const br = (s: string) => esc(s).replace(/\n/g, '<br>');
 
 export interface EnquiryPhoto { cid: string; kind: 'pet' | 'home' }
 export interface Enquiry {
@@ -25,13 +25,13 @@ export interface Enquiry {
 }
 
 // "2026-11-12" -> "Thu 12 Nov 2026"
-const day = (iso?: string) => {
+export const day = (iso?: string) => {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '';
   return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).replace(/,/g, '');
 };
 
 // Pull the quote apart, if the message came from the price builder.
-function readQuote(message = '') {
+export function readQuote(message = '') {
   const lines = message.split(/\r?\n/);
   const q = { total: '', length: '', when: '', charges: [] as [string, string][], facts: [] as [string, string][], extra: '', isQuote: false };
   const m = /^From the price builder: about (\$[\d,.]+ \w+)(?: (?:for|a) (.+?))?\.$/.exec(lines[0] || '');
@@ -51,16 +51,16 @@ function readQuote(message = '') {
   return q;
 }
 
-const label = (t: string) => `<p style="margin:0 0 10px;font-family:${F_LABEL};font-weight:700;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:${C.tan}">${t}</p>`;
-const section = (inner: string, pad = '26px 40px 0') => `<tr><td class="px" style="padding:${pad}">${inner}</td></tr>`;
+export const label = (t: string) => `<p style="margin:0 0 10px;font-family:${F_LABEL};font-weight:700;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:${C.tan}">${t}</p>`;
+export const section = (inner: string, pad = '26px 40px 0') => `<tr><td class="px" style="padding:${pad}">${inner}</td></tr>`;
 // Label on the left, value on the right; a hairline between rows (not after the last).
-const rows = (pairs: [string, string][], strongRight = false) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${pairs.map(([k, v], i) => {
+export const rows = (pairs: [string, string][], strongRight = false) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${pairs.map(([k, v], i) => {
   const line = i < pairs.length - 1 ? `border-bottom:1px solid ${C.line};` : '';
   return `
   <tr><td valign="top" style="padding:9px 12px 9px 0;${line}font-family:${F_BODY};font-size:14px;line-height:1.5;color:${C.soft};white-space:nowrap">${esc(k)}</td>
   <td valign="top" align="right" style="padding:9px 0;${line}font-family:${F_BODY};font-size:14px;line-height:1.5;color:${C.ink};${strongRight ? 'font-weight:600;white-space:nowrap' : ''}">${esc(v)}</td></tr>`;
 }).join('')}</table>`;
-const button = (href: string, text: string, solid: boolean) => `<td style="padding:0 8px 8px 0"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:999px;${solid ? `background:${C.forest}` : `border:1.5px solid ${C.forest}`}"><a href="${esc(href)}" style="display:inline-block;padding:${solid ? '12px 22px' : '10.5px 20px'};font-family:${F_BODY};font-weight:600;font-size:13px;color:${solid ? '#ffffff' : C.forest};text-decoration:none;border-radius:999px">${text}</a></td></tr></table></td>`;
+export const button = (href: string, text: string, solid: boolean) => `<td style="padding:0 8px 8px 0"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:999px;${solid ? `background:${C.forest}` : `border:1.5px solid ${C.forest}`}"><a href="${esc(href)}" style="display:inline-block;padding:${solid ? '12px 22px' : '10.5px 20px'};font-family:${F_BODY};font-weight:600;font-size:13px;color:${solid ? '#ffffff' : C.forest};text-decoration:none;border-radius:999px">${text}</a></td></tr></table></td>`;
 
 export function enquiryEmail(e: Enquiry) {
   const name = [e.firstName, e.lastName].filter(Boolean).join(' ');
