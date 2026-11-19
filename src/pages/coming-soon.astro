@@ -556,15 +556,19 @@ if (ourPics.length < 3) ourPics = ['/images/couple-villa-1.jpg', '/images/couple
     // Send the interest form without leaving the page.
     document.querySelectorAll('form[data-interest]').forEach((f) => {
       const st = f.querySelector('[data-status]');
+      // When a person starts filling it in (bots post without the page: see api/interest).
+      let started = 0;
+      ['focusin', 'input', 'pointerdown'].forEach((ev) => f.addEventListener(ev, () => { if (!started) started = Date.now(); }));
       f.addEventListener('submit', (e) => {
         e.preventDefault();
         st.className = 'istatus'; st.textContent = 'Sending…';
-        fetch('/api/interest', { method: 'POST', body: new FormData(f), headers: { Accept: 'application/json' } })
+        const fd = new FormData(f); fd.append('ts', String(started || ''));
+        fetch('/api/interest', { method: 'POST', body: fd, headers: { Accept: 'application/json' } })
           .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
           .then(({ ok, j }) => {
             if (ok) {
               const email = f.querySelector('input[type=email]').value.trim();
-              f.reset(); st.textContent = "You're on the list. Check your inbox for a welcome email.";
+              f.reset(); started = 0; st.textContent = "You're on the list. Check your inbox for a welcome email.";
               if (window.myahWelcome) window.myahWelcome({ role: j.role, position: j.position, email });
             }
             else { st.className = 'istatus err'; st.textContent = j.error === 'email' ? 'Please check your email address and try again.' : 'Something went wrong, please try again.'; }

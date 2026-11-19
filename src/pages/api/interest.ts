@@ -6,6 +6,9 @@ import { emailInterestThanks, emailInterestToAdmin } from '../../lib/email';
 import type { Role } from '../../lib/welcome-email';
 import { visitFrom } from '../../lib/geo';
 
+// Where MYAH is launching: sign-ups from anywhere else are ignored (see below).
+const MARKETS = new Set(['AU', 'NZ', 'GB', 'IE']);
+
 // "Register your interest" before launch. Saves the email to launch_interest
 // and sends a thank-you. Works from a normal form post or fetch().
 export const POST: APIRoute = async ({ request }) => {
@@ -17,6 +20,16 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const form = await request.formData();
     if (String(form.get('website') || '')) return done(true); // spam trap
+    // Bot sign-ups (owner, 19 Nov 2026): scripts were posting strangers' emails
+    // from servers in Riga, Paris and the US, so each stranger got our welcome
+    // email. Quietly ignore (look like success, save nothing, email no one):
+    // - anyone outside our markets (Vercel's country header; none locally);
+    // - anyone who didn't use the page: the form adds "ts" when someone starts
+    //   typing, and a person takes more than 2.5 seconds to fill it in.
+    const country = (request.headers.get('x-vercel-ip-country') || '').toUpperCase();
+    if (country && !MARKETS.has(country)) return done(true);
+    const started = Number(form.get('ts') || 0), took = Date.now() - started;
+    if (!started || !(took > 2500 && took < 6 * 3600e3)) return done(true);
     const email = String(form.get('email') || '').trim().toLowerCase();
     const rawRole = String(form.get('role') || '');
     const role = (['sitter', 'owner', 'both'].includes(rawRole) ? rawRole : '') as Role;
