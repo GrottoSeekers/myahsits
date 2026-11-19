@@ -13,6 +13,7 @@ const sent = sp.has('sent');
 const sentTo = sp.get('email') || 'your email';
 const errTxt = !e ? null
   : e === 'missing' ? 'Please fill in all fields.'
+  : e === 'busy' ? 'Something went wrong. Please wait a moment and try again.'
   : e === 'short' ? 'Password must be at least 8 characters.'
   : e === 'mismatch' ? 'Passwords do not match.'
   : e === 'exists' ? 'An account with that email already exists.'
@@ -39,6 +40,7 @@ const errTxt = !e ? null
 
       <form method="POST" action="/api/auth/signup" class="au-form" data-signup-form="1">
         <input type="hidden" name="ref" data-ref />
+        <input type="hidden" name="ts" data-ts />
         <fieldset class="su-roles">
           <legend>I am a…</legend>
           <label><input type="radio" name="role" value="sitter" checked /><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span><b>Pet Sitter</b><small>I look after pets &amp; homes</small></label>
@@ -55,6 +57,8 @@ const errTxt = !e ? null
     </>
   )}
 <script is:inline>
+  // When a person starts filling the form in (bot check in api/auth/signup).
+  (function () { var f = document.querySelector('[data-signup-form]'), t = document.querySelector('[data-ts]'); if (!f || !t) return; ['focusin', 'input', 'pointerdown'].forEach(function (ev) { f.addEventListener(ev, function () { if (!t.value) t.value = String(Date.now()); }); }); })();
   (function () { var sp = new URLSearchParams(location.search); var v = sp.get('utm_source') || sp.get('ref') || document.referrer || ''; document.querySelectorAll('[data-ref]').forEach(function (i) { i.value = v; }); })();
 </script>
 </AuthShell>

@@ -2,7 +2,8 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { supabase } from '../../lib/supabase';
-import { emailInterestThanks, emailInterestToAdmin } from '../../lib/email';
+import { emailInterestThanks, emailInterestToAdmin, emailAdminAlert } from '../../lib/email';
+import { humanPace, rateLimit, signupSpike } from '../../lib/antibot';
 import type { Role } from '../../lib/welcome-email';
 import { visitFrom } from '../../lib/geo';
 
@@ -21,10 +22,11 @@ export const POST: APIRoute = async ({ request }) => {
     // from servers in Riga, Paris and the US, so each stranger got our welcome
     // email. Quietly ignore (look like success, save nothing, email no one)
     // anyone who didn't use the page: the form adds "ts" when someone starts
-    // typing, and a person takes more than 2.5 seconds to fill it in.
+    // typing, and a person takes more than 1.5 seconds to fill it in.
     // Open to every country (owner, 19 Nov 2026: MYAH is global).
-    const started = Number(form.get('ts') || 0), took = Date.now() - started;
-    if (!started || !(took > 2500 && took < 6 * 3600e3)) return done(true);
+    if (!humanPace(form.get('ts'))) return done(true);
+    // At most 3 sign-ups an hour from one connection (lib/antibot.ts).
+    if (!(await rateLimit(request, 'interest', 3))) return done(true);
     const email = String(form.get('email') || '').trim().toLowerCase();
     const rawRole = String(form.get('role') || '');
     const role = (['sitter', 'owner', 'both'].includes(rawRole) ? rawRole : '') as Role;
@@ -52,6 +54,10 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     await emailInterestThanks(email, role, position);
+    // Early warning: email the founders when sign-ups jump (20, 50, 100… in a day).
+    const spike = error ? null : await signupSpike();
+    if (spike) await emailAdminAlert(`MYAH: ${spike} launch sign-ups in the last 24 hours`,
+      `<p>${spike} people have joined the launch list in the last 24 hours. If that's more than you'd expect, it may be bots: check the list in Supabase (look at city and time) before sending anything to it.</p>`);
     return done(true, '', role, position);
   } catch {
     return done(false, 'server');

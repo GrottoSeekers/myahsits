@@ -220,7 +220,7 @@ const homes = ['House', 'Apartment', 'Townhouse', 'Farm or acreage'];
     remindSaved = val('email');
     fetch('/api/quote-save', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
       slug: location.pathname.replace(/^\/|\/$/g, ''), email: val('email'), first_name: val('first_name'),
-      summary: Q.summary(), state: Q.state(), date_from: Q.from(), date_to: Q.to(), remind: true, send: false }) }).catch(() => {});
+      summary: Q.summary(), state: Q.state(), date_from: Q.from(), date_to: Q.to(), remind: true, send: false, ts: Q.started ? Q.started() : 0 }) }).catch(() => {});
   };
   const markBooked = () => fetch('/api/quote-save', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'booked', slug: location.pathname.replace(/^\/|\/$/g, ''), email: val('email') }) }).catch(() => {});
