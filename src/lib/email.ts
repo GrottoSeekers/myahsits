@@ -85,6 +85,17 @@ export async function emailInterestThanks(to: string, role: Role = '', position?
   }
 }
 
+/** A short alert to the founders (e.g. a jump in launch sign-ups, lib/antibot.ts). */
+export async function emailAdminAlert(subject: string, html: string) {
+  const key = import.meta.env.RESEND_API_KEY;
+  const to = await adminRecipients();
+  if (!key || !to.length) return { sent: false };
+  try {
+    await new Resend(key).emails.send({ from: 'MYAH <hello@myahsits.com>', to, subject, html });
+    return { sent: true };
+  } catch { return { sent: false }; }
+}
+
 /** Fallback when the interest list can't be saved: email the founders instead, so nobody is lost. */
 export async function emailInterestToAdmin(email: string, role: string) {
   const key = import.meta.env.RESEND_API_KEY;

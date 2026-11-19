@@ -7,10 +7,15 @@ import { signSession, sessionCookie } from '../../../lib/auth';
 import { verifyOn } from '../../../lib/verify-email';
 import { visitFrom } from '../../../lib/geo';
 import { sendVerifyLink } from '../../../lib/email';
+import { humanPace, rateLimit } from '../../../lib/antibot';
 
 export const POST: APIRoute = async ({ request, url }) => {
   try {
     const form = await request.formData();
+    // Bots (lib/antibot.ts): must come through the page, at most 5 an hour per connection.
+    if (!humanPace(form.get('ts')) || !(await rateLimit(request, 'signup', 5))) {
+      return new Response(null, { status: 302, headers: { Location: '/signup?error=busy' } });
+    }
     const email = (form.get('email') as string ?? '').trim().toLowerCase();
     const password = (form.get('password') as string) ?? '';
     const confirm = (form.get('confirm') as string) ?? '';

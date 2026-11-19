@@ -343,7 +343,12 @@ const { waHref = '' } = Astro.props as { waHref?: string };
     });
     if (['shop', 'keys', 'meet'].some((k) => p.has(k) && !/^(none|std-near)$/.test(p.get(k)))) { const x = form.querySelector('.q-more'); if (x) x.open = true; }
   };
-  window.myahQuote = { state: stateOf, summary: () => summary, from: () => q('[name=q_from]').value, to: () => q('[name=q_to]').value };
+  // When someone started using the quote (bot check in api/quote-save).
+  let qStarted = 0;
+  ['pointerdown', 'focusin', 'input'].forEach((ev) => form.addEventListener(ev, () => { if (!qStarted) qStarted = Date.now(); }));
+  const s0 = document.querySelector('[data-q-save]');
+  if (s0) ['pointerdown', 'focusin', 'input'].forEach((ev) => s0.addEventListener(ev, () => { if (!qStarted) qStarted = Date.now(); }));
+  window.myahQuote = { started: () => qStarted, state: stateOf, summary: () => summary, from: () => q('[name=q_from]').value, to: () => q('[name=q_to]').value };
   form.addEventListener('change', changed);
   form.addEventListener('input', changed);
   const saved = new URLSearchParams(location.search).get('quote');
@@ -363,7 +368,7 @@ const { waHref = '' } = Astro.props as { waHref?: string };
       try {
         const r = await fetch('/api/quote-save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
           slug: location.pathname.replace(/^\/|\/$/g, ''), email: em.value.trim(), summary, state: stateOf(),
-          date_from: q('[name=q_from]').value, date_to: q('[name=q_to]').value, remind: rm.checked, send: true }) });
+          date_from: q('[name=q_from]').value, date_to: q('[name=q_to]').value, remind: rm.checked, send: true, ts: qStarted }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j.error || '');
         st.textContent = 'Sent to ' + em.value.trim() + '. If it isn\u2019t there in a few minutes, check your junk folder.' + (rm.checked ? ' We\u2019ll send one reminder in 2 days unless you book.' : '');

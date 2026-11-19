@@ -15,6 +15,7 @@ import { supabase } from '../../lib/supabase';
 import { SITE } from '../../lib/enquiry-email';
 import { quoteEmail } from '../../lib/quote-emails';
 import { sitterInbox, resumeUrl, unsubscribeUrl } from '../../lib/saved-quotes';
+import { humanPace, rateLimit } from '../../lib/antibot';
 
 const resend = new Resend(import.meta.env.RESEND_API_KEY);
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -32,6 +33,11 @@ export const POST: APIRoute = async ({ request }) => {
       await supabase.from('saved_quotes').update({ booked_at: new Date().toISOString() }).eq('slug', slug).eq('email', email).is('booked_at', null);
       return json({ ok: true });
     }
+
+    // Bots (lib/antibot.ts): must come through the page; at most 5 an hour.
+    // (A real person who is refused just tries again, so say so.)
+    if (!humanPace(b.ts)) return json({ error: 'Please try again in a moment.' }, 400);
+    if (!(await rateLimit(request, 'quote', 5))) return json({ error: 'Too many tries from this connection. Please try again in an hour.' }, 429);
 
     const sitter = await sitterInbox(slug);
     if (!sitter) return json({ error: 'Page not found.' }, 404);

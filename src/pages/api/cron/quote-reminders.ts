@@ -26,6 +26,8 @@ function allowed(request: Request) {
 export const GET: APIRoute = async ({ request }) => {
   if (!allowed(request)) return json({ error: 'Not allowed' }, 401);
   const now = Date.now();
+  // Housekeeping: bot-protection counts older than 2 days aren't needed (lib/antibot.ts).
+  try { await supabase.from('rate_limits').delete().lt('created_at', new Date(now - 2 * 864e5).toISOString()); } catch {}
   const { data, error } = await supabase.from('saved_quotes')
     .select('id, token, slug, email, first_name, summary, state, date_from, date_to')
     .eq('remind', true).is('reminder_sent_at', null).is('booked_at', null).is('unsubscribed_at', null)

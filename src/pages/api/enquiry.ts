@@ -4,11 +4,16 @@ import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 import { supabase } from '../../lib/supabase';
 import { enquiryEmail } from '../../lib/enquiry-email';
+import { rateLimit } from '../../lib/antibot';
 
 const resend = new Resend(import.meta.env.RESEND_API_KEY);
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // At most 5 enquiries an hour from one connection (lib/antibot.ts).
+    if (!(await rateLimit(request, 'enquiry', 5))) {
+      return new Response(JSON.stringify({ error: 'Too many tries from this connection. Please try again in an hour.' }), { status: 429, headers: { 'Content-Type': 'application/json' } });
+    }
     const form = await request.formData();
     const slug = (form.get('slug') as string)?.trim();
     const firstName = (form.get('first_name') as string)?.trim();

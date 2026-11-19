@@ -9,12 +9,14 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { randomBytes } from 'node:crypto';
 import { supabase } from '../../lib/supabase';
+import { rateLimit } from '../../lib/antibot';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    if (!(await rateLimit(request, 'photos', 5))) return json({ error: 'Too many tries from this connection. Please try again in an hour.' }, 429);
     const form = await request.formData();
     const slug = String(form.get('slug') ?? '').trim();
     if (!slug) return json({ error: 'Missing page' }, 400);
